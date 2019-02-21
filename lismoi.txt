@@ -1,3 +1,0 @@
-les sources doivent etre mises dans le repertoire src/
-les images doivent etre mises a la base du projet
-
