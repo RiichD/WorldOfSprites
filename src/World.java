@@ -10,32 +10,38 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.ImageIcon;
 
+import java.util.ArrayList;
+
 public class World extends JPanel{
+	
+	public static final int X = 30, Y = 30; //taille de world
 	
 	private JFrame frame;
 	
 	private int spriteLength = 32;
 	
-	private Item[][] world;
+	private Item[][] world; //Le terrain
+	private ArrayList<Agents> agents; //Les agents
 	
 	public World(int x, int y){
 		world = new Item[x][y];
-		
+		agents = new ArrayList<Agents>();
 		int i, j;
 		
 		// Terrain prédéfini
 		
 		for (i=0; i<x; i++) {
 			for (j=0; j<y; j++){
-				world[i][0] = new Water();
-				world[0][j] = new Water();
-				world[x-1][j] = new Water();
-				world[i][y-1] = new Water();
+				//Condition à ajouter pour éviter de créer un nouveau Water()
+				if (world[i][0]==null)world[i][0] = new Water();
+				if (world[0][j]==null)world[0][j] = new Water();
+				if (world[x-1][j]==null)world[x-1][j] = new Water();
+				if (world[i][y-1]==null)world[i][y-1] = new Water();
 				
-				world[i][1] = new Water();
-				world[1][j] = new Water();
-				world[x-2][j] = new Water();
-				world[i][y-2] = new Water();
+				if (world[i][1]==null)world[i][1] = new Water();
+				if (world[1][j]==null)world[1][j] = new Water();
+				if (world[x-2][j]==null)world[x-2][j] = new Water();
+				if (world[i][y-2]==null)world[i][y-2] = new Water();
 			}
 		}
 		
@@ -65,7 +71,7 @@ public class World extends JPanel{
 		
 		// Fin du terrain prédéfini
 		
-		
+		//Création du frame et affichage de la fenêtre
 		frame = new JFrame("World Of Sprite");
 		frame.add(this);
 		frame.setSize(978,1000);
@@ -73,9 +79,22 @@ public class World extends JPanel{
 	}
 	
 	public void add(Item i, int x, int y) {
+		world[x][y] = null; //Programme plus rapide si on met null puis ajouter l'Item i
 		world[x][y] = i;
 	}
 	
+	public void addAgents(Agents a) {
+		agents.add(a);
+	}
+	
+	// Déplace les agents
+	public void move() {
+		for (Agents a : agents) {
+			a.move();
+		}
+	}
+	
+	// Mise à jour de chaque Item et Agents
 	public void update() {
 		for ( int i = 0 ; i < world.length ; i++ )
 			for ( int j = 0 ; j < world[0].length ; j++ ) {
@@ -83,6 +102,9 @@ public class World extends JPanel{
 					world[i][j].update();
 				}
 			}
+		for (Agents a : agents) {
+			a.update();
+		}
 	}
 	
 	public void paint(Graphics g){
@@ -90,16 +112,33 @@ public class World extends JPanel{
 		for ( int i = 0 ; i < world.length ; i++ )
 			for ( int j = 0 ; j < world[0].length ; j++ )
 			{
-				if (world[i][j] instanceof Grass) g2.drawImage(((Grass)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+				if (world[i][j] instanceof Item) g2.drawImage(((Item)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+				/* Pas nécessaire d'écrire les classes appartenant a Item
 				else if (world[i][j] instanceof Tree) g2.drawImage(((Tree)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				else if (world[i][j] instanceof Water) g2.drawImage(((Water)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				else if (world[i][j] instanceof Sand) g2.drawImage(((Sand)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+				else if (world[i][j] instanceof Rose) g2.drawImage(((Rose)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+				else if (world[i][j] instanceof Marguerite) g2.drawImage(((Marguerite)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+				 */
+				for (Agents a : agents ) {
+					g2.drawImage(a.getImage(),spriteLength*(a.getX()),spriteLength*(a.getY()),spriteLength,spriteLength, frame);
+				}
 			}
 	}
 	
 	public static void main(String[] args) {
 		World world = new World(30,30);
-		//world.update();
+		world.add(new Tree(), 15, 15);
+		world.add(new Rose(), 10, 10);
+		world.add(new Marguerite(), 20, 20);
+		world.addAgents(new Agents(10, 15, X, Y));
+		int delai = 0;
+		try {
+			Thread.sleep(delai);
+		} catch ( InterruptedException e ) {
+			
+		}
+		world.move();
 	}
 }
 
