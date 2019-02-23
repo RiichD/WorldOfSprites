@@ -20,12 +20,16 @@ public class World extends JPanel{
 	
 	private int spriteLength = 32;
 	
-	private Item[][] world; //Le terrain
+	private Item[][] world; //Le terrain uniquement
 	private ArrayList<Agent> agents; //Les agents
+	private Item[][] environnement; //environnement contient les arbres, le feu, volcan etc..
 	
 	public World(int x, int y){
 		world = new Item[x][y];
 		agents = new ArrayList<Agent>();
+		environnement = new Item[x][y];
+		
+		
 		int i, j;
 		
 		// Terrain prédéfini
@@ -79,8 +83,12 @@ public class World extends JPanel{
 	}
 	
 	public void add(Item i, int x, int y) {
-		world[x][y] = null; //Programme plus rapide si on met null puis ajouter l'Item i
-		world[x][y] = i;
+		if (environnement[x][y]== null) {
+			environnement[x][y] = null; //Programme plus rapide si on met null puis ajouter l'Item i
+			environnement[x][y] = i;
+		} else {
+			System.out.println("Ajout impossible");
+		}
 	}
 	
 	public void addAgents(Agent a) {
@@ -112,14 +120,8 @@ public class World extends JPanel{
 		for ( int i = 0 ; i < world.length ; i++ )
 			for ( int j = 0 ; j < world[0].length ; j++ )
 			{
-				if (world[i][j] instanceof Item) g2.drawImage(((Item)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
-				/* Pas nécessaire d'écrire les classes appartenant a Item
-				else if (world[i][j] instanceof Tree) g2.drawImage(((Tree)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
-				else if (world[i][j] instanceof Water) g2.drawImage(((Water)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
-				else if (world[i][j] instanceof Sand) g2.drawImage(((Sand)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
-				else if (world[i][j] instanceof Rose) g2.drawImage(((Rose)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
-				else if (world[i][j] instanceof Marguerite) g2.drawImage(((Marguerite)world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
-				 */				
+				if (world[i][j] instanceof Item) g2.drawImage((world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+				if (environnement[i][j] instanceof Item) g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);				
 			}
 		for (Agent a : agents) {
 			g2.drawImage(a.getImage(),spriteLength*(a.getX()),spriteLength*(a.getY()),spriteLength,spriteLength, frame);
@@ -131,6 +133,7 @@ public class World extends JPanel{
 		world.add(new Tree(), 15, 15);
 		world.add(new Rose(), 10, 10);
 		world.add(new Marguerite(), 20, 20);
+		world.add(new Tree(), 15, 15); //Simule l'ajout impossible
 		world.addAgents(new Agent(10, 15, X, Y));
 		int delai = 200;
 		int nbpas = 0;

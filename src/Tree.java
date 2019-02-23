@@ -16,7 +16,7 @@ public class Tree implements Item{
 	public Tree() {
 		age=0;
 		try {
-			treeSprite = ImageIO.read(new File("oldtree.png"));
+			treeSprite = ImageIO.read(new File("tree.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -34,7 +34,7 @@ public class Tree implements Item{
 	public void update(){
 		if (age == 0 ) {
 			try {
-				treeSprite = ImageIO.read(new File("oldtree.png"));
+				treeSprite = ImageIO.read(new File("tree.png"));
 			} catch ( Exception e ) {
 				e.printStackTrace();
 				System.exit(-1);
