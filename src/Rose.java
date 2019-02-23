@@ -15,7 +15,7 @@ public class Rose extends Flower {
 	public Rose() {
 		super();
 		try {
-			spriteRose = ImageIO.read(new File("fleur3.png"));
+			spriteRose = ImageIO.read(new File("fleur1.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -29,4 +29,5 @@ public class Rose extends Flower {
 	public void update() {
 		
 	}
+	
 }

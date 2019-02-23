@@ -29,4 +29,5 @@ public class Marguerite extends Flower {
 	public void update() {
 		
 	}
+	
 }
