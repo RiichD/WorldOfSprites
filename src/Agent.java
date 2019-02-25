@@ -10,25 +10,24 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
-public class Agent{ //Agents sera abstract, avec différents types d'agents
+public abstract class Agent{ //Agents sera abstract, avec différents types d'agents
 	private boolean alive;
 	private int age;
 	private Image tmp; // A retirer quand il y aura des agents
 	private int tailleX, tailleY;
 	private int x, y;
-	public Agent(int x, int y, int tailleX, int tailleY) {
+	
+	public Agent(int tailleX, int tailleY) {
 		alive = true;
 		age = 1;
-		this.x = x;
-		this.y = y;
-		try { //A retirer quand il y aura des agents
-			tmp = ImageIO.read(new File("Agent.png"));
-		} catch ( Exception e ) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
+		this.tailleX = tailleX;
+		this.tailleY = tailleY;
+		x = (int)(Math.random()*(tailleX));
+		y = (int)(Math.random()*(tailleY));
+		alive=true;
 	}
 	
+	//Get
 	public boolean getAlive() {
 		return alive;
 	}
@@ -45,41 +44,46 @@ public class Agent{ //Agents sera abstract, avec différents types d'agents
 		return y;
 	}
 	
-	public void move() { //Déplacement aléatoire pour l'instant
+	//Set
+	public void setAlive(boolean b) {
+		alive = b;
+	}
+	
+	//Déplacement aléatoire pour l'instant
+	public void move(int[][] floor) {
 		double rand = Math.random();
 		if (rand < 0.75) {
 			if (rand < 0.5) {
-				if (rand < 0.25) move_left();
-				else move_down();
+				if (rand < 0.25) {
+					if (x-1>0 && floor[x-1][y]!=0 ) x--;
+				} else {
+					if (y+1<tailleY && floor[x][y+1]!=0) y++;
+				}
 			} else {
-				move_up();
+				if (y-1>0 && floor[x][y-1]!=0 ) y--;
 			}
 		} else {
-			move_right();
+			if (x+1<tailleX && floor[x+1][y]!=0) x++;
 		}
 	}
 	
 	public void move_right() {
-		x++;
+		if (x<tailleX) x++;
 	}
 	
 	public void move_left() {
-		x--;
+		if (x>0) x--;
 	}
 	
 	public void move_up() {
-		y--;
+		if (y>0) y--;
 	}
 	
 	public void move_down() {
-		y++;
+		if (y<tailleY) y++;
 	}
 	
-	public Image getImage() {
-		return tmp;
-	}
+	public abstract Image getImage();
 	
-	public void update() {
-	}
-	
+	public abstract void update();
 }
