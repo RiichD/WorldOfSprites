@@ -9,6 +9,7 @@ import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+@SuppressWarnings("unused")
 public class Tulipe extends Flower {
 	private Image spriteTulipe;
 	

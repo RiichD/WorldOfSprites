@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 
 import java.util.ArrayList;
 
+@SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
 	public static final int X = 48, Y = 48;//taille de world

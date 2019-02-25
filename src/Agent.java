@@ -9,6 +9,7 @@ import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+@SuppressWarnings("unused")
 public class Agent{ //Agents sera abstract, avec différents types d'agents
 	private boolean alive;
 	private int age;
@@ -21,7 +22,7 @@ public class Agent{ //Agents sera abstract, avec différents types d'agents
 		this.x = x;
 		this.y = y;
 		try { //A retirer quand il y aura des agents
-			tmp = ImageIO.read(new File("tronc.png"));
+			tmp = ImageIO.read(new File("Agent.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);

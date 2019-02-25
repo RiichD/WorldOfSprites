@@ -9,6 +9,7 @@ import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+@SuppressWarnings("unused")
 public class Water implements Item{
 	private Image waterSprite;
 	

@@ -9,6 +9,7 @@ import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+@SuppressWarnings("unused")
 public abstract class Flower implements Item {
 	private int age;
 	
