@@ -14,8 +14,8 @@ public class Human extends Agent{
 	private Image humanSprite;
 	private int drowning; //Se noie s'il reste 15 secondes dans l'eau
 	
-	public Human(int X, int Y) {
-		super(X,Y);
+	public Human() {
+		super();
 		
 		try {
 			humanSprite = ImageIO.read(new File("humain.png"));

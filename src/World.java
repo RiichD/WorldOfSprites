@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.ImageIcon;
 
 import java.util.ArrayList;
-
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
@@ -19,20 +18,18 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	private int spriteLength = 16;
+	private int spriteLength = 24;
 	
 	private Item[][] world; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
 	private Item[][] environnement; //environnement contient les arbres, le feu etc..
-	private int[][] floor; //permet de savoir si on peut se déplacer à la case
-	
+	public int[][] floor; //permet de savoir si on peut se déplacer à la case
 	public World(int x, int y){
 		
 		world = new Item[x][y];
 		agents = new ArrayList<Agent>();
 		environnement = new Item[x][y];
 		floor = new int[x][y];
-		
 		int i, j;
 		
 		// Terrain prédéfini
@@ -49,54 +46,53 @@ public class World extends JPanel{
 				if (world[1][j]==null)world[1][j] = new Water();
 				if (world[x-2][j]==null)world[x-2][j] = new Water();
 				if (world[i][y-2]==null)world[i][y-2] = new Water();
-				
-				floor[i][j] = 0;
+				floor[i][j]=0;
 			}
 		}
 		
 		for (i=2; i<x-2; i++) {
 			if (Math.random() < 0.5 ) {
 				world[i][2] = new Sand();
-				floor[i][2] = 1;
 			} else {
 				world[i][2] = new Water();
 			} if (Math.random() < 0.5 ) {
 				world[x-3][i] = new Sand();
-				floor[x-3][i] = 1;
 			} else {
 				world[x-3][i] = new Water();
 			}
 			
 			world[i][3] = new Sand();
 			world[x-4][i] = new Sand();
-			floor[i][3] = 1;
-			floor[x-4][i] = 1;
 		}
 		
 		for (i=2; i<y-2; i++) {
 			if (Math.random() < 0.5 ) {
 				world[2][i] = new Sand();
-				floor[2][i] = 1;
 			} else {
 				world[2][i] = new Water();
 			} if (Math.random() < 0.5 ) {
 				world[i][y-3] = new Sand();
-				floor[i][y-3] = 1;
 			} else {
 				world[i][y-3] = new Water();
 			}
 			
 			world[3][i] = new Sand();
 			world[i][y-4] = new Sand();
-			floor[i][y-4] = 1;
 		}
 		
 		for (i=0; i<x; i++) 
 			for (j=0; j<y; j++)
 				if (world[i][j]==null) {
 					world[i][j] = new Grass();
-					floor[i][j] = 1;
 				}
+		
+		
+		for (int n=0;n<X;n++) {
+			for (int m=0;m<Y;m++) {
+				if (world[n][m] instanceof Sand || world[n][m] instanceof Grass)
+					floor[n][m]=1;
+			}
+		}
 		
 		// Fin du terrain prédéfini
 		
@@ -108,19 +104,32 @@ public class World extends JPanel{
 	}
 	
 	//Get
-	public int[][] getFloor() {
-		return floor;
-	}
-	
 	public Item getWorld(int x, int y) {
 		return world[x][y];
+	}
+	
+	public int[][] getFloor(){
+		return floor;
 	}
 	
 	//add
 	public void addItem(Item i, int x, int y) {
 		if (environnement[x][y]== null) {
 			environnement[x][y] = null; //Programme plus rapide si on met null puis ajouter l'Item i
-			environnement[x][y] = i;
+			if ( ! (world[x][y] instanceof Water) ) {
+				if (world[x][y] instanceof Sand) {
+					if (i instanceof Cactus) {
+						environnement[x][y] = i;
+						floor[x][y] = -1;
+					}
+				} else if (world[x][y] instanceof Grass) {
+					if (i instanceof Tree || i instanceof Flower)
+						environnement[x][y] = i;
+				} else {
+					System.out.println("Pas d'ajout possible");
+				}
+			} else
+				System.out.println("Ajout dans l'eau impossible");
 		} else {
 			System.out.println("Ajout impossible");
 		}
@@ -131,6 +140,16 @@ public class World extends JPanel{
 	}
 	
 	//remove ou replace
+	public void removeAgent(Agent a) {
+		agents.remove(a);
+	}
+	
+	public void removeAgent(ArrayList<Agent> rmagents) {
+		for (Agent a : rmagents) {
+			agents.remove(a);
+		}
+	}
+	
 	public void replaceItemTerrain(Item i, int x, int y) { //Pour world
 		world[x][y] = i;
 	}
@@ -139,15 +158,24 @@ public class World extends JPanel{
 		environnement[x][y] = i;
 	}
 	
-	// Déplace les agents
-	public void move(int[][] floor) {
-		for (Agent a : agents) {
-			a.move(floor);
+	//Affichage du floor pour débuger
+		public void showFloor() {
+			for ( int i = 0 ; i < X ; i++ ) {
+				for ( int j = 0 ; j < Y ; j++ ) {
+					System.out.print(floor[j][i]+ " ");
+				}
+				System.out.println();
+			}
 		}
-	}
 	
 	// Mise à jour de chaque Item et Agents
 	public void update() {
+		
+		//Déplacement des agents
+		for (Agent a : agents) {
+			a.move(floor, environnement);
+		}
+		
 		for ( int i = 0 ; i < world.length ; i++ )
 			for ( int j = 0 ; j < world[0].length ; j++ ) {
 				if (world[i][j]!=null) { 
@@ -174,6 +202,7 @@ public class World extends JPanel{
 			for (Agent arm : agentsmort) {
 				agents.remove(arm);
 			}
+			
 	}
 	
 	public void paint(Graphics g){
@@ -181,10 +210,15 @@ public class World extends JPanel{
 		for ( int i = 0 ; i < world.length ; i++ )
 			for ( int j = 0 ; j < world[0].length ; j++ )
 			{
-				if (world[i][j] instanceof Item) g2.drawImage((world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
-				if (environnement[i][j] instanceof Item) g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);				
+				if (world[i][j] instanceof Item) 
+					g2.drawImage((world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+				if (environnement[i][j] instanceof Item) 
+					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);				
 			}
-		for (Agent a : agents) {
+		
+		//Le clone permet d'éviter les problèmes rencontrés lors d'affichage des agents et des modifications qui ont lieu en même temps
+		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
+		for (Agent a : clone) {
 			g2.drawImage(a.getImage(),spriteLength*(a.getX()),spriteLength*(a.getY()),spriteLength,spriteLength, frame);
 		}
 	}
@@ -192,32 +226,33 @@ public class World extends JPanel{
 	//Main
 	public static void main(String[] args) {
 		World world = new World(X,Y);
-		world.addItem(new Tree(), 15, 15);
-		world.addItem(new Rose(), 10, 10);
-		world.addItem(new Marguerite(), 20, 20);
-		world.addItem(new Tree(), 15, 15); //Simule l'ajout impossible
-		
-		world.replaceItemTerrain(new Sand(), 10, 10);
-		world.replaceItem(new Cactus(), 10, 10);
-		
-		for (int i=0;i<20;i++) {
-			world.addAgents(new Human(X,Y));
+		for (int i=0;i<50;i++) {
+			world.addAgents(new Human());
 		}
+		
+		for (int i=0;i<10;i++) {
+			world.addItem(new Tree(), (int)(Math.random()*X), (int)(Math.random()*Y));
+			world.addItem(new Rose(), (int)(Math.random()*X), (int)(Math.random()*Y));
+			world.addItem(new Tulipe(), (int)(Math.random()*X), (int)(Math.random()*Y));
+			world.addItem(new Marguerite(), (int)(Math.random()*X), (int)(Math.random()*Y));
+		}
+		
+		for (int i=0;i<25;i++)
+			world.addItem(new Cactus(), (int)(Math.random()*X), (int)(Math.random()*Y));
 		
 		int delai = 200;
 		int nbpas = 0;
+		
+		world.showFloor();
 		while (nbpas < 10000) {
-			
-			world.move(world.getFloor());
-			world.update();
 			try {
 				Thread.sleep(delai);
 			} catch ( InterruptedException e ) 
 			{
 			}
-
-			nbpas++;
+			world.update();
 			world.repaint();
+			nbpas++;
 		}
 	}
 }
