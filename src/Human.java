@@ -18,7 +18,7 @@ public class Human extends Agent{
 		super();
 		
 		try {
-			humanSprite = ImageIO.read(new File("humain.png"));
+			humanSprite = ImageIO.read(new File("human.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
