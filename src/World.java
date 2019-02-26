@@ -136,7 +136,11 @@ public class World extends JPanel{
 	}
 	
 	public void addAgents(Agent a) {
-		agents.add(a);
+		if (!(world[a.getX()][a.getY()] instanceof Water))
+			if (a instanceof Human)
+				agents.add(a);
+		else
+			System.out.println("Ajout d'agent impossible dans l'eau");
 	}
 	
 	//remove ou replace
@@ -162,7 +166,10 @@ public class World extends JPanel{
 		public void showFloor() {
 			for ( int i = 0 ; i < X ; i++ ) {
 				for ( int j = 0 ; j < Y ; j++ ) {
-					System.out.print(floor[j][i]+ " ");
+					if (floor[j][i]>=0)
+						System.out.print("  "+ floor[j][i]);
+					else
+						System.out.print(" " + floor[j][i]);
 				}
 				System.out.println();
 			}
@@ -227,7 +234,7 @@ public class World extends JPanel{
 	public static void main(String[] args) {
 		World world = new World(X,Y);
 		for (int i=0;i<50;i++) {
-			world.addAgents(new Human());
+			world.addAgents(new Human((int)(Math.random()*X), (int)(Math.random()*Y)));
 		}
 		
 		for (int i=0;i<10;i++) {
@@ -243,7 +250,7 @@ public class World extends JPanel{
 		int delai = 200;
 		int nbpas = 0;
 		
-		world.showFloor();
+		//world.showFloor(); //A utiliser en cas de problème pour afficher les déplacements possibles avec les entiers
 		while (nbpas < 10000) {
 			try {
 				Thread.sleep(delai);

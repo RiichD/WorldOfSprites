@@ -22,7 +22,13 @@ public abstract class Agent{ //Agents sera abstract, avec différents types d'age
 		age = 1;
 		x = (int)(Math.random()*(World.X));
 		y = (int)(Math.random()*(World.Y));
+	}
+	
+	public Agent(int x, int y) {
 		alive=true;
+		age=1;
+		this.x=x;
+		this.y=y;
 	}
 	
 	//Get

@@ -27,6 +27,19 @@ public class Human extends Agent{
 		drowning=0;
 	}
 	
+	public Human(int x, int y) {
+		super(x,y);
+		
+		try {
+			humanSprite = ImageIO.read(new File("humain.png"));
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
+		drowning=0;
+	}
+	
 	//Get
 	public Image getImage() {
 		return humanSprite;
