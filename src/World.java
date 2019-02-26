@@ -23,7 +23,8 @@ public class World extends JPanel{
 	private Item[][] world; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
 	private Item[][] environnement; //environnement contient les arbres, le feu etc..
-	public int[][] floor; //permet de savoir si on peut se déplacer à la case
+	private int[][] floor; //permet de savoir si on peut se déplacer à la case
+	
 	public World(int x, int y){
 		
 		world = new Item[x][y];
@@ -209,7 +210,6 @@ public class World extends JPanel{
 			for (Agent arm : agentsmort) {
 				agents.remove(arm);
 			}
-			
 	}
 	
 	public void paint(Graphics g){
@@ -218,9 +218,9 @@ public class World extends JPanel{
 			for ( int j = 0 ; j < world[0].length ; j++ )
 			{
 				if (world[i][j] instanceof Item) 
-					g2.drawImage((world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+					g2.drawImage((world[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				if (environnement[i][j] instanceof Item) 
-					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);				
+					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
 			}
 		
 		//Le clone permet d'éviter les problèmes rencontrés lors d'affichage des agents et des modifications qui ont lieu en même temps

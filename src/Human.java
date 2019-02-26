@@ -58,8 +58,6 @@ public class Human extends Agent{
 		drowning=x;
 	}
 	
-	
 	public void update() {
-		
 	}
 }
