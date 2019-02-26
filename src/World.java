@@ -102,6 +102,7 @@ public class World extends JPanel{
 		frame.add(this);
 		frame.setSize(spriteLength*X+X,spriteLength*Y+Y);
 		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	//Get

@@ -52,6 +52,13 @@ public abstract class Agent{ //Agents sera abstract, avec différents types d'age
 		alive = b;
 	}
 	
+	public void setX(int n) {
+		x=n;
+	}
+	
+	public void setY(int n) {
+		y=n;
+	}
 	//Déplacement aléatoire pour l'instant
 	public void move(int[][] floor, Item[][] environnement) {
 		double rand = Math.random();
