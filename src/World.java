@@ -18,12 +18,12 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	private int spriteLength = 24;
+	public static final int spriteLength = 24;
 	
 	private Item[][] world; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
 	private Item[][] environnement; //environnement contient les arbres, le feu etc..
-	private int[][] floor; //permet de savoir si on peut se déplacer à la case
+	private int[][] floor; //permet de savoir si on peut se deplacer a la case
 	
 	public World(int x, int y){
 		
@@ -33,11 +33,11 @@ public class World extends JPanel{
 		floor = new int[x][y];
 		int i, j;
 		
-		// Terrain prédéfini
+		// Terrain predefini
 		
 		for (i=0; i<x; i++) {
 			for (j=0; j<y; j++){
-				//Condition à ajouter pour éviter de créer un nouveau Water()
+				//Condition a ajouter pour eviter de creer un nouveau Water()
 				if (world[i][0]==null)world[i][0] = new Water();
 				if (world[0][j]==null)world[0][j] = new Water();
 				if (world[x-1][j]==null)world[x-1][j] = new Water();
@@ -95,9 +95,9 @@ public class World extends JPanel{
 			}
 		}
 		
-		// Fin du terrain prédéfini
+		// Fin du terrain predefini
 		
-		//Création du frame et affichage de la fenêtre
+		//Creation du frame et affichage de la fenetre
 		frame = new JFrame("World Of Sprite");
 		frame.add(this);
 		frame.setSize(spriteLength*X+X,spriteLength*Y+Y);
@@ -130,14 +130,18 @@ public class World extends JPanel{
 				} else {
 					System.out.println("Pas d'ajout possible");
 				}
-			} else
-				System.out.println("Ajout dans l'eau impossible");
+			} else {
+				if (i instanceof Tsunami) {
+					environnement[x][y]=i;
+					floor[x][y] = -2;
+				}
+			}
 		} else {
-			System.out.println("Ajout impossible");
+			System.out.println("Un item se trouve a cet emplacement");
 		}
 	}
 	
-	public void addAgents(Agent a) {
+	public void addAgent(Agent a) {
 		if (!(world[a.getX()][a.getY()] instanceof Water))
 			if (a instanceof Human)
 				agents.add(a);
@@ -164,7 +168,12 @@ public class World extends JPanel{
 		environnement[x][y] = i;
 	}
 	
-	//Affichage du floor pour débuger
+	//Affichage du floor pour debuger
+	/* -2 : Tsunami
+	 * -1 : Cactus
+	 * 0 : Water
+	 * 1 : Grass/ Sand
+	 */
 		public void showFloor() {
 			for ( int i = 0 ; i < X ; i++ ) {
 				for ( int j = 0 ; j < Y ; j++ ) {
@@ -177,28 +186,42 @@ public class World extends JPanel{
 			}
 		}
 	
-	// Mise à jour de chaque Item et Agents
+	// Mise a jour de chaque Item et Agents
 	public void update() {
 		
-		//Déplacement des agents
+		//Deplacement des agents
 		for (Agent a : agents) {
 			a.move(floor, environnement);
 		}
 		
+		//Mise a jour des donnees
 		for ( int i = 0 ; i < world.length ; i++ )
 			for ( int j = 0 ; j < world[0].length ; j++ ) {
 				if (world[i][j]!=null) { 
 					world[i][j].update();
 				}
+				/*
+				if (environnement[i][j]!=null) {
+					if (environnement[i][j] instanceof Tsunami) {
+						boolean trouve=false;
+						for (int n = i ; n < X && !trouve ; n++) {
+							for (int m = j ; m < Y && !trouve ; m++) {
+								if( !trouve && (floor[n][m]==1 || floor[n][m]==-1) ) { 
+										trouve= true;
+								}
+							}
+						}
+					}
+				}
+				*/
 			}
 		
-		//Création d'une liste pour ajouter les agents décédés
+		//Creation d'une liste pour ajouter les agents decedes
 		ArrayList<Agent> agentsmort = new ArrayList<Agent>();
-		
 		for (Agent a : agents) {
 			a.update();
 			
-			if (a instanceof Human ) { //Si humain dans l'eau, incrémente la noyade
+			if (a instanceof Human ) { //Si humain dans l'eau, incremente la noyade
 				if ( floor[a.getX()][a.getY()]==0 ) ((Human)a).addDrowning();
 				else ((Human)a).setDrowning(0);
 			}
@@ -207,10 +230,23 @@ public class World extends JPanel{
 				agentsmort.add(a);
 			}
 		}
+		
+		
 		if (agentsmort.size()!=0)
 			for (Agent arm : agentsmort) {
 				agents.remove(arm);
 			}
+		
+		//Boucle permettant d'afficher les agents fluidement
+		for (int i = 0; i < spriteLength; i++) {
+			try {
+				Thread.sleep(10);
+			} catch ( Exception e ) {};
+			for (Agent a : agents ) {
+				a.smoothMove();
+				repaint();
+			}
+		}
 	}
 	
 	public void paint(Graphics g){
@@ -224,10 +260,10 @@ public class World extends JPanel{
 					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
 			}
 		
-		//Le clone permet d'éviter les problèmes rencontrés lors d'affichage des agents et des modifications qui ont lieu en même temps
+		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps
 		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
 		for (Agent a : clone) {
-			g2.drawImage(a.getImage(),spriteLength*(a.getX()),spriteLength*(a.getY()),spriteLength,spriteLength, frame);
+			a.draw(g2, frame, spriteLength);
 		}
 	}
 	
@@ -235,7 +271,7 @@ public class World extends JPanel{
 	public static void main(String[] args) {
 		World world = new World(X,Y);
 		for (int i=0;i<50;i++) {
-			world.addAgents(new Human((int)(Math.random()*X), (int)(Math.random()*Y)));
+			world.addAgent(new Human());
 		}
 		
 		for (int i=0;i<10;i++) {
@@ -243,24 +279,15 @@ public class World extends JPanel{
 			world.addItem(new Rose(), (int)(Math.random()*X), (int)(Math.random()*Y));
 			world.addItem(new Tulipe(), (int)(Math.random()*X), (int)(Math.random()*Y));
 			world.addItem(new Marguerite(), (int)(Math.random()*X), (int)(Math.random()*Y));
+			world.addItem(new Tsunami(), (int)(Math.random()*X), (int)(Math.random()*Y));
 		}
 		
 		for (int i=0;i<25;i++)
 			world.addItem(new Cactus(), (int)(Math.random()*X), (int)(Math.random()*Y));
 		
-		int delai = 200;
-		int nbpas = 0;
-		
-		//world.showFloor(); //A utiliser en cas de problème pour afficher les déplacements possibles avec les entiers
-		while (nbpas < 10000) {
-			try {
-				Thread.sleep(delai);
-			} catch ( InterruptedException e ) 
-			{
-			}
+		//world.showFloor(); //A utiliser en cas de probleme avec l'affichage des deplacements possibles avec les entiers
+		while (true) {
 			world.update();
-			world.repaint();
-			nbpas++;
 		}
 	}
 }
