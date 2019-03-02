@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 public abstract class Agent{ //Agents sera abstract, avec differents types d'agents
 	private boolean alive;
 	private int age;
-	private Image tmp; // A retirer quand il y aura des agents
 	private int x, y;
 	private int spriteX, spriteY; // position du Sprite
 	private int pspriteX, pspriteY; // ancienne position du Sprite qui permet de deplacer fluidement
@@ -88,30 +87,30 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	}
 	
 	//Deplacement aleatoire
-	public void move(int[][] floor, Item[][] environnement) {
+	public void move(int[][] world, Item[][] environnement) {
 		if (pspriteX==spriteX && pspriteY==spriteY) {
 			double rand = Math.random();
 			if (rand < 0.75) {
 				if (rand < 0.5) {
 					if (rand < 0.25) {
-						if (x-1>0 && floor[x-1][y]>0 ) {
+						if (x-1>=0 && world[x-1][y]>0 ) {
 							if ( !( environnement[x-1][y] instanceof Cactus) && !(environnement[x-1][y] instanceof Tree) )
 								x--;
 						}
 					} else {
-						if (y+1<World.X && floor[x][y+1]>0) {
+						if (y+1<World.X && world[x][y+1]>0) {
 							if ( !( environnement[x][y+1] instanceof Cactus) && !(environnement[x][y+1] instanceof Tree) )
 								y++;
 						}
 					}
 				} else {
-					if (y-1>0 && floor[x][y-1]>0 ) {
+					if (y-1>=0 && world[x][y-1]>0 ) {
 						if ( !( environnement[x][y-1] instanceof Cactus) && !(environnement[x][y-1] instanceof Tree) )
 							y--;
 					}
 				}
 			} else {
-				if (x+1<World.Y && floor[x+1][y]>0) {
+				if (x+1<World.Y && world[x+1][y]>0) {
 					if ( !( environnement[x+1][y] instanceof Cactus) && !(environnement[x+1][y] instanceof Tree) )
 						x++;
 				}
@@ -139,7 +138,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 			}
 		} else {
 			pspriteX = spriteX;
-			pspriteY= spriteY;
+			pspriteY = spriteY;
 		}
 	}
 	
@@ -147,5 +146,5 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	public abstract void update();
 	
-	public abstract void draw(Graphics2D g, JFrame frame, int spriteLength);
+	public abstract void draw(Graphics2D g, JFrame frame);
 }

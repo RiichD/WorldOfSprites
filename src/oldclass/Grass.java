@@ -10,28 +10,22 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
-public class Tsunami extends NaturalDisaster{
-	private Image tsunamiSprite;
+public class Grass implements Item{
+	private Image grassSprite;
 	
-	public Tsunami() {
-		super();
+	public Grass() {
 		try {
-			tsunamiSprite = ImageIO.read(new File("tsunami.png"));
+			grassSprite = ImageIO.read(new File("grass.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 	}
 	
-	public Image getImage() {
-		return tsunamiSprite;
+	public Image getImage(){
+		return grassSprite;
 	}
 	
-	public Tsunami clone(Tsunami t) {
-		Tsunami clone = new Tsunami();
-		return clone;
-	}
-	
-	public void update() {
+	public void update(){
 	}
 }
