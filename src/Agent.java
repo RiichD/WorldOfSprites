@@ -13,31 +13,31 @@ import javax.swing.JPanel;
 public abstract class Agent{ //Agents sera abstract, avec differents types d'agents
 	private boolean alive;
 	private int age;
+	private double deathAge=200; //age maximum
+	
 	private int x, y;
 	private int spriteX, spriteY; // position du Sprite
 	private int pspriteX, pspriteY; // ancienne position du Sprite qui permet de deplacer fluidement
 	
+	private int sexe; //0 Homme, 1 Femme
+	private int stime; //possibilite d'avoir un enfant a partir de stime=0
+	private int stimeIni = 10; //temps initial avant de pouvoir avoir un enfant
+	
 	public Agent() {
-		alive = true;
-		age = 1;
-		x = (int)(Math.random()*(World.X));
-		y = (int)(Math.random()*(World.Y));
-		spriteX=x*World.spriteLength;
-		spriteY=y*World.spriteLength;
-		pspriteX=spriteX;
-		pspriteY=spriteY;
+		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
 	}
 	
 	public Agent(int x, int y) {
-		alive=true;
-		age=1;
+		alive = true;
+		age = 1;
 		this.x=x;
 		this.y=y;
 		spriteX=x*World.spriteLength;
 		spriteY=y*World.spriteLength;
 		pspriteX=spriteX;
 		pspriteY=spriteY;
-		
+		sexe = (int)(Math.random()*2);
+		stime=stimeIni;
 	}
 	
 	//Get
@@ -47,6 +47,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	public int getAge() {
 		return age;
+	}
+	
+	public double getDeathAge() {
+		return deathAge;
 	}
 	
 	public int getX() {
@@ -73,6 +77,14 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		return pspriteY;
 	}
 	
+	public int getSexe() {
+		return sexe;
+	}
+	
+	public int getStime() {
+		return stime;
+	}
+	
 	//Set
 	public void setAlive(boolean b) {
 		alive = b;
@@ -86,31 +98,46 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		y=n;
 	}
 	
+	public void setStime() {
+		stime=stimeIni;
+	}
+	//Add
+	public void addAge() {
+		age++;
+	}
+	
+	//Remove
+	public void removeStime() {
+		if (stime != 0) {
+			stime--;
+		}
+	}
+	
 	//Deplacement aleatoire
-	public void move(int[][] world, Item[][] environnement) {
+	public void move(int[][] terrain, Item[][] environnement) {
 		if (pspriteX==spriteX && pspriteY==spriteY) {
 			double rand = Math.random();
 			if (rand < 0.75) {
 				if (rand < 0.5) {
 					if (rand < 0.25) {
-						if (x-1>=0 && world[x-1][y]>0 ) {
+						if (x-1>=0 && terrain[x-1][y]>0 ) {
 							if ( !( environnement[x-1][y] instanceof Cactus) && !(environnement[x-1][y] instanceof Tree) )
 								x--;
 						}
 					} else {
-						if (y+1<World.X && world[x][y+1]>0) {
+						if (y+1<World.X && terrain[x][y+1]>0) {
 							if ( !( environnement[x][y+1] instanceof Cactus) && !(environnement[x][y+1] instanceof Tree) )
 								y++;
 						}
 					}
 				} else {
-					if (y-1>=0 && world[x][y-1]>0 ) {
+					if (y-1>=0 && terrain[x][y-1]>0 ) {
 						if ( !( environnement[x][y-1] instanceof Cactus) && !(environnement[x][y-1] instanceof Tree) )
 							y--;
 					}
 				}
 			} else {
-				if (x+1<World.Y && world[x+1][y]>0) {
+				if (x+1<World.Y && terrain[x+1][y]>0) {
 					if ( !( environnement[x+1][y] instanceof Cactus) && !(environnement[x+1][y] instanceof Tree) )
 						x++;
 				}

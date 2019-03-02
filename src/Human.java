@@ -12,15 +12,30 @@ import javax.swing.JPanel;
 @SuppressWarnings("unused")
 public class Human extends Agent{
 	private Image humanSprite;
+	
 	private int drowning;
-	private int drowningtime=15;//Se noie s'il reste 15 secondes dans l'eau
+	private int drowningtime=2;//Se noie s'il reste 15 secondes dans l'eau
+	
 	private int health;
-	private int maxHealth = 100;
-	private int minHealth = 50;
+	private int maxHealth = 150;
+	private int minHealth = 75;
+	private double loseHealth = 0.75; //probabilite de perdre de la vie
 	
 	public Human() {
 		super();
+		try {
+			humanSprite = ImageIO.read(new File("human.png"));
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		
+		drowning=0;
+		health=(int)(Math.random()*(maxHealth+1)+minHealth);
+	}
+	
+	public Human(int x, int y) {
+		super(x,y);
 		try {
 			humanSprite = ImageIO.read(new File("human.png"));
 		} catch ( Exception e ) {
@@ -51,8 +66,11 @@ public class Human extends Agent{
 	}
 	
 	public void update() {
-		health--;
+		if (Math.random()<loseHealth) health--;
 		if (health == 0 ) setAlive(false);
+		addAge();
+		if (getAge()>getDeathAge()) setAlive(false);
+		removeStime();
 	}
 	
 	public void draw(Graphics2D g, JFrame frame) {

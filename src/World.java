@@ -30,30 +30,31 @@ public class World extends JPanel{
 	 * 1 : grass
 	 * 2 : sand
 	 */
-	private int[][] world; //Le terrain uniquement : terre, mer, volcan
+	private int[][] terrain; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
 	private Item[][] environnement; //environnement contient les arbres, le feu etc..
-	private int[][] altitude; //permet de savoir si on peut se deplacer a la case
+	private int[][] altitude; //altitude du world
 	
 	//Vitesse d'execution
-	private int delai=12; //delai pour la vitesse de deplacement d'agent
+	private int delai=5; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	
 	//Probabilite d'ajout
-	private double pHuman= 0.8;
+	private double pHuman = 0.8; //Ajout d'un humain aleatoirement
+	private double pEnfant = 1; //Ajout d'un enfant lorsque 2 sexe sont a la meme case
 	
 	public World(int x, int y){
 		
-		world = new int[x][y];
+		terrain = new int[x][y];
 		agents = new ArrayList<Agent>();
 		environnement = new Item[x][y];
 		altitude = new int[x][y];
 		int i, j;
 		
 		try {
-			waterSprite = ImageIO.read(new File("water.png"));;
-			grassSprite = ImageIO.read(new File("grass.png"));;
-			sandSprite = ImageIO.read(new File("sand.png"));;
+			waterSprite = ImageIO.read(new File("water.png"));
+			grassSprite = ImageIO.read(new File("grass.png"));
+			sandSprite = ImageIO.read(new File("sand.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -69,35 +70,35 @@ public class World extends JPanel{
 		
 		for (i=2; i<x-2; i++) {
 			if (Math.random() < 0.5 ) {
-				world[i][2] = 2;
+				terrain[i][2] = 2;
 			} else {
-				world[i][2] = 0;
+				terrain[i][2] = 0;
 			} if (Math.random() < 0.5 ) {
-				world[x-3][i] =2;
+				terrain[x-3][i] =2;
 			} else {
-				world[x-3][i] = 0;
+				terrain[x-3][i] = 0;
 			}
 			
-			world[i][3] = 2;
-			world[x-4][i] = 2;
+			terrain[i][3] = 2;
+			terrain[x-4][i] = 2;
 		}
 		
 		for (i=2; i<y-2; i++) {
 			if (Math.random() < 0.5 ) {
-				world[2][i] = 2;
+				terrain[2][i] = 2;
 			}
 			if (Math.random() < 0.5 ) {
-				world[i][y-3] = 2;
+				terrain[i][y-3] = 2;
 			}
 			
-			world[3][i] = 2;
-			world[i][y-4] = 2;
+			terrain[3][i] = 2;
+			terrain[i][y-4] = 2;
 		}
 		
 		for (i=4; i<x-4; i++) 
 			for (j=4; j<y-4; j++)
-				if (world[i][j]==0) {
-					world[i][j] = 1;
+				if (terrain[i][j]==0) {
+					terrain[i][j] = 1;
 				}
 		
 		// Fin du terrain predefini
@@ -128,8 +129,8 @@ public class World extends JPanel{
 	}
 	
 	//Get
-	public int[][] getWorld() {
-		return world;
+	public int[][] getTerrain() {
+		return terrain;
 	}
 	
 	public int[][] getAltitude(){
@@ -143,14 +144,13 @@ public class World extends JPanel{
 	//add
 	public void addItem(Item i, int x, int y) {
 		if (environnement[x][y]== null) {
-			environnement[x][y] = null; //Programme plus rapide si on met null puis ajouter l'Item i
-			if ( ! (world[x][y]==0 )) {
-				if (world[x][y]==2) {
+			environnement[x][y] = null; //Programme plus rapide si on met null avant d'ajouter l'Item i
+			if ( ! (terrain[x][y]==0 )) {
+				if (terrain[x][y]==2) {
 					if (i instanceof Cactus) {
 						environnement[x][y] = i;
-						altitude[x][y] = -1;
 					}
-				} else if (world[x][y]==1) {
+				} else if (terrain[x][y]==1) {
 					if (i instanceof Tree || i instanceof Flower)
 						environnement[x][y] = i;
 				} else {
@@ -159,7 +159,6 @@ public class World extends JPanel{
 			} else {
 				if (i instanceof Tsunami) {
 					environnement[x][y]=i;
-					altitude[x][y] = -2;
 				}
 			}
 		} else {
@@ -168,22 +167,16 @@ public class World extends JPanel{
 	}
 	
 	public void addAgent(Agent a) {
-		if (!(world[a.getX()][a.getY()]==0))
+		if (!(terrain[a.getX()][a.getY()]==0))
 			if (a instanceof Human)
 				agents.add(a);
 		else
-			System.out.println("Ajout d'agent impossible dans l'eau");
+			System.out.println("Ajout d'agent impossible");
 	}
 	
 	//remove ou replace
 	public void removeAgent(Agent a) {
 		agents.remove(a);
-	}
-	
-	public void removeAgent(ArrayList<Agent> rmagents) {
-		for (Agent a : rmagents) {
-			agents.remove(a);
-		}
 	}
 	
 	public void replaceItem(Item i, int x, int y) { //Pour environnement
@@ -206,9 +199,9 @@ public class World extends JPanel{
 	// Mise a jour de chaque Item et Agents
 	public void update() {
 		
-		//Mise a jour des donnees
-		for ( int i = 0 ; i < world.length ; i++ )
-			for ( int j = 0 ; j < world[0].length ; j++ ) {
+		//Mise a jour des donnees de l'environnement
+		for ( int i = 0 ; i < terrain.length ; i++ )
+			for ( int j = 0 ; j < terrain[0].length ; j++ ) {
 				if (environnement[i][j]!=null ) {
 					environnement[i][j].update();
 				}
@@ -236,14 +229,35 @@ public class World extends JPanel{
 				}*/
 			}
 		
-		//Creation d'une liste pour ajouter les agents decedes
+		//Liste permettant d'ajouter les nouveaux enfants
+		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
+		//Met a jour les agents
 		for (Agent a : agents) {
 			if (a.getAlive()) {
-				a.move(world, environnement);
+				a.move(terrain, environnement);
 				a.update();
 			}
-			if (a instanceof Human && world[a.getX()][a.getY()]==0) ((Human)a).addDrowning();
+			if (a instanceof Human && terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning();
 			else ((Human)a).setDrowning(0);
+			
+			for (Agent a2 : agents) {
+				if (!(a.equals(a2)) && Math.random()<pEnfant) {
+					if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) {
+						if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
+							int cptNbPos = 0;
+							for (Agent a3 : agents) {
+								if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbPos++;
+							}
+							
+							if (cptNbPos < 4) { //S'il y a 3 agents a la meme position, il n'y a pas naissance d'enfant
+								nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
+								a.setStime(); //Reinitialise le stime
+								a2.setStime();
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		//Boucle permettant d'afficher les agents fluidement
@@ -262,7 +276,10 @@ public class World extends JPanel{
 			if (agents.get(i).getAlive() == false) agents.remove(agents.get(i));
 		}
 		
-		if (Math.random()<pHuman) addAgent(new Human());
+		//Ajout les enfants dans la liste d'agent
+		for ( Agent a : nEnfant ) {
+			addAgent(a);
+		}
 		
 		try {
 			Thread.sleep(delai2);
@@ -271,14 +288,14 @@ public class World extends JPanel{
 	
 	public void paint(Graphics g){
 		Graphics2D g2 = (Graphics2D)g;
-		for ( int i = 0 ; i < world.length ; i++ )
-			for ( int j = 0 ; j < world[0].length ; j++ )
+		for ( int i = 0 ; i < terrain.length ; i++ )
+			for ( int j = 0 ; j < terrain[0].length ; j++ )
 			{
-				if (world[i][j]==0) {
+				if (terrain[i][j]==0) {
 					g2.drawImage(waterSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
-				} else if (world[i][j]==1) {
+				} else if (terrain[i][j]==1) {
 					g2.drawImage(grassSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
-				} else if (world[i][j]==2) {
+				} else if (terrain[i][j]==2) {
 					g2.drawImage(sandSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
 
 				}
