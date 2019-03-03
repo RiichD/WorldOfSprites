@@ -13,15 +13,13 @@ import javax.swing.JPanel;
 public abstract class Agent{ //Agents sera abstract, avec differents types d'agents
 	private boolean alive;
 	private int age;
-	private double deathAge=200; //age maximum
+	private double deathAge=5000; //age maximum
 	
 	private int x, y;
 	private int spriteX, spriteY; // position du Sprite
 	private int pspriteX, pspriteY; // ancienne position du Sprite qui permet de deplacer fluidement
 	
 	private int sexe; //0 Homme, 1 Femme
-	private int stime; //possibilite d'avoir un enfant a partir de stime=0
-	private int stimeIni = 10; //temps initial avant de pouvoir avoir un enfant
 	
 	public Agent() {
 		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
@@ -30,14 +28,13 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	public Agent(int x, int y) {
 		alive = true;
 		age = 1;
-		this.x=x;
-		this.y=y;
-		spriteX=x*World.spriteLength;
-		spriteY=y*World.spriteLength;
-		pspriteX=spriteX;
-		pspriteY=spriteY;
+		this.x = x;
+		this.y = y;
+		spriteX = x*World.spriteLength;
+		spriteY = y*World.spriteLength;
+		pspriteX = spriteX;
+		pspriteY = spriteY;
 		sexe = (int)(Math.random()*2);
-		stime=stimeIni;
 	}
 	
 	//Get
@@ -81,9 +78,9 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		return sexe;
 	}
 	
-	public int getStime() {
-		return stime;
-	}
+	public abstract int getStime();
+	
+	public abstract int getStimeIni();
 	
 	//Set
 	public void setAlive(boolean b) {
@@ -98,19 +95,11 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		y=n;
 	}
 	
-	public void setStime() {
-		stime=stimeIni;
-	}
+	public abstract void setStime();
+	
 	//Add
 	public void addAge() {
 		age++;
-	}
-	
-	//Remove
-	public void removeStime() {
-		if (stime != 0) {
-			stime--;
-		}
 	}
 	
 	//Deplacement aleatoire

@@ -17,9 +17,14 @@ public class Human extends Agent{
 	private int drowningtime=2;//Se noie s'il reste 15 secondes dans l'eau
 	
 	private int health;
-	private int maxHealth = 150;
-	private int minHealth = 75;
-	private double loseHealth = 0.75; //probabilite de perdre de la vie
+	private int maxHealth = 300;
+	private int minHealth = 150;
+	private double ploseHealth = 0.75; //probabilite de perdre de la vie
+	
+	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
+	private int stime; //possibilite d'avoir un enfant a partir de stime=0
+	private int minStime = 15;
+	private int maxStime = 30;
 	
 	public Human() {
 		super();
@@ -31,7 +36,9 @@ public class Human extends Agent{
 		}
 		
 		drowning=0;
-		health=(int)(Math.random()*(maxHealth+1)+minHealth);
+		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
+		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
+		stime=stimeIni;
 	}
 	
 	public Human(int x, int y) {
@@ -45,11 +52,34 @@ public class Human extends Agent{
 		
 		drowning=0;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
+		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
+		stime=stimeIni;
 	}
 	
 	//Get
 	public Image getImage() {
 		return humanSprite;
+	}
+	
+	public int getStime() {
+		return stime;
+	}
+	
+	public int getStimeIni() {
+		return stimeIni;
+	}
+	
+	public int getHealth() {
+		return health;
+	}
+	
+	//Set
+	public void setDrowning(int x) {
+		drowning=x;
+	}
+	
+	public void setStime() {
+		stime=stimeIni;
 	}
 	
 	//Add
@@ -60,13 +90,19 @@ public class Human extends Agent{
 		}
 	}
 	
-	//Set
-	public void setDrowning(int x) {
-		drowning=x;
+	public void addHealth(int n) {
+		health+=n;
+	}
+	
+	//Remove
+	public void removeStime() {
+		if (stime != 0) {
+			stime--;
+		}
 	}
 	
 	public void update() {
-		if (Math.random()<loseHealth) health--;
+		if (Math.random()<ploseHealth) health--;
 		if (health == 0 ) setAlive(false);
 		addAge();
 		if (getAge()>getDeathAge()) setAlive(false);

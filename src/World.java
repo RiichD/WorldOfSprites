@@ -36,12 +36,32 @@ public class World extends JPanel{
 	private int[][] altitude; //altitude du world
 	
 	//Vitesse d'execution
-	private int delai=5; //delai pour la vitesse de deplacement d'agent
+	private int delai=0; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
+	public static final int delai3=0; //delai du main ( iteration )
+	
+	//Attribut du monde
+	private int nbHumanDepart = 25;
+	private int nbEnvDepart = 10;
+	private int nbCactusDepart = 25;
+	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
+	private int addHumanHealth = 50;
 	
 	//Probabilite d'ajout
-	private double pHuman = 0.8; //Ajout d'un humain aleatoirement
-	private double pEnfant = 1; //Ajout d'un enfant lorsque 2 sexe sont a la meme case
+	private double pHuman = 0.55; //probabilite d'apparation d'un humain aleatoirement
+	private double pEnfant = 1; //probabilite d'apparation de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
+	
+	private double pFlower = 0.25; //probabilite d'apparation d'une fleur
+	private double pTulipe = 0.05;
+	private double pMarguerite = 0.05;
+	private double pRose = 0.05;
+	
+	private double pGrass = 0.2;
+	private double pSand = 0.8;
+	private double pWater = 0.5;
+	
+	private double pTree = 0.01;
+	private double pCactus = 0.1;
 	
 	public World(int x, int y){
 		
@@ -104,19 +124,19 @@ public class World extends JPanel{
 		// Fin du terrain predefini
 		
 		//Agents de depart
-		for (int n=0;n<50;n++) {
+		for (int n=0;n<nbHumanDepart;n++) {
 			addAgent(new Human());
 		}
 		
-		for (int n=0;n<10;n++) {
-			addItem(new Tree(), (int)(Math.random()*X), (int)(Math.random()*Y));
-			addItem(new Rose(), (int)(Math.random()*X), (int)(Math.random()*Y));
-			addItem(new Tulipe(), (int)(Math.random()*X), (int)(Math.random()*Y));
-			addItem(new Marguerite(), (int)(Math.random()*X), (int)(Math.random()*Y));
-			addItem(new Tsunami(), (int)(Math.random()*X), (int)(Math.random()*Y));
+		for (int n=0;n<nbEnvDepart;n++) {
+			addItem(new Tree());
+			addItem(new Rose());
+			addItem(new Tulipe());
+			addItem(new Marguerite());
+			addItem(new Tsunami());
 		}
 		
-		for (int n=0;n<25;n++)
+		for (int n=0;n<nbCactusDepart;n++)
 			addItem(new Cactus(), (int)(Math.random()*X), (int)(Math.random()*Y));
 		
 		
@@ -153,17 +173,17 @@ public class World extends JPanel{
 				} else if (terrain[x][y]==1) {
 					if (i instanceof Tree || i instanceof Flower)
 						environnement[x][y] = i;
-				} else {
-					System.out.println("Pas d'ajout possible");
 				}
 			} else {
 				if (i instanceof Tsunami) {
 					environnement[x][y]=i;
 				}
 			}
-		} else {
-			System.out.println("Un item se trouve a cet emplacement");
 		}
+	}
+	
+	public void addItem(Item i) {
+		addItem(i, (int)(Math.random()*X), (int)(Math.random()*Y));
 	}
 	
 	public void addAgent(Agent a) {
@@ -176,11 +196,13 @@ public class World extends JPanel{
 	
 	//remove ou replace
 	public void removeAgent(Agent a) {
-		agents.remove(a);
+		ArrayList<Agent> copie = new ArrayList<Agent>(agents);
+		copie.remove(a);
+		agents=copie;
 	}
 	
-	public void replaceItem(Item i, int x, int y) { //Pour environnement
-		environnement[x][y] = i;
+	public void removeItem(Item i, int x, int y) { //Pour environnement
+		environnement[x][y] = null;
 	}
 	
 	//Affichage du altitude pour debuger
@@ -198,37 +220,15 @@ public class World extends JPanel{
 	
 	// Mise a jour de chaque Item et Agents
 	public void update() {
-		
 		//Mise a jour des donnees de l'environnement
-		for ( int i = 0 ; i < terrain.length ; i++ )
-			for ( int j = 0 ; j < terrain[0].length ; j++ ) {
-				if (environnement[i][j]!=null ) {
-					environnement[i][j].update();
+		for (int i = 0 ; i< X ; i++ )
+			for (int j = 0 ; j<Y ; j++ ) {
+				if (environnement[i][j] instanceof Flower || environnement[i][j] instanceof Tree) {
+					if (terrain[i][j]!=1) environnement[i][j]=null;
+				} else if (environnement[i][j] instanceof Cactus ) {
+					if (terrain[i][j]!=2) environnement[i][j]=null;
 				}
-				/*
-				if (environnement[i][j] instanceof Tsunami) {
-					boolean trouve = false;
-					if (environnement[i][j] instanceof Tsunami ) {
-						if (i+1 < X && !(environnement[i+1][j] instanceof Tsunami)) {
-							environnement[i+1][j] = (new Tsunami()).clone((Tsunami)environnement[i+1][j]);
-							trouve=true;
-						}
-						if (i-1 >=0 && !(environnement[i-1][j] instanceof Tsunami)) {
-							environnement[i-1][j] = (new Tsunami()).clone((Tsunami)environnement[i-1][j]);
-							trouve=true;
-						}
-						if (j+1 < X && !(environnement[i][j+1] instanceof Tsunami)) {
-							environnement[i][j+1] = (new Tsunami()).clone((Tsunami)environnement[i][j+1]);
-							trouve=true;
-						}
-						if (j-1 >=0 && !(environnement[i][j-1] instanceof Tsunami)) {
-							environnement[i][j-1] = (new Tsunami()).clone((Tsunami)environnement[i][j-1]);
-							trouve=true;
-						}
-					}
-				}*/
 			}
-		
 		//Liste permettant d'ajouter les nouveaux enfants
 		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
 		//Met a jour les agents
@@ -237,19 +237,26 @@ public class World extends JPanel{
 				a.move(terrain, environnement);
 				a.update();
 			}
-			if (a instanceof Human && terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning();
-			else ((Human)a).setDrowning(0);
+			if (a instanceof Human && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning();
+				else ((Human)a).setDrowning(0);
+				if (environnement[a.getX()][a.getY()] instanceof Flower) {
+					((Human)a).addHealth(addHumanHealth);
+					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+			}
 			
 			for (Agent a2 : agents) {
 				if (!(a.equals(a2)) && Math.random()<pEnfant) {
 					if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) {
 						if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
-							int cptNbPos = 0;
+							int cptNbAgents = 0;
 							for (Agent a3 : agents) {
-								if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbPos++;
+								if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbAgents++;
+								if (cptNbAgents>nbAgentsMaxPos) break;
 							}
 							
-							if (cptNbPos < 4) { //S'il y a 3 agents a la meme position, il n'y a pas naissance d'enfant
+							if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant
 								nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
 								a.setStime(); //Reinitialise le stime
 								a2.setStime();
@@ -259,21 +266,20 @@ public class World extends JPanel{
 				}
 			}
 		}
-		
 		//Boucle permettant d'afficher les agents fluidement
-		for (int i = 0; i < spriteLength; i++) {
+
+		for (int nb=0; nb < spriteLength; nb++) {
 			try {
 				Thread.sleep(delai);
-			} catch ( Exception e ) {};
-			for (Agent a : agents ) {
-				a.smoothMove();
+			} catch ( Exception e ) {}
+			for (Agent a : agents) {
+				if (a.getAlive()) a.smoothMove();
 				repaint();
 			}
 		}
-		
 		//S'il y a des agents qui sont morts, alors on le retire de la liste
 		for (int i = 0; i < agents.size(); i++) {
-			if (agents.get(i).getAlive() == false) agents.remove(agents.get(i));
+			if (agents.get(i).getAlive() == false) removeAgent(agents.get(i));
 		}
 		
 		//Ajout les enfants dans la liste d'agent
@@ -281,6 +287,70 @@ public class World extends JPanel{
 			addAgent(a);
 		}
 		
+		//Environnement aleatoire
+		if (Math.random()<pFlower) {
+			if (Math.random()<pRose) addItem(new Rose());
+			if (Math.random()<pTulipe) addItem(new Tulipe());
+			if (Math.random()<pMarguerite) addItem(new Marguerite());
+		}
+		
+		//Variables pour le changement de terrain aleatoire
+		int p=(int)(Math.random()*X);
+		int q=(int)(Math.random()*Y);
+		boolean presenceSand = false;
+		
+		if (Math.random()<pSand) {
+			if (terrain[p][q]==1) {
+				for (int i = -1; i < 2 && !false;i++ ) //Rayon de 3x3 
+					for (int j = -1; j < 2 && !false; j++) {
+						if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2) {
+							presenceSand=true;
+						}
+					}
+				if (presenceSand) { //On ne remplace que grass
+					terrain[p][q]=2;
+				}
+			}
+		}
+		
+		if (Math.random()<pWater) {
+			if (terrain[p][q]==2) { //Remplace uniquement le sable
+				boolean presenceWater = false;
+				//Recherche d'eau sous forme de +
+				if (p+1<X ) {
+					if (terrain[p+1][q]==0)
+						presenceWater = true;
+				}
+				if (p-1 >= 0) {
+					if (terrain[p-1][q]==0)
+						presenceWater = true;
+				}
+				if (q+1 < Y) {
+					if (terrain[p][q+1]==0)
+						presenceWater = true;
+				}
+				if (q-1 >= 0) {
+					if (terrain[p][q-1]==0)
+						presenceWater = true;
+				}
+				if (presenceWater) { //Uniquement s'il y a de l'eau a cote (les angles ne sont pas pris en compte)
+					terrain[p][q] = 0;
+				}
+			}
+		}
+		
+		p=(int)(Math.random()*X);
+		q=(int)(Math.random()*Y);
+		
+		if (Math.random()<pTree) {
+			if (terrain[p][q]==1) addItem(new Tree());
+		}
+		
+		if (Math.random()<pTree) {
+			if (terrain[p][q]==2) addItem(new Cactus());
+		}
+		
+		repaint();
 		try {
 			Thread.sleep(delai2);
 		} catch ( Exception e ) {};
@@ -300,22 +370,28 @@ public class World extends JPanel{
 
 				}
 				if (environnement[i][j] instanceof Item) 
-					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+					if (environnement[i][j] != null ) g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
 			}
 		
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps
 		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
 		for (Agent a : clone) {
-			if (a.getAlive()) a.draw(g2, frame);
+			if (a.getAlive() && a!=null) a.draw(g2, frame);
 		}
 	}
 	
 	//Main
 	public static void main(String[] args) {
 		World world = new World(X,Y);
+		int i=0;
 		//world.showAltitude(); //A utiliser en cas de probleme avec l'affichage des deplacements possibles avec les entiers
 		while (true) {
 			world.update();
+			try {
+				Thread.sleep(delai3);
+			} catch ( Exception e ) {};
+			System.out.println("it : " + i);
+			i++;
 		}
 	}
 }
