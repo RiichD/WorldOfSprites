@@ -19,7 +19,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private int spriteX, spriteY; // position du Sprite
 	private int pspriteX, pspriteY; // ancienne position du Sprite qui permet de deplacer fluidement
 	
-	private int sexe; //0 Homme, 1 Femme
+	private int sexe; //0 Male, 1 Female
 	
 	public Agent() {
 		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
@@ -78,9 +78,13 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		return sexe;
 	}
 	
+	public abstract int getHealth();
+	
 	public abstract int getStime();
 	
 	public abstract int getStimeIni();
+
+	public abstract Image getImage();
 	
 	//Set
 	public void setAlive(boolean b) {
@@ -157,8 +161,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 			pspriteY = spriteY;
 		}
 	}
-	
-	public abstract Image getImage();
 	
 	public abstract void update();
 	

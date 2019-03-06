@@ -10,12 +10,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
-public class Human extends Agent{
-	private Image humanSprite;
-	private double spriteSize=1; //Change la taille du sprite. 1 etant la taille normale
-	
-	private int drowning;
-	private int drowningtime=2;//Se noie s'il reste drowningtime dans l'eau
+public class Chicken extends Agent{
+	private Image chickenSprite;
+	private double spriteSize=0.9; //Change la taille du sprite. 1 etant la taille normale
 	
 	private int health;
 	private int maxHealth = 300;
@@ -27,31 +24,27 @@ public class Human extends Agent{
 	private int minStime = 15;
 	private int maxStime = 30;
 	
-	public Human() {
+	public Chicken() {
 		super();
 		try {
-			humanSprite = ImageIO.read(new File("human.png"));
+			chickenSprite = ImageIO.read(new File("chicken.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
-		drowning=0;
 		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
 	}
 	
-	public Human(int x, int y) {
+	public Chicken(int x, int y) {
 		super(x,y);
 		try {
-			humanSprite = ImageIO.read(new File("human.png"));
+			chickenSprite = ImageIO.read(new File("chicken.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
-		drowning=0;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -59,7 +52,7 @@ public class Human extends Agent{
 	
 	//Get
 	public Image getImage() {
-		return humanSprite;
+		return chickenSprite;
 	}
 	
 	public int getStime() {
@@ -75,21 +68,12 @@ public class Human extends Agent{
 	}
 	
 	//Set
-	public void setDrowning(int x) {
-		drowning=x;
-	}
 	
 	public void setStime() {
 		stime=stimeIni;
 	}
 	
 	//Add
-	public void addDrowning() {
-		drowning++;
-		if (drowning == drowningtime ) {
-			super.setAlive(false);
-		}
-	}
 	
 	public void addHealth(int n) {
 		health+=n;
@@ -113,7 +97,7 @@ public class Human extends Agent{
 	public void draw(Graphics2D g, JFrame frame) {
 		Graphics2D g2 = (Graphics2D) g;
 		
-		g2.drawImage(humanSprite, getPSpriteX(), getPSpriteY(), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		g2.drawImage(chickenSprite, getPSpriteX(), getPSpriteY(), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 
 	}
 }

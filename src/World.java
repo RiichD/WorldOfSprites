@@ -36,13 +36,14 @@ public class World extends JPanel{
 	private int[][] altitude; //altitude du world
 	
 	//Vitesse d'execution
-	private int delai=0; //delai pour la vitesse de deplacement d'agent
+	private int delai=10; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
 	
 	//Attribut du monde
 	private int nbHumanDepart = 25;
-	private int nbEnvDepart = 10;
+	private int nbChickenDepart = 25;
+	private int nbEnvDepart = 10; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	private int addHumanHealth = 50;
@@ -128,6 +129,10 @@ public class World extends JPanel{
 			addAgent(new Human());
 		}
 		
+		for (int n=0;n<nbChickenDepart;n++) {
+			addAgent(new Chicken());
+		}
+		
 		for (int n=0;n<nbEnvDepart;n++) {
 			addItem(new Tree());
 			addItem(new Rose());
@@ -188,7 +193,7 @@ public class World extends JPanel{
 	
 	public void addAgent(Agent a) {
 		if (!(terrain[a.getX()][a.getY()]==0))
-			if (a instanceof Human)
+			if (a instanceof Human || a instanceof Chicken)
 				agents.add(a);
 		else
 			System.out.println("Ajout d'agent impossible");
@@ -240,8 +245,13 @@ public class World extends JPanel{
 			if (a instanceof Human && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning();
 				else ((Human)a).setDrowning(0);
-				if (environnement[a.getX()][a.getY()] instanceof Flower) {
+				if (environnement[a.getX()][a.getY()] instanceof Rose) { //Les humains ne mangent que les roses
 					((Human)a).addHealth(addHumanHealth);
+					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+			} else if ( a instanceof Chicken && a.getAlive()) {
+				if (environnement[a.getX()][a.getY()] instanceof Tulipe) { //Les poules ne mangent que les tulipes
+					((Chicken)a).addHealth(addHumanHealth);
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
 				}
 			}
@@ -257,7 +267,8 @@ public class World extends JPanel{
 							}
 							
 							if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant
-								nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
+								if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
+								else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
 								a.setStime(); //Reinitialise le stime
 								a2.setStime();
 							}

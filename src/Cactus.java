@@ -15,7 +15,11 @@ public class Cactus implements Item{
 	
 	public Cactus() {
 		try {
-			cactusSprite = ImageIO.read(new File("cactus1.png"));
+			double rand= Math.random();
+			if (rand<0.25)cactusSprite = ImageIO.read(new File("cactus4.png"));
+			else if (rand<0.50)cactusSprite = ImageIO.read(new File("cactus3.png"));
+			else if (rand<0.75)cactusSprite = ImageIO.read(new File("cactus2.png"));
+			else cactusSprite = ImageIO.read(new File("cactus1.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
