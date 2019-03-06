@@ -15,7 +15,10 @@ public class Human extends Agent{
 	private double spriteSize=1; //Change la taille du sprite. 1 etant la taille normale
 	
 	private int drowning;
-	private int drowningtime=2;//Se noie s'il reste drowningtime dans l'eau
+	private int drowningtime=20;//Se noie s'il reste drowningtime dans l'eau
+
+	private int age;
+	private int deathAge=600; //age maximum
 	
 	private int health;
 	private int maxHealth = 300;
@@ -30,12 +33,12 @@ public class Human extends Agent{
 	public Human() {
 		super();
 		try {
-			humanSprite = ImageIO.read(new File("human.png"));
+			humanSprite = ImageIO.read(new File("human1.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+		age=1;
 		drowning=0;
 		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
@@ -45,12 +48,12 @@ public class Human extends Agent{
 	public Human(int x, int y) {
 		super(x,y);
 		try {
-			humanSprite = ImageIO.read(new File("human.png"));
+			humanSprite = ImageIO.read(new File("human1.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+		age=1;
 		drowning=0;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
@@ -62,16 +65,24 @@ public class Human extends Agent{
 		return humanSprite;
 	}
 	
+	public int getAge() {
+		return age;
+	}
+	
+	public int getDeathAge() {
+		return deathAge;
+	}
+	
+	public int getHealth() {
+		return health;
+	}
+	
 	public int getStime() {
 		return stime;
 	}
 	
 	public int getStimeIni() {
 		return stimeIni;
-	}
-	
-	public int getHealth() {
-		return health;
 	}
 	
 	//Set
@@ -89,6 +100,10 @@ public class Human extends Agent{
 		if (drowning == drowningtime ) {
 			super.setAlive(false);
 		}
+	}
+	
+	public void addAge() {
+		age++;
 	}
 	
 	public void addHealth(int n) {

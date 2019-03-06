@@ -8,9 +8,8 @@ import javax.imageio.ImageIO;
 import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.ImageIcon;
-
 import java.util.ArrayList;
+
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
@@ -36,7 +35,7 @@ public class World extends JPanel{
 	private int[][] altitude; //altitude du world
 	
 	//Vitesse d'execution
-	private int delai=10; //delai pour la vitesse de deplacement d'agent
+	private int delai=5; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
 	
@@ -48,6 +47,7 @@ public class World extends JPanel{
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	private int addHumanHealth = 50;
 	
+	private int nbChangementTerrain = 20; //Augmente la chance d'avoir des modifications du terrain. 1 par defaut
 	//Probabilite d'ajout
 	private double pHuman = 0.55; //probabilite d'apparation d'un humain aleatoirement
 	private double pEnfant = 1; //probabilite d'apparation de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
@@ -211,17 +211,17 @@ public class World extends JPanel{
 	}
 	
 	//Affichage du altitude pour debuger
-		public void showAltitude() {
-			for ( int i = 0 ; i < X ; i++ ) {
-				for ( int j = 0 ; j < Y ; j++ ) {
-					if (altitude[j][i]>=0)
-						System.out.print("  "+ altitude[j][i]);
-					else
-						System.out.print(" " + altitude[j][i]);
-				}
-				System.out.println();
+	public void showAltitude() {
+		for ( int i = 0 ; i < X ; i++ ) {
+			for ( int j = 0 ; j < Y ; j++ ) {
+				if (altitude[j][i]>=0)
+					System.out.print("  "+ altitude[j][i]);
+				else
+					System.out.print(" " + altitude[j][i]);
 			}
+			System.out.println();
 		}
+	}
 	
 	// Mise a jour de chaque Item et Agents
 	public void update() {
@@ -250,6 +250,8 @@ public class World extends JPanel{
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
 				}
 			} else if ( a instanceof Chicken && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Chicken)a).addDrowning();
+				else ((Chicken)a).setDrowning(0);
 				if (environnement[a.getX()][a.getY()] instanceof Tulipe) { //Les poules ne mangent que les tulipes
 					((Chicken)a).addHealth(addHumanHealth);
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
@@ -263,13 +265,14 @@ public class World extends JPanel{
 							int cptNbAgents = 0;
 							for (Agent a3 : agents) {
 								if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbAgents++;
-								if (cptNbAgents>nbAgentsMaxPos) break;
+								if (cptNbAgents>nbAgentsMaxPos) {
+									break; //Permet de sortir de la boucle for et eviter de faire des boucles inutilement
+								}
 							}
-							
 							if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant
 								if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
 								else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
-								a.setStime(); //Reinitialise le stime
+								a.setStime(); //Reinitialise le stime des deux agents
 								a2.setStime();
 							}
 						}
@@ -277,8 +280,8 @@ public class World extends JPanel{
 				}
 			}
 		}
+		
 		//Boucle permettant d'afficher les agents fluidement
-
 		for (int nb=0; nb < spriteLength; nb++) {
 			try {
 				Thread.sleep(delai);
@@ -288,6 +291,7 @@ public class World extends JPanel{
 				repaint();
 			}
 		}
+		
 		//S'il y a des agents qui sont morts, alors on le retire de la liste
 		for (int i = 0; i < agents.size(); i++) {
 			if (agents.get(i).getAlive() == false) removeAgent(agents.get(i));
@@ -306,59 +310,62 @@ public class World extends JPanel{
 		}
 		
 		//Variables pour le changement de terrain aleatoire
-		int p=(int)(Math.random()*X);
-		int q=(int)(Math.random()*Y);
-		boolean presenceSand = false;
-		
-		if (Math.random()<pSand) {
-			if (terrain[p][q]==1) {
-				for (int i = -1; i < 2 && !false;i++ ) //Rayon de 3x3 
-					for (int j = -1; j < 2 && !false; j++) {
-						if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2) {
-							presenceSand=true;
+		for (int a=0; a < nbChangementTerrain ; a++) {
+			int p=(int)(Math.random()*X);
+			int q=(int)(Math.random()*Y);
+			boolean presenceSand = false;
+			
+			if (Math.random()<pSand) {
+				if (terrain[p][q]==1) {
+					for (int i = -1; i < 2 && !false;i++ ) //Rayon de 3x3 
+						for (int j = -1; j < 2 && !false; j++) {
+							if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2) {
+								presenceSand=true;
+							}
 						}
+					if (presenceSand) { //On ne remplace que grass
+						terrain[p][q]=2;
 					}
-				if (presenceSand) { //On ne remplace que grass
-					terrain[p][q]=2;
 				}
 			}
-		}
-		
-		if (Math.random()<pWater) {
-			if (terrain[p][q]==2) { //Remplace uniquement le sable
-				boolean presenceWater = false;
-				//Recherche d'eau sous forme de +
-				if (p+1<X ) {
-					if (terrain[p+1][q]==0)
-						presenceWater = true;
-				}
-				if (p-1 >= 0) {
-					if (terrain[p-1][q]==0)
-						presenceWater = true;
-				}
-				if (q+1 < Y) {
-					if (terrain[p][q+1]==0)
-						presenceWater = true;
-				}
-				if (q-1 >= 0) {
-					if (terrain[p][q-1]==0)
-						presenceWater = true;
-				}
-				if (presenceWater) { //Uniquement s'il y a de l'eau a cote (les angles ne sont pas pris en compte)
-					terrain[p][q] = 0;
+			
+			if (Math.random()<pWater) {
+				if (terrain[p][q]==2) { //Remplace uniquement le sable
+					boolean presenceWater = false;
+					//Recherche d'eau sous forme de +
+					if (p+1<X ) {
+						if (terrain[p+1][q]==0)
+							presenceWater = true;
+					}
+					if (p-1 >= 0) {
+						if (terrain[p-1][q]==0)
+							presenceWater = true;
+					}
+					if (q+1 < Y) {
+						if (terrain[p][q+1]==0)
+							presenceWater = true;
+					}
+					if (q-1 >= 0) {
+						if (terrain[p][q-1]==0)
+							presenceWater = true;
+					}
+					if (presenceWater) { //Uniquement s'il y a de l'eau a cote (les angles ne sont pas pris en compte)
+						terrain[p][q] = 0;
+					}
 				}
 			}
-		}
-		
-		p=(int)(Math.random()*X);
-		q=(int)(Math.random()*Y);
-		
-		if (Math.random()<pTree) {
-			if (terrain[p][q]==1) addItem(new Tree());
-		}
-		
-		if (Math.random()<pTree) {
-			if (terrain[p][q]==2) addItem(new Cactus());
+			
+			p=(int)(Math.random()*X);
+			q=(int)(Math.random()*Y);
+			
+			if (Math.random()<pTree) {
+				if (terrain[p][q]==1) addItem(new Tree());
+			}
+			
+			if (Math.random()<pTree) {
+				if (terrain[p][q]==2) addItem(new Cactus());
+			}
+			repaint();
 		}
 		
 		repaint();
@@ -387,7 +394,11 @@ public class World extends JPanel{
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps
 		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
 		for (Agent a : clone) {
-			if (a.getAlive() && a!=null) a.draw(g2, frame);
+			try {
+				if (a.getAlive() && a!=null) a.draw(g2, frame);
+			} catch ( Exception e ) {
+				System.out.println(a.getX() + " " + a.getY());
+			}
 		}
 	}
 	
@@ -401,7 +412,7 @@ public class World extends JPanel{
 			try {
 				Thread.sleep(delai3);
 			} catch ( Exception e ) {};
-			System.out.println("it : " + i);
+			//System.out.println("it : " + i);
 			i++;
 		}
 	}

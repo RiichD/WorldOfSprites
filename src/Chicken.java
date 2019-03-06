@@ -14,15 +14,21 @@ public class Chicken extends Agent{
 	private Image chickenSprite;
 	private double spriteSize=0.9; //Change la taille du sprite. 1 etant la taille normale
 	
+	private int drowning;
+	private int drowningtime=40;//Se noie s'il reste drowningtime dans l'eau
+	
+	private int age;
+	private int deathAge=500; //age maximum
+	
 	private int health;
-	private int maxHealth = 300;
-	private int minHealth = 150;
-	private double ploseHealth = 0.75; //probabilite de perdre de la vie
+	private int maxHealth = 280;
+	private int minHealth = 140;
+	private double ploseHealth = 0.6; //probabilite de perdre de la vie
 	
 	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
 	private int stime; //possibilite d'avoir un enfant a partir de stime=0
-	private int minStime = 15;
-	private int maxStime = 30;
+	private int minStime = 20;
+	private int maxStime = 35;
 	
 	public Chicken() {
 		super();
@@ -32,6 +38,7 @@ public class Chicken extends Agent{
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		age=1;
 		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -45,6 +52,7 @@ public class Chicken extends Agent{
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		age=1;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -53,6 +61,14 @@ public class Chicken extends Agent{
 	//Get
 	public Image getImage() {
 		return chickenSprite;
+	}
+	
+	public int getAge() {
+		return age;
+	}
+	
+	public int getDeathAge() {
+		return deathAge;
 	}
 	
 	public int getStime() {
@@ -68,12 +84,25 @@ public class Chicken extends Agent{
 	}
 	
 	//Set
+	public void setDrowning(int x) {
+		drowning=x;
+	}
 	
 	public void setStime() {
 		stime=stimeIni;
 	}
 	
 	//Add
+	public void addDrowning() {
+		drowning++;
+		if (drowning == drowningtime ) {
+			super.setAlive(false);
+		}
+	}
+	
+	public void addAge() {
+		age++;
+	}
 	
 	public void addHealth(int n) {
 		health+=n;

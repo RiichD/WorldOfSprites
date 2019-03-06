@@ -12,8 +12,6 @@ import javax.swing.JPanel;
 @SuppressWarnings("unused")
 public abstract class Agent{ //Agents sera abstract, avec differents types d'agents
 	private boolean alive;
-	private int age;
-	private double deathAge=5000; //age maximum
 	
 	private int x, y;
 	private int spriteX, spriteY; // position du Sprite
@@ -27,7 +25,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	public Agent(int x, int y) {
 		alive = true;
-		age = 1;
 		this.x = x;
 		this.y = y;
 		spriteX = x*World.spriteLength;
@@ -40,14 +37,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	//Get
 	public boolean getAlive() {
 		return alive;
-	}
-	
-	public int getAge() {
-		return age;
-	}
-	
-	public double getDeathAge() {
-		return deathAge;
 	}
 	
 	public int getX() {
@@ -78,6 +67,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		return sexe;
 	}
 	
+	public abstract int getAge();
+	
+	public abstract int getDeathAge();
+	
 	public abstract int getHealth();
 	
 	public abstract int getStime();
@@ -102,9 +95,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	public abstract void setStime();
 	
 	//Add
-	public void addAge() {
-		age++;
-	}
+	public abstract void addAge();
 	
 	//Deplacement aleatoire
 	public void move(int[][] terrain, Item[][] environnement) {
