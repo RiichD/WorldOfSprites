@@ -40,7 +40,7 @@ public class World extends JPanel{
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
 	
-	//Attribut du monde
+	//Attributs du monde
 	private int nbHumanDepart = 25;
 	private int nbChickenDepart = 25;
 	private int nbEnvDepart = 10; //Arbres, Fleurs ...
