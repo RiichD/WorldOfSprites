@@ -57,6 +57,8 @@ public class Cactus implements Item{
 	public void update(){
 		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
 		if (age>deathAge) alive=false;
-		age++;
+		if (alive) {
+			age++;
+		}
 	}
 }

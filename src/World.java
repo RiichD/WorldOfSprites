@@ -23,16 +23,19 @@ public class World extends JPanel{
 	private Image waterSprite;
 	private Image grassSprite;
 	private Image sandSprite;
+	private Image fireSprite;
 	
-	/* world :
+	/* terrain :
 	 * 0 : water
 	 * 1 : grass
 	 * 2 : sand
 	 */
+	
 	private int[][] terrain; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
 	private Item[][] environnement; //environnement contient les arbres, le feu etc..
 	private int[][] altitude; //altitude du monde
+	private int[][] fire; ///si 0 rien, sinon feu
 	
 	//Vitesse d'execution
 	private int delai=10; //delai pour la vitesse de deplacement d'agent
@@ -45,10 +48,14 @@ public class World extends JPanel{
 	private int nbFoxDepart = 10;
 	private int nbSnakeDepart = 10;
 	
-	private int nbEnvDepart = 10; //Arbres, Fleurs ...
+	private int nbEnvDepart = 50; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
-	private int addHumanHealth = 50;
+	
+	private int addHumanHealth = 50; //La sante que recupere chaque agent lorsqu'ils se soignent
+	private int addChickenHealth = 45;
+	private int addFoxHealth = 56;
+	private int addSnakeHealth = 105;
 	
 	private int nbChangementTerrain = 20; //Augmente la chance d'avoir des modifications du terrain. 1 par defaut
 	//Probabilite d'ajout
@@ -67,18 +74,24 @@ public class World extends JPanel{
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
 	
+	private double pFire = 1; //Probabilite qu'un item soit en feu
+	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
+	public static final int fireDamage = 10;
+	
 	public World(int x, int y){
 		
 		terrain = new int[x][y];
 		agents = new ArrayList<Agent>();
 		environnement = new Item[x][y];
 		altitude = new int[x][y];
+		fire = new int[x][y];
 		int i, j;
 		
 		try {
 			waterSprite = ImageIO.read(new File("water.png"));
 			grassSprite = ImageIO.read(new File("grass.png"));
 			sandSprite = ImageIO.read(new File("sand.png"));
+			fireSprite = ImageIO.read(new File("fire.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -88,6 +101,7 @@ public class World extends JPanel{
 		for (i=0; i<x; i++) {
 			for (j=0; j<y; j++){
 				altitude[i][j]=0;
+				fire[i][j]=0;
 			}
 		}
 		
@@ -222,12 +236,12 @@ public class World extends JPanel{
 	
 	//Affichage du altitude pour debuger
 	public void showAltitude() {
-		for ( int i = 0 ; i < X ; i++ ) {
-			for ( int j = 0 ; j < Y ; j++ ) {
-				if (altitude[j][i]>=0)
-					System.out.print("  "+ altitude[j][i]);
+		for ( int i = 0 ; i < Y ; i++ ) {
+			for ( int j = 0 ; j < X ; j++ ) {
+				if (altitude[i][j]>=0)
+					System.out.print("  "+ altitude[i][j]);
 				else
-					System.out.print(" " + altitude[j][i]);
+					System.out.print(" " + altitude[i][j]);
 			}
 			System.out.println();
 		}
@@ -236,8 +250,8 @@ public class World extends JPanel{
 	// Mise a jour de chaque Item et Agents
 	public void update() {
 		//Mise a jour des donnees de l'environnement
-		for (int i = 0 ; i< X ; i++ )
-			for (int j = 0 ; j<Y ; j++ ) {
+		for (int i = 0 ; i < Y ; i++ )
+			for (int j = 0 ; j < X ; j++ ) {
 				if (environnement[i][j] instanceof Flower ) {
 					if (terrain[i][j]!=1 || !environnement[i][j].getAlive()) environnement[i][j]=null;
 					else environnement[i][j].update();
@@ -250,6 +264,14 @@ public class World extends JPanel{
 				} else if (environnement[i][j] instanceof Tsunami ) {
 					if (!environnement[i][j].getAlive()) environnement[i][j]=null;
 					else environnement[i][j].update();
+				}
+				
+				if (fire[i][j]>0) {
+					if (fire[i][j]>=fireStop) {
+						fire[i][j]=0;
+					} else {
+						fire[i][j]++;
+					}
 				}
 			}
 		//Liste permettant d'ajouter les nouveaux enfants
@@ -270,23 +292,39 @@ public class World extends JPanel{
 					((Human)a).addHealth(addHumanHealth);
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
 				}
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Human)a).setFire(0);
+				}
 			} else if ( a instanceof Chicken && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==0) ((Chicken)a).addDrowning();
 				else ((Chicken)a).setDrowning(0);
 				if (environnement[a.getX()][a.getY()] instanceof Tulipe) { //Les poules ne mangent que les tulipes
-					((Chicken)a).addHealth(addHumanHealth);
+					((Chicken)a).addHealth(addChickenHealth);
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Chicken)a).setFire(0);
 				}
 			}  else if ( a instanceof Fox && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==0) ((Fox)a).addDrowning();
 				else ((Fox)a).setDrowning(0);
 				if (environnement[a.getX()][a.getY()] instanceof Marguerite) { //Les renards ne mangent que les marguerites
-					((Fox)a).addHealth(addHumanHealth);
+					((Fox)a).addHealth(addFoxHealth);
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Fox)a).setFire(0);
 				}
 			}  else if ( a instanceof Snake && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==0) ((Snake)a).addDrowning();
 				else ((Snake)a).setDrowning(0);
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Snake)a).setFire(0);
+				}
 			}
 			
 			//Boucle permettant la naissance des enfants
@@ -295,10 +333,10 @@ public class World extends JPanel{
 					if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) {
 						if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
 							int cptNbAgents = 0;
-							for (Agent a3 : agents) {
+							for (Agent a3 : agents) { //Verifie que le nombre d'agent a la meme case ne depasse pas nbAgentsMaxPos
 								if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbAgents++;
 								if (cptNbAgents>nbAgentsMaxPos) {
-									break; //Permet de sortir de la boucle for et eviter de faire des boucles inutilement
+									break; //Permet de sortir de la boucle for et eviter de faire des boucles inutilement car la limite est depassee
 								}
 							}
 							if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant
@@ -399,6 +437,10 @@ public class World extends JPanel{
 			if (Math.random()<pTree) {
 				if (terrain[p][q]==2) addItem(new Cactus());
 			}
+			
+			if (Math.random()<pFire) {
+				if (terrain[p][q]!=0) fire[p][q]=1;
+			}
 			repaint();
 		}
 		
@@ -410,21 +452,19 @@ public class World extends JPanel{
 	
 	public void paint(Graphics g){
 		Graphics2D g2 = (Graphics2D)g;
-		for ( int i = 0 ; i < terrain.length ; i++ )
-			for ( int j = 0 ; j < terrain[0].length ; j++ )
-			{
+		for ( int i = 0 ; i < terrain[0].length ; i++ )
+			for ( int j = 0 ; j < terrain.length ; j++ ) {
 				if (terrain[i][j]==0) {
-					g2.drawImage(waterSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+					g2.drawImage(waterSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				} else if (terrain[i][j]==1) {
-					g2.drawImage(grassSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+					g2.drawImage(grassSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				} else if (terrain[i][j]==2) {
-					g2.drawImage(sandSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
-
+					g2.drawImage(sandSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				}
 			}
 		
-		for ( int i = 0 ; i < terrain.length ; i++ )
-			for ( int j = 0 ; j < terrain[0].length ; j++ ) {
+		for ( int i = 0 ; i < environnement[0].length ; i++ )
+			for ( int j = 0 ; j < environnement.length ; j++ ) {
 			if (environnement[i][j] instanceof Item)
 				/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
 				 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
@@ -435,8 +475,21 @@ public class World extends JPanel{
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps
 		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
 		for (Agent a : clone) {
-			if (a.getAlive() && a!=null) a.draw(g2, frame);
+			if (a.getAlive() && a!=null) {
+				a.draw(g2, frame);
+			}
 		}
+		
+		for ( int i = 0 ; i < fire[0].length ; i++ )
+			for ( int j = 0 ; j < fire.length ; j++ ) {
+				if ( fire[i][j]!=0) {
+					if (environnement[i][j] instanceof Tree) {
+						g2.drawImage(fireSprite,(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+					} else {
+						g2.drawImage(fireSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+					}
+				}
+			}
 	}
 	
 	//Main

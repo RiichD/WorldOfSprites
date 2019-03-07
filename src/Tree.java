@@ -25,7 +25,7 @@ public class Tree implements Item{
 	public Tree() {
 		age=1;
 		alive=true;
-		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize+minSpriteSize);
+		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize)+minSpriteSize;
 		try {
 			treeSprite = ImageIO.read(new File("tree.png"));
 		} catch ( Exception e ) {
@@ -57,6 +57,8 @@ public class Tree implements Item{
 	public void update(){
 		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
 		if (age>deathAge) alive=false;
-		age++;
+		if (alive) {
+			age++;
+		}
 	}
 }

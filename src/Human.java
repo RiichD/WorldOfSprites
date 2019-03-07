@@ -12,13 +12,17 @@ import javax.swing.JPanel;
 @SuppressWarnings("unused")
 public class Human extends Agent{
 	private Image humanSprite;
-	private double spriteSize=1; //Change la taille du sprite. 1 etant la taille normale
+	private Image fireSprite;
+	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale
 	
 	private int drowning;
-	private int drowningtime=25;//Se noie s'il reste drowningtime dans l'eau
-
+	private int drowningTime = 25;//Se noie s'il reste drowningtime dans l'eau
+	
+	private int fire;
+	private int fireTime = 10;
+	
 	private int age;
-	private int deathAge=600; //age maximum
+	private int deathAge = 600; //age maximum
 	
 	private int health;
 	private int maxHealth = 300;
@@ -35,12 +39,14 @@ public class Human extends Agent{
 		try {
 			if (getSexe()==0)humanSprite = ImageIO.read(new File("human1.png"));
 			else humanSprite = ImageIO.read(new File("human2.png"));
+			fireSprite = ImageIO.read(new File("fire.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 		age=1;
 		drowning=0;
+		fire=0;
 		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -56,6 +62,7 @@ public class Human extends Agent{
 		}
 		age=1;
 		drowning=0;
+		fire=0;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -91,6 +98,10 @@ public class Human extends Agent{
 		drowning=x;
 	}
 	
+	public void setFire(int x) {
+		fire = x;
+	}
+	
 	public void setStime() {
 		stime=stimeIni;
 	}
@@ -98,7 +109,7 @@ public class Human extends Agent{
 	//Add
 	public void addDrowning() {
 		drowning++;
-		if (drowning == drowningtime ) {
+		if (drowning == drowningTime) {
 			super.setAlive(false);
 		}
 	}
@@ -119,11 +130,18 @@ public class Human extends Agent{
 	}
 	
 	public void update() {
-		if (Math.random()<ploseHealth) health--;
-		if (health == 0 ) setAlive(false);
-		addAge();
+		if (health <= 0) setAlive(false);
 		if (getAge()>getDeathAge()) setAlive(false);
-		removeStime();
+		if (fire>=fireTime) setOnFire(false);
+		if (getAlive()) {
+			if (Math.random()<ploseHealth) health--;
+			addAge();
+			removeStime();
+			if (getOnFire()) {
+				fire++;
+				health-=World.fireDamage;
+			}
+		}
 	}
 	
 	public void draw(Graphics2D g, JFrame frame) {
@@ -132,6 +150,9 @@ public class Human extends Agent{
 			g2.drawImage(humanSprite, World.spriteLength + (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), -(int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 		} else {
 			g2.drawImage(humanSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		}
+		if (getOnFire()) {
+			g2.drawImage(fireSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 		}
 	}
 }

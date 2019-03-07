@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 @SuppressWarnings("unused")
 public abstract class Agent{ //Agents sera abstract, avec differents types d'agents
 	private boolean alive;
+	private boolean onFire;
 	
 	private int x, y;
 	private int spriteX, spriteY; // position du Sprite
@@ -25,6 +26,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	public Agent(int x, int y) {
 		alive = true;
+		onFire = false;
 		this.x = x;
 		this.y = y;
 		spriteX = x*World.spriteLength;
@@ -37,6 +39,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	//Get
 	public boolean getAlive() {
 		return alive;
+	}
+	
+	public boolean getOnFire() {
+		return onFire;
 	}
 	
 	public int getX() {
@@ -82,6 +88,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	//Set
 	public void setAlive(boolean b) {
 		alive = b;
+	}
+	
+	public void setOnFire(boolean b) {
+		onFire = b;
 	}
 	
 	public void setX(int n) {

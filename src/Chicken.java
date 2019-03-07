@@ -12,13 +12,17 @@ import javax.swing.JPanel;
 @SuppressWarnings("unused")
 public class Chicken extends Agent{
 	private Image chickenSprite;
-	private double spriteSize=0.9; //Change la taille du sprite. 1 etant la taille normale et maximale.
+	private Image fireSprite;
+	private double spriteSize = 0.9; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
 	private int drowning;
-	private int drowningtime=40;//Se noie s'il reste drowningtime dans l'eau
+	private int drowningTime = 40;//Se noie s'il reste drowningtime dans l'eau
+	
+	private int fire;
+	private int fireTime = 15;
 	
 	private int age;
-	private int deathAge=500; //age maximum
+	private int deathAge = 500; //age maximum
 	
 	private int health;
 	private int maxHealth = 280;
@@ -34,11 +38,14 @@ public class Chicken extends Agent{
 		super();
 		try {
 			chickenSprite = ImageIO.read(new File("chicken.png"));
+			fireSprite = ImageIO.read(new File("fire.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 		age=1;
+		drowning=0;
+		fire=0;
 		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -53,6 +60,8 @@ public class Chicken extends Agent{
 			System.exit(-1);
 		}
 		age=1;
+		drowning=0;
+		fire=0;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -88,6 +97,10 @@ public class Chicken extends Agent{
 		drowning=x;
 	}
 	
+	public void setFire(int x) {
+		fire = x;
+	}
+	
 	public void setStime() {
 		stime=stimeIni;
 	}
@@ -95,7 +108,7 @@ public class Chicken extends Agent{
 	//Add
 	public void addDrowning() {
 		drowning++;
-		if (drowning == drowningtime ) {
+		if (drowning == drowningTime ) {
 			super.setAlive(false);
 		}
 	}
@@ -116,11 +129,18 @@ public class Chicken extends Agent{
 	}
 	
 	public void update() {
-		if (Math.random()<ploseHealth) health--;
-		if (health == 0 ) setAlive(false);
-		addAge();
+		if (health <= 0) setAlive(false);
 		if (getAge()>getDeathAge()) setAlive(false);
-		removeStime();
+		if (fire>=fireTime) setOnFire(false);
+		if (getAlive()) {
+			if (Math.random()<ploseHealth) health--;
+			addAge();
+			removeStime();
+			if (getOnFire()) {
+				fire++;
+				health-=World.fireDamage;
+			}
+		}
 	}
 	
 	public void draw(Graphics2D g, JFrame frame) {
@@ -129,6 +149,9 @@ public class Chicken extends Agent{
 			g2.drawImage(chickenSprite, World.spriteLength + (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), -(int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 		} else {
 			g2.drawImage(chickenSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		}
+		if (getOnFire()) {
+			g2.drawImage(fireSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 		}
 	}
 }

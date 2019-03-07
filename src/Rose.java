@@ -54,7 +54,9 @@ public class Rose extends Flower {
 	public void update() {
 		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
 		if (age>deathAge) alive=false;
-		age++;
+		if (alive) {
+			age++;
+		}
 	}
 	
 }
