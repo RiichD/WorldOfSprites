@@ -125,8 +125,10 @@ public class Chicken extends Agent{
 	
 	public void draw(Graphics2D g, JFrame frame) {
 		Graphics2D g2 = (Graphics2D) g;
-		
-		g2.drawImage(chickenSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
-
+		if (getPSpriteX()!=getSpriteX() && getSpriteX()<getPSpriteX()) {
+			g2.drawImage(chickenSprite, World.spriteLength + (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), -(int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		} else {
+			g2.drawImage(chickenSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		}
 	}
 }

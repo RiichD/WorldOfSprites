@@ -33,7 +33,8 @@ public class Human extends Agent{
 	public Human() {
 		super();
 		try {
-			humanSprite = ImageIO.read(new File("human1.png"));
+			if (getSexe()==0)humanSprite = ImageIO.read(new File("human1.png"));
+			else humanSprite = ImageIO.read(new File("human2.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -127,8 +128,10 @@ public class Human extends Agent{
 	
 	public void draw(Graphics2D g, JFrame frame) {
 		Graphics2D g2 = (Graphics2D) g;
-		
-		g2.drawImage(humanSprite, getPSpriteX(), getPSpriteY(), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
-
+		if (getSpriteX()<getPSpriteX()) {
+			g2.drawImage(humanSprite, World.spriteLength + (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), -(int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		} else {
+			g2.drawImage(humanSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		}
 	}
 }

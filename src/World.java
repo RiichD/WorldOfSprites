@@ -35,7 +35,7 @@ public class World extends JPanel{
 	private int[][] altitude; //altitude du monde
 	
 	//Vitesse d'execution
-	private int delai=5; //delai pour la vitesse de deplacement d'agent
+	private int delai=10; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
 	
