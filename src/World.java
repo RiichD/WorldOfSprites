@@ -41,7 +41,10 @@ public class World extends JPanel{
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25;
-	private int nbChickenDepart = 25;
+	private int nbChickenDepart = 10;
+	private int nbFoxDepart = 10;
+	private int nbSnakeDepart = 10;
+	
 	private int nbEnvDepart = 10; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
@@ -132,6 +135,14 @@ public class World extends JPanel{
 			addAgent(new Chicken());
 		}
 		
+		for (int n=0;n<nbFoxDepart;n++) {
+			addAgent(new Fox());
+		}
+		
+		for (int n=0;n<nbSnakeDepart;n++) {
+			addAgent(new Snake());
+		}
+		
 		for (int n=0;n<nbEnvDepart;n++) {
 			addItem(new Tree());
 			addItem(new Rose());
@@ -192,7 +203,7 @@ public class World extends JPanel{
 	
 	public void addAgent(Agent a) {
 		if (!(terrain[a.getX()][a.getY()]==0))
-			if (a instanceof Human || a instanceof Chicken)
+			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Snake)
 				agents.add(a);
 		else
 			System.out.println("Ajout d'agent impossible");
@@ -245,12 +256,15 @@ public class World extends JPanel{
 		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
 		//Met a jour les agents
 		for (Agent a : agents) {
-			if (a.getAlive()) {
+			
+			if (a.getAlive()) { //Verifie si l'agent est en vie, et le met a jour
 				a.move(terrain, environnement);
 				a.update();
 			}
+			
+			//Quelques regles du monde pour les agents
 			if (a instanceof Human && a.getAlive()) {
-				if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning();
+				if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning(); //si le terrain est de l'eau, l'agent incremente la noyade
 				else ((Human)a).setDrowning(0);
 				if (environnement[a.getX()][a.getY()] instanceof Rose) { //Les humains ne mangent que les roses
 					((Human)a).addHealth(addHumanHealth);
@@ -263,10 +277,21 @@ public class World extends JPanel{
 					((Chicken)a).addHealth(addHumanHealth);
 					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
 				}
+			}  else if ( a instanceof Fox && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Fox)a).addDrowning();
+				else ((Fox)a).setDrowning(0);
+				if (environnement[a.getX()][a.getY()] instanceof Marguerite) { //Les renards ne mangent que les marguerites
+					((Fox)a).addHealth(addHumanHealth);
+					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+			}  else if ( a instanceof Snake && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Snake)a).addDrowning();
+				else ((Snake)a).setDrowning(0);
 			}
 			
+			//Boucle permettant la naissance des enfants
 			for (Agent a2 : agents) {
-				if (!(a.equals(a2)) && Math.random()<pEnfant) {
+				if (!(a.equals(a2)) && Math.random()<pEnfant) { //Verifie si les deux agents sont de meme espece
 					if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) {
 						if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
 							int cptNbAgents = 0;
@@ -279,6 +304,8 @@ public class World extends JPanel{
 							if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant
 								if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
 								else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
+								else if (a instanceof Fox) nEnfant.add(new Fox(a.getX(), a.getY()));
+								else if (a instanceof Snake) nEnfant.add(new Snake(a.getX(), a.getY()));
 								a.setStime(); //Reinitialise le stime des deux agents
 								a2.setStime();
 							}
@@ -394,11 +421,15 @@ public class World extends JPanel{
 					g2.drawImage(sandSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
 
 				}
-				if (environnement[i][j] instanceof Item)
-					/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
-					 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
-					 */
-					g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+			}
+		
+		for ( int i = 0 ; i < terrain.length ; i++ )
+			for ( int j = 0 ; j < terrain[0].length ; j++ ) {
+			if (environnement[i][j] instanceof Item)
+				/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
+				 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
+				 */
+				g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
 			}
 		
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps

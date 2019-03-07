@@ -11,3 +11,7 @@ https://forums.rpgmakerweb.com/index.php?threads/merry-christmas-here-are-some-t
 https://www.freepngimg.com/nature/tsunami
 https://www.artstation.com/artwork/N61Rg
 https://www.nexusmods.com/stardewvalley/mods/1437
+https://community.playstarbound.com/threads/tokiris-pet-replacements-fox-wolf-red-panda-update-red-panda-finished.110263/
+https://i.pinimg.com/originals/69/b1/fb/69b1fb2faf31adac1c8be47a5651dff6.png
+
+NB: Les images peuvent subir des modifications afin de les adapter au monde.

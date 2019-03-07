@@ -10,52 +10,49 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
-public class Human extends Agent{
-	private Image humanSprite;
-	private double spriteSize=1; //Change la taille du sprite. 1 etant la taille normale
+public class Fox extends Agent{
+	private Image foxSprite;
+	private double spriteSize=1; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
 	private int drowning;
-	private int drowningtime=25;//Se noie s'il reste drowningtime dans l'eau
-
+	private int drowningtime=15;//Se noie s'il reste drowningtime dans l'eau
+	
 	private int age;
-	private int deathAge=600; //age maximum
+	private int deathAge=420; //age maximum
 	
 	private int health;
-	private int maxHealth = 300;
-	private int minHealth = 150;
-	private double ploseHealth = 0.75; //probabilite de perdre de la vie
+	private int maxHealth = 350;
+	private int minHealth = 180;
+	private double ploseHealth = 0.55; //probabilite de perdre de la vie
 	
 	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
 	private int stime; //possibilite d'avoir un enfant a partir de stime=0
-	private int minStime = 15;
-	private int maxStime = 30;
+	private int minStime = 18;
+	private int maxStime = 55;
 	
-	public Human() {
+	public Fox() {
 		super();
 		try {
-			if (getSexe()==0)humanSprite = ImageIO.read(new File("human1.png"));
-			else humanSprite = ImageIO.read(new File("human2.png"));
+			foxSprite = ImageIO.read(new File("fox.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 		age=1;
-		drowning=0;
 		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
 	}
 	
-	public Human(int x, int y) {
+	public Fox(int x, int y) {
 		super(x,y);
 		try {
-			humanSprite = ImageIO.read(new File("human1.png"));
+			foxSprite = ImageIO.read(new File("fox.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 		age=1;
-		drowning=0;
 		health=(int)(Math.random()*(maxHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
@@ -63,7 +60,7 @@ public class Human extends Agent{
 	
 	//Get
 	public Image getImage() {
-		return humanSprite;
+		return foxSprite;
 	}
 	
 	public int getAge() {
@@ -74,16 +71,16 @@ public class Human extends Agent{
 		return deathAge;
 	}
 	
-	public int getHealth() {
-		return health;
-	}
-	
 	public int getStime() {
 		return stime;
 	}
 	
 	public int getStimeIni() {
 		return stimeIni;
+	}
+	
+	public int getHealth() {
+		return health;
 	}
 	
 	//Set
@@ -128,10 +125,10 @@ public class Human extends Agent{
 	
 	public void draw(Graphics2D g, JFrame frame) {
 		Graphics2D g2 = (Graphics2D) g;
-		if (getSpriteX()<getPSpriteX()) {
-			g2.drawImage(humanSprite, World.spriteLength + (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), -(int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		if (getPSpriteX()!=getSpriteX() && getSpriteX()<getPSpriteX()) {
+			g2.drawImage(foxSprite, World.spriteLength + (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), -(int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 		} else {
-			g2.drawImage(humanSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+			g2.drawImage(foxSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 		}
 	}
 }

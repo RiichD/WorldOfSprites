@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 public class Tree implements Item{
 	private Image treeSprite;
 	private double spriteSize;
-	private double maxSpriteSize=1;
+	private double maxSpriteSize=2;
 	private double minSpriteSize=0.2;
 	
 	private boolean alive;
