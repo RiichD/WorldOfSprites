@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public interface Item{
+	public abstract boolean getAlive();
 	public abstract void update();
 	public abstract Image getImage();
+	public abstract double getSpriteSize();
 }

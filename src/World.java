@@ -17,7 +17,7 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 24;
+	public static final int spriteLength = 20;
 	
 	//Sprites
 	private Image waterSprite;
@@ -32,7 +32,7 @@ public class World extends JPanel{
 	private int[][] terrain; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
 	private Item[][] environnement; //environnement contient les arbres, le feu etc..
-	private int[][] altitude; //altitude du world
+	private int[][] altitude; //altitude du monde
 	
 	//Vitesse d'execution
 	private int delai=5; //delai pour la vitesse de deplacement d'agent
@@ -228,10 +228,18 @@ public class World extends JPanel{
 		//Mise a jour des donnees de l'environnement
 		for (int i = 0 ; i< X ; i++ )
 			for (int j = 0 ; j<Y ; j++ ) {
-				if (environnement[i][j] instanceof Flower || environnement[i][j] instanceof Tree) {
-					if (terrain[i][j]!=1) environnement[i][j]=null;
+				if (environnement[i][j] instanceof Flower ) {
+					if (terrain[i][j]!=1 || !environnement[i][j].getAlive()) environnement[i][j]=null;
+					else environnement[i][j].update();
+				} else if (environnement[i][j] instanceof Tree) {
+					if (terrain[i][j]!=1 || !environnement[i][j].getAlive()) environnement[i][j]=null;
+					else environnement[i][j].update();
 				} else if (environnement[i][j] instanceof Cactus ) {
-					if (terrain[i][j]!=2) environnement[i][j]=null;
+					if (terrain[i][j]!=2 || !environnement[i][j].getAlive()) environnement[i][j]=null;
+					else environnement[i][j].update();
+				} else if (environnement[i][j] instanceof Tsunami ) {
+					if (!environnement[i][j].getAlive()) environnement[i][j]=null;
+					else environnement[i][j].update();
 				}
 			}
 		//Liste permettant d'ajouter les nouveaux enfants
@@ -337,15 +345,15 @@ public class World extends JPanel{
 						if (terrain[p+1][q]==0)
 							presenceWater = true;
 					}
-					if (p-1 >= 0) {
+					if (!false && p-1 >= 0) {
 						if (terrain[p-1][q]==0)
 							presenceWater = true;
 					}
-					if (q+1 < Y) {
+					if (!false && q+1 < Y) {
 						if (terrain[p][q+1]==0)
 							presenceWater = true;
 					}
-					if (q-1 >= 0) {
+					if (!false && q-1 >= 0) {
 						if (terrain[p][q-1]==0)
 							presenceWater = true;
 					}
@@ -388,17 +396,13 @@ public class World extends JPanel{
 
 				}
 				if (environnement[i][j] instanceof Item) 
-					if (environnement[i][j] != null ) g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
+					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
 			}
 		
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps
 		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
 		for (Agent a : clone) {
-			try {
-				if (a.getAlive() && a!=null) a.draw(g2, frame);
-			} catch ( Exception e ) {
-				System.out.println(a.getX() + " " + a.getY());
-			}
+			if (a.getAlive() && a!=null) a.draw(g2, frame);
 		}
 	}
 	
