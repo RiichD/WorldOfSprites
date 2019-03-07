@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 public class Rose extends Flower {
 	private Image spriteRose;
 	private double spriteSize;
-	private double maxSpriteSize=1.1;
+	private double maxSpriteSize=1;
 	private double minSpriteSize=0.2;
 	
 	private boolean alive;

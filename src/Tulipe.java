@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 public class Tulipe extends Flower {
 	private Image spriteTulipe;
 	private double spriteSize;
-	private double maxSpriteSize=1.1;
+	private double maxSpriteSize=1;
 	private double minSpriteSize=0.2;
 	
 	private boolean alive;

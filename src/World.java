@@ -17,7 +17,7 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 20;
+	public static final int spriteLength = 28;
 	
 	//Sprites
 	private Image waterSprite;
@@ -82,7 +82,6 @@ public class World extends JPanel{
 		}
 		
 		// Terrain predefini
-		
 		for (i=0; i<x; i++) {
 			for (j=0; j<y; j++){
 				altitude[i][j]=0;
@@ -395,8 +394,11 @@ public class World extends JPanel{
 					g2.drawImage(sandSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);	
 
 				}
-				if (environnement[i][j] instanceof Item) 
-					g2.drawImage((environnement[i][j]).getImage(),spriteLength*i,spriteLength*j,(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+				if (environnement[i][j] instanceof Item)
+					/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
+					 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
+					 */
+					g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
 			}
 		
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps

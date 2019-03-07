@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 @SuppressWarnings("unused")
 public class Chicken extends Agent{
 	private Image chickenSprite;
-	private double spriteSize=0.9; //Change la taille du sprite. 1 etant la taille normale
+	private double spriteSize=0.9; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
 	private int drowning;
 	private int drowningtime=40;//Se noie s'il reste drowningtime dans l'eau
@@ -126,7 +126,7 @@ public class Chicken extends Agent{
 	public void draw(Graphics2D g, JFrame frame) {
 		Graphics2D g2 = (Graphics2D) g;
 		
-		g2.drawImage(chickenSprite, getPSpriteX(), getPSpriteY(), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
+		g2.drawImage(chickenSprite, (int)(getPSpriteX()+(1-spriteSize)*(World.spriteLength/2+1)),(int)(getPSpriteY()+(1-spriteSize)*(World.spriteLength/2+1)), (int)(World.spriteLength*spriteSize), (int)(World.spriteLength*spriteSize), frame);
 
 	}
 }
