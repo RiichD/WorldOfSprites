@@ -13,19 +13,20 @@ import javax.swing.JPanel;
 public class Tree implements Item{
 	private Image treeSprite;
 	private double spriteSize;
-	private double maxSpriteSize=2;
-	private double minSpriteSize=0.2;
+	private double maxSpriteSize=2; //Taille maximale du sprite
+	private double minSpriteSize=0.2; //Taille minimale du sprite
+	private boolean fire; //Si l'arbre est en feu
+	private boolean alive; //Si l'arbre est en vie
 	
-	private boolean alive;
-	
-	private int age;
-	private int deathAge=1500;
-	private double pGrow=0.01;
+	private int age; //L'age de l'arbre
+	private int deathAge=1500; //L'age de deces
+	private double pGrow=0.01; //Chance de gagner en taille
 	
 	public Tree() {
 		age=1;
 		alive=true;
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize)+minSpriteSize;
+		fire=false;
 		try {
 			treeSprite = ImageIO.read(new File("tree.png"));
 		} catch ( Exception e ) {
@@ -50,13 +51,31 @@ public class Tree implements Item{
 		return spriteSize;
 	}
 	
+	public boolean getFire() {
+		return fire;
+	}
+	
 	public void setAge(int age) {
 		this.age=age;
 	}
 	
+	public void setAlive(boolean b) {
+		alive=b;
+	}
+	
+	public void setBurned() {
+		try {
+			treeSprite = ImageIO.read(new File("burnedtree.png"));
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		fire=true;
+	}
+	
 	public void update(){
-		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>deathAge) alive=false;
+		if (!fire && Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
+		if (age>=deathAge) alive=false;
 		if (alive) {
 			age++;
 		}

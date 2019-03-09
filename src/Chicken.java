@@ -55,6 +55,7 @@ public class Chicken extends Agent{
 		super(x,y);
 		try {
 			chickenSprite = ImageIO.read(new File("chicken.png"));
+			fireSprite = ImageIO.read(new File("fire.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -130,7 +131,7 @@ public class Chicken extends Agent{
 	
 	public void update() {
 		if (health <= 0) setAlive(false);
-		if (getAge()>getDeathAge()) setAlive(false);
+		if (age>=deathAge) setAlive(false);
 		if (fire>=fireTime) setOnFire(false);
 		if (getAlive()) {
 			if (Math.random()<ploseHealth) health--;

@@ -45,17 +45,17 @@ public class World extends JPanel{
 	private int[][] fire; ///si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai=0; //delai pour la vitesse de deplacement d'agent
+	private int delai=1; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
-	private int lavaDelai=0; //delai permettant d'afficher la propagation de la lave progressivement
-	private int newCycleLSDelai=1; //delai lors du passage de la lave a la nouvelle terre
+	private int lavaDelai=200; //delai permettant d'afficher la propagation de la lave progressivement
+	private int newCycleLSDelai=5; //delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25;
 	private int nbChickenDepart = 10;
 	private int nbFoxDepart = 10;
-	private int nbSnakeDepart = 10;
+	private int nbViperDepart = 10;
 	
 	private int nbEnvDepart = 20; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
@@ -64,7 +64,7 @@ public class World extends JPanel{
 	private int addHumanHealth = 50; //La sante que recupere chaque agent lorsqu'ils se soignent
 	private int addChickenHealth = 45;
 	private int addFoxHealth = 56;
-	private int addSnakeHealth = 105;
+	private int addViperHealth = 105;
 	
 	private int nbChangementTerrain = 20; //Augmente la chance d'avoir des modifications du terrain. 1 par defaut
 	private int volcanoSpawn = 0; //Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
@@ -95,7 +95,7 @@ public class World extends JPanel{
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
 	
-	private double pFire = 0.01; //Probabilite qu'un item soit en feu
+	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
 	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
 	public static final int fireDamage = 10;
 	
@@ -172,7 +172,7 @@ public class World extends JPanel{
 		//Creation du frame et affichage de la fenetre
 		frame = new JFrame("World Of Sprite");
 		frame.add(this);
-		frame.setSize(spriteLength*X+X,spriteLength*Y+Y);
+		frame.setSize((spriteLength+1)*(X),(spriteLength+1)*(Y));
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -191,8 +191,8 @@ public class World extends JPanel{
 			addAgent(new Fox());
 		}
 		
-		for (int n=0;n<nbSnakeDepart;n++) {
-			addAgent(new Snake());
+		for (int n=0;n<nbViperDepart;n++) {
+			addAgent(new Viper());
 		}
 		
 		//Environnement de depart
@@ -248,7 +248,7 @@ public class World extends JPanel{
 	
 	public void addAgent(Agent a) {
 		if (!(terrain[a.getX()][a.getY()]==0))
-			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Snake)
+			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper)
 				agents.add(a);
 		else
 			System.out.println("Ajout d'agent impossible");
@@ -276,13 +276,15 @@ public class World extends JPanel{
 			for (int i = 0 ; i < Y ; i++ )
 				for (int j = 0 ; j < X ; j++ ) {
 					if (environnement[i][j] instanceof Flower) {
-						if (terrain[i][j]!=1 || !environnement[i][j].getAlive()) environnement[i][j]=null;
-						else environnement[i][j].update();
+						if (terrain[i][j]!=1 || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j]=null; //Si le terrain ne correspond pas a de l'herbe, ou que la fleur est morte, ou que le feu se s'arrete, la fleur meurt
+						else if (fire[i][j]>0) ((Flower)environnement[i][j]).setFire(true); //S'il y a du feu et une fleur, la fleur est en feu
+						else environnement[i][j].update(); //Met a jour la fleur
 					} else if (environnement[i][j] instanceof Tree) {
-						if (terrain[i][j]!=1 || !environnement[i][j].getAlive()) environnement[i][j]=null;
+						if (terrain[i][j]!=1 || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j]=null;
+						else if (fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
 						else environnement[i][j].update();
 					} else if (environnement[i][j] instanceof Cactus) {
-						if (terrain[i][j]!=2 || !environnement[i][j].getAlive()) environnement[i][j]=null;
+						if (terrain[i][j]!=2 || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j]=null;
 						else environnement[i][j].update();
 					} else if (environnement[i][j] instanceof Tsunami) {
 						if (!environnement[i][j].getAlive()) environnement[i][j]=null;
@@ -290,15 +292,17 @@ public class World extends JPanel{
 					}
 					
 					if (fire[i][j]>0) {
-						if (fire[i][j]>=fireStop) {
+						if (fire[i][j]>=fireStop) { //Le feu s'eteint
 							fire[i][j]=0;
-						} else {
+						} else { //Sinon le feu continu
 							fire[i][j]++;
 						}
 					}
+					
 					if (fire[i][j]<0) {
-						terrain[i][j] = 4;
+						terrain[i][j] = 4; //Le terrain devient de l'obsidienne
 					}
+					
 					if (terrain[i][j]==1) nbGrass++;
 					else if (terrain[i][j]==2) nbSand++;
 					else if (terrain[i][j]==0) nbWater++;
@@ -316,19 +320,19 @@ public class World extends JPanel{
 				//Quelques regles du monde pour les agents
 				if (a instanceof Human && a.getAlive()) {
 					if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning(); //si le terrain est de l'eau, l'agent incremente la noyade
-					else ((Human)a).setDrowning(0);
-					if (environnement[a.getX()][a.getY()] instanceof Rose) { //Les humains ne mangent que les roses
-						((Human)a).addHealth(addHumanHealth);
-						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+					else ((Human)a).setDrowning(0); //Reinitialise la noyade de l'agent
+					if (environnement[a.getX()][a.getY()] instanceof Rose && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les humains ne mangent que les roses, et si celle-ci n'est pas en feu
+						((Human)a).addHealth(addHumanHealth); //Soigne l'agent
+						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY()); //Retire la fleur
 					}
-					if (fire[a.getX()][a.getY()]!=0) {
+					if (fire[a.getX()][a.getY()]!=0) { //L'agent est en feu s'il marche sur du feu ou de la lave
 						a.setOnFire(true);
 						((Human)a).setFire(0);
 					}
 				} else if ( a instanceof Chicken && a.getAlive()) {
 					if (terrain[a.getX()][a.getY()]==0) ((Chicken)a).addDrowning();
 					else ((Chicken)a).setDrowning(0);
-					if (environnement[a.getX()][a.getY()] instanceof Tulipe) { //Les poules ne mangent que les tulipes
+					if (environnement[a.getX()][a.getY()] instanceof Tulipe && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les poules ne mangent que les tulipes
 						((Chicken)a).addHealth(addChickenHealth);
 						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
 					}
@@ -339,7 +343,7 @@ public class World extends JPanel{
 				}  else if ( a instanceof Fox && a.getAlive()) {
 					if (terrain[a.getX()][a.getY()]==0) ((Fox)a).addDrowning();
 					else ((Fox)a).setDrowning(0);
-					if (environnement[a.getX()][a.getY()] instanceof Marguerite) { //Les renards ne mangent que les marguerites
+					if (environnement[a.getX()][a.getY()] instanceof Marguerite && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les renards ne mangent que les marguerites
 						((Fox)a).addHealth(addFoxHealth);
 						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
 					}
@@ -347,12 +351,12 @@ public class World extends JPanel{
 						a.setOnFire(true);
 						((Fox)a).setFire(0);
 					}
-				}  else if ( a instanceof Snake && a.getAlive()) {
-					if (terrain[a.getX()][a.getY()]==0) ((Snake)a).addDrowning();
-					else ((Snake)a).setDrowning(0);
+				}  else if ( a instanceof Viper && a.getAlive()) {
+					if (terrain[a.getX()][a.getY()]==0) ((Viper)a).addDrowning();
+					else ((Viper)a).setDrowning(0);
 					if (fire[a.getX()][a.getY()]!=0) {
 						a.setOnFire(true);
-						((Snake)a).setFire(0);
+						((Viper)a).setFire(0);
 					}
 				}
 				
@@ -372,7 +376,7 @@ public class World extends JPanel{
 									if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
 									else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
 									else if (a instanceof Fox) nEnfant.add(new Fox(a.getX(), a.getY()));
-									else if (a instanceof Snake) nEnfant.add(new Snake(a.getX(), a.getY()));
+									else if (a instanceof Viper) nEnfant.add(new Viper(a.getX(), a.getY()));
 									a.setStime(); //Reinitialise le stime des deux agents
 									a2.setStime();
 								}
@@ -456,10 +460,11 @@ public class World extends JPanel{
 					}
 				}
 				
+				//Variables aleatoires
 				p=(int)(Math.random()*X);
 				q=(int)(Math.random()*Y);
 				
-				if (Math.random()<pTree) {
+				if (Math.random()<pTree) { //Probabilite d'ajouter un arbre aux coordonnees (p,q)
 					if (terrain[p][q]==1) addItem(new Tree());
 				}
 				
@@ -496,7 +501,7 @@ public class World extends JPanel{
 				if (y-1 >=0 && terrain[x][y-1]==1)
 					terrain[x][y-1]=2;
 			}
-		} else if (nbSand==0 && nbGrass<volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre
+		} else if (nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre
 			newCycle = true;
 			volcanoX = X/2;
 			volcanoY = Y/2;

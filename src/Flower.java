@@ -11,17 +11,26 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public abstract class Flower implements Item {
-	private int age;
-	
+	private boolean fire;
 	public Flower() {
-		age=0;
+		fire=false;
 	}
 	
-	public int getAge() {
-		return age;
-	}
+	public abstract int getAge();
 	
+	public abstract boolean getAlive();
+	
+	public boolean getFire() {
+		return fire;
+	}
+
 	public abstract Image getImage();
+	
+	public void setFire(boolean b) {
+		fire=b;
+	}
+	
+	public abstract void setAlive(boolean b);
 	
 	public abstract void update();
 }

@@ -51,9 +51,13 @@ public class Marguerite extends Flower {
 		return spriteSize;
 	}
 	
+	public void setAlive(boolean b) {
+		alive=b;
+	}
+	
 	public void update() {
 		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>deathAge) alive=false;
+		if (age>=deathAge) alive=false;
 		age++;
 	}
 	

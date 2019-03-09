@@ -133,7 +133,7 @@ public class Human extends Agent{
 	
 	public void update() {
 		if (health <= 0) setAlive(false);
-		if (getAge()>getDeathAge()) setAlive(false);
+		if (age>=deathAge) setAlive(false);
 		if (fire>=fireTime) setOnFire(false);
 		if (getAlive()) {
 			if (Math.random()<ploseHealth) health--;

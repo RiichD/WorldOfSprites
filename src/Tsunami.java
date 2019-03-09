@@ -58,7 +58,7 @@ public class Tsunami extends NaturalDisaster{
 	
 	public void update() {
 		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>deathAge) alive=false;
+		if (age>=deathAge) alive=false;
 		age++;
 	}
 }
