@@ -16,7 +16,7 @@ public class Human extends Agent{
 	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale
 	
 	private int drowning;
-	private int drowningTime = 25;//Se noie s'il reste drowningtime dans l'eau
+	private int drowningTime = 22;//Se noie s'il reste drowningtime dans l'eau
 	
 	private int fire;
 	private int fireTime = 10;
