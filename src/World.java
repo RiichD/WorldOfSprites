@@ -48,7 +48,8 @@ public class World extends JPanel{
 	private int delai=0; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
-	private int lavaDelai=5; //delai permettant d'afficher la propagation de la lave progressivement
+	private int lavaDelai=100; //delai permettant d'afficher la propagation de la lave progressivement
+	private int newCycleLSDelai=0;
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25;
@@ -69,11 +70,12 @@ public class World extends JPanel{
 	private int volcanoSpawn = 1; //Il faut avoir au moins volcanoSpawn de Grass pour un nouveau cycle
 	private int volcanoX, volcanoY; //Coordonnees du volcan
 	private int volcanoRange = (int)(X/1.2); //Distance de propagation de la lave sur le terrain
-	private int currentRange = 0; //Variable permettant de creer un effet de propagation de la lave
+	private int currentRange = 0; //Ne pas changer. Variable permettant de creer un effet de propagation de la lave
 	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
-	private int dirtRejuvenate = 5; //Nombre de terre maximum qui apparaissant chaque iteration
+	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissant chaque iteration
+	private int grassRejuvenate = 5; //Nombre d'herbes maximum qui apparaissant chaque iteration
 	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur 
-	private int currentSandFill = 0; //Assure une apparition de sables de maniere progressive
+	private int currentSandFill = 0; //Ne pas changer. Assure une apparition de sables de maniere progressive
 	private boolean newCycle = false; //Nouveau cycle du monde, avec un terrain qui se recree avec l'aide d'un volcan
 	private boolean newCycleLastStep = false; //Dernier etape du nouveau cycle avant que tout reprenne normalement
 	
@@ -493,7 +495,7 @@ public class World extends JPanel{
 			while (!newCycle) {
 				int x = (int)(Math.random()*(X));
 				int y = (int)(Math.random()*(Y));
-				if (terrain[x][y]==1) {
+				if (terrain[x][y]==1) { //Enregistre les coordonnees du volcan pour la suite
 					terrain[x][y] = 3;
 					newCycle = true;
 					volcanoX = x;
@@ -502,15 +504,19 @@ public class World extends JPanel{
 				}
 			}
 			
-			if (currentRange < volcanoRange) {
-				int[][] copyFire = new int[X][Y];
+			if (currentRange < volcanoRange) { //Tant que le rayon de propagation de la lave n'atteint pas volcanoRange, on continue dans cette condition
+				//On copie le tableau fire pour eviter d'ajouter de la lave en meme temps que de modifier le tableau, cela remplirait le tableau entierement de lave
+				int[][] copyFire = new int[X][Y]; 
+				//Boucle copiant le contenu de fire dans copyFire
 				for ( int i = 0 ; i < copyFire[0].length ; i++ )
 					for ( int j = 0 ; j < copyFire.length ; j++ )
 						copyFire[i][j] = fire[i][j];
 				
+				//Boucle 
 				for ( int i = 0 ; i < copyFire[0].length ; i++ )
 					for ( int j = 0 ; j < copyFire.length ; j++ ) {
-						if (fire[i][j]!=-1) {
+						if (fire[i][j]!=-1) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de +
+							//Remplacement de la lave par de l'obsdienne
 							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i][j]==3) ) {
 								fire[i][j]=-1;
 								if (terrain[i][j]!=3)terrain[i][j]=4;
@@ -531,85 +537,94 @@ public class World extends JPanel{
 								int x = (int)(Math.random()*(X));
 								int y = (int)(Math.random()*(Y));
 								boolean found=false;
-								if (x+1<X && fire[x][y]==-1) {
-									fire[x][y]=-1;
-									found=true;
+								if (terrain[i][j]!=3) {
+									if (x+1<X && fire[x][y]==-1) {
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (!found && x-1>=0 && fire[x-1][y]==-1) {
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (!found && y+1<Y && fire[x][y+1]==-1) {
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (!found && y-1>=0 && fire[x][y-1]==-1){
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (found)terrain[x][y]=4;
 								}
-								if (!found && x-1>=0 && fire[x-1][y]==-1) {
-									fire[x][y]=-1;
-									found=true;
-								}
-								if (!found && y+1<Y && fire[x][y+1]==-1) {
-									fire[x][y]=-1;
-									found=true;
-								}
-								if (!found && y-1>=0 && fire[x][y-1]==-1){
-									fire[x][y]=-1;
-									found=true;
-								}
-								if (found && terrain[i][j]!=3)terrain[x][y]=4;
 							}
 						}
 					}
 				currentRange++;
+				try {
+					Thread.sleep(lavaDelai);
+				} catch ( Exception e ) {};
 			} else { //Retrait de la lave
 				int cptLava=0;
 				
-				//Verifie qu'il y a assez de lave pour eviter une boucle infinie dans le while suivant
+				//Verifie qu'il y a assez de lave pour eviter une boucle infinie dans la boucle while suivant
 				for ( int i = 0 ; i < fire[0].length && cptLava<lavaDissipate; i++ )
 					for ( int j = 0 ; j < fire.length && cptLava<lavaDissipate; j++ )
-						if (fire[i][j]==-1) cptLava++;
+						if (fire[i][j]==-1) cptLava++; //Compte le nombre de lava restant dans le monde
 				
 				boolean fireDone = false;
-				int nbLava=0;
+				int nbTerr=0; //Le nombre de modification faites a chaque iteration
 				while (!fireDone && cptLava>0) {
 					int x = (int)(Math.random()*(X));
 					int y = (int)(Math.random()*(Y));
-						if (fire[x][y]==-1) {
+						if (fire[x][y]==-1) { //Si c'est de la lave, elle s'eteint pour laisser place a l'obsidienne
 							fire[x][y]=0;
-							nbLava++;
-							if  (cptLava<lavaDissipate) fireDone=true;
+							nbTerr++;
+							if (cptLava<lavaDissipate) fireDone=true; //Si cptLava ne peut plus depasser lavaDissipate, on sort de la boucle pour eviter une boucle infinie
 						}
-						if (nbLava>=lavaDissipate) fireDone=true;
-					}
-				if (cptLava==0 && !newCycleLastStep) {
-					terrain[volcanoX][volcanoY]=4;
+						if (nbTerr>=lavaDissipate) fireDone=true; //Le nombre de laves qui disparaissent a chaque iteration a ete atteint, on sort de la boucle
+				}
+				//Dernier etape du nouveau cycle
+				if (!newCycleLastStep && cptLava==0) {
+					terrain[volcanoX][volcanoY]=4; //Le volcan devient de l'obsidienne lorsqu'il n'y a plus de lave
 					volcanoX=0;
 					volcanoY=0;
-					newCycleLastStep=true;
+					newCycleLastStep=true; //Actionne la derniere etape du nouveau cycle
 				}
 				
-				if (newCycleLastStep) {
+				if (newCycleLastStep && cptLava==0) {
 					int cptObsidian=0;
 					int cptDirt=0;
 					int cptGrass=0;
-					
 					//Boucle permettant de compter le nombre de chaque type de sol restant sur terre
 					for ( int i = 0 ; i < terrain[0].length; i++ )
 						for ( int j = 0 ; j < terrain.length ; j++ ) {
 							if (terrain[i][j]==4) cptObsidian++;
 							if (cptObsidian == 0 && terrain[i][j]==5) cptDirt++;
-							if (cptDirt == 0 && cptObsidian ==0  && terrain[i][j]==1) cptGrass++;
+							if (cptDirt == 0 && cptObsidian == 0  && terrain[i][j]==1) cptGrass++;
 						}
-					int nbDirt=0;
-					boolean dirtFill=false;
-					while (!dirtFill && (cptObsidian>0 || cptDirt>0 || cptGrass>0) && currentSandFill<addSandFill) {
+					
+					boolean fillTerr=false; //Remplissage du terrain
+					nbTerr=0;
+					while (!fillTerr && (cptObsidian>0 || cptDirt>0 || cptGrass>0) && currentSandFill<addSandFill) {
 						int x = (int)(Math.random()*(X));
 						int y = (int)(Math.random()*(Y));
-							if (terrain[x][y]==4) {
-								terrain[x][y]=5;
-								nbDirt++;
-								if  (cptObsidian<dirtRejuvenate) dirtFill=true;
-							}
-							if (cptObsidian>=dirtRejuvenate) dirtFill=true;
-							
-							if (cptObsidian==0) { //Si c'est une obsidienne, elle se transforme en terre
+							if (cptObsidian>0) { //Tant qu'il y a de l'obsidienne, on cherche a le remplacer par de la terre(dirt)
+								if (terrain[x][y]==4) {
+									terrain[x][y]=5;
+									nbTerr++;
+									if (cptObsidian<dirtRejuvenate) fillTerr = true;
+								}
+								if (nbTerr>=dirtRejuvenate) fillTerr = true;
+							} else {
+								//Si terrain[x][y] est de la terre(dirt), elle se transforme en herbe
 								if (terrain[x][y]==5) {
 									terrain[x][y]=1;
-									dirtFill=true;
+									nbTerr++;
+									if (cptDirt<grassRejuvenate) fillTerr = true;
 								}
+								if (nbTerr>=grassRejuvenate) fillTerr = true;
 								
-								if (cptDirt==0) {
+								if (cptDirt==0) { //S'il n'y a plus de terre(dirt), on cherche a ajouter du sable aux bordures de la nouvelle zone terrestre
 									x = (int)(Math.random()*(X));
 									y = (int)(Math.random()*(Y));
 									if (terrain[x][y]==1) {
@@ -631,7 +646,8 @@ public class World extends JPanel{
 							}
 						}
 					
-					if (!dirtFill && cptObsidian<=0 && cptDirt<=0 && currentSandFill>=addSandFill) {
+					//Condition permettant de tout reinitialiser et de debuter ce nouveau cycle
+					if (!fillTerr && cptObsidian<=0 && cptDirt<=0 && currentSandFill>=addSandFill) {
 						currentSandFill=0;
 						currentRange=0;
 						newCycle=false;
@@ -639,10 +655,10 @@ public class World extends JPanel{
 						addInitiate();
 					}
 				}
+				try {
+					Thread.sleep(newCycleLSDelai);
+				} catch ( Exception e ) {};
 			}
-			try {
-				Thread.sleep(lavaDelai);
-			} catch ( Exception e )  {};
 		}
 		
 		repaint();
@@ -679,7 +695,7 @@ public class World extends JPanel{
 					try {
 						g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
 					} catch ( Exception e ) {
-						System.out.println(environnement[i][j].getClass());
+						System.out.println(i + " " + j);
 					}
 				}
 			}
@@ -700,12 +716,12 @@ public class World extends JPanel{
 		for ( int i = 0 ; i < fire[0].length ; i++ )
 			for ( int j = 0 ; j < fire.length ; j++ ) {
 				if (fire[i][j]>0) {
-					if (environnement[i][j] instanceof Tree) {
+					if (environnement[i][j] instanceof Tree) { //Affiche les arbres en feu
 						g2.drawImage(fireSprite,(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
-					} else {
+					} else { //Sinon affiche le feu
 						g2.drawImage(fireSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 					}
-				} else if (fire[i][j]<0) {
+				} else if (fire[i][j]<0) { //Affiche la lave
 					g2.drawImage(lavaSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
 				}
 				
