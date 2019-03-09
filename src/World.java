@@ -48,7 +48,7 @@ public class World extends JPanel{
 	private int delai=0; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
-	private int lavaDelai=0;
+	private int lavaDelai=5; //delai permettant d'afficher la propagation de la lave progressivement
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25;
@@ -66,16 +66,16 @@ public class World extends JPanel{
 	private int addSnakeHealth = 105;
 	
 	private int nbChangementTerrain = 20; //Augmente la chance d'avoir des modifications du terrain. 1 par defaut
-	private int volcanoSpawn = 10;
-	private int volcanoX, volcanoY;
-	private int volcanoRange = (int)(X/1.2);
-	private int CurrentRange = 0;
-	private int lavaDissipate = 5;
-	private int dirtRejuvenate = 5;
-	private int addSandFill = 2500; //probabilite tres faible
-	private int currentSandFill = 0;
+	private int volcanoSpawn = 1; //Il faut avoir au moins volcanoSpawn de Grass pour un nouveau cycle
+	private int volcanoX, volcanoY; //Coordonnees du volcan
+	private int volcanoRange = (int)(X/1.2); //Distance de propagation de la lave sur le terrain
+	private int currentRange = 0; //Variable permettant de creer un effet de propagation de la lave
+	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
+	private int dirtRejuvenate = 5; //Nombre de terre maximum qui apparaissant chaque iteration
+	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur 
+	private int currentSandFill = 0; //Assure une apparition de sables de maniere progressive
 	private boolean newCycle = false; //Nouveau cycle du monde, avec un terrain qui se recree avec l'aide d'un volcan
-	private boolean newCycleLastStep = false;
+	private boolean newCycleLastStep = false; //Dernier etape du nouveau cycle avant que tout reprenne normalement
 	
 	//Probabilite d'ajout
 	private double pHuman = 0.55; //probabilite d'apparation d'un humain aleatoirement
@@ -96,6 +96,8 @@ public class World extends JPanel{
 	private double pFire = 0.01; //Probabilite qu'un item soit en feu
 	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
 	public static final int fireDamage = 10;
+	
+	public double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave
 	
 	public World(int x, int y){
 		
@@ -279,6 +281,7 @@ public class World extends JPanel{
 		int nbGrass = 0;
 		int nbSand = 0;
 		
+		//Si newCycle est vrai, le nouveau cycle commence donc on n'a plus besoin de modifier le monde
 		if (!newCycle) {
 			//Mise a jour des donnees de l'environnement
 			for (int i = 0 ; i < Y ; i++ )
@@ -481,7 +484,8 @@ public class World extends JPanel{
 			}
 		}
 		
-		if ((nbSand == 0 && nbGrass < volcanoSpawn) || (newCycle)) {
+		//Le nouveau cycle commence si le nombre de sable vaut 0
+		if ((nbSand == 0 && nbGrass >= volcanoSpawn) || (newCycle)) {
 			if (agents.size()>0) {
 				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
 				for (Agent a : copy) agents.remove(a);
@@ -498,7 +502,7 @@ public class World extends JPanel{
 				}
 			}
 			
-			if (CurrentRange < volcanoRange) {
+			if (currentRange < volcanoRange) {
 				int[][] copyFire = new int[X][Y];
 				for ( int i = 0 ; i < copyFire[0].length ; i++ )
 					for ( int j = 0 ; j < copyFire.length ; j++ )
@@ -523,9 +527,31 @@ public class World extends JPanel{
 								fire[i][j]=-1;
 								if (terrain[i][j]!=3)terrain[i][j]=4;
 							}
+							if (Math.random()<pLavaNoise) {
+								int x = (int)(Math.random()*(X));
+								int y = (int)(Math.random()*(Y));
+								boolean found=false;
+								if (x+1<X && fire[x][y]==-1) {
+									fire[x][y]=-1;
+									found=true;
+								}
+								if (!found && x-1>=0 && fire[x-1][y]==-1) {
+									fire[x][y]=-1;
+									found=true;
+								}
+								if (!found && y+1<Y && fire[x][y+1]==-1) {
+									fire[x][y]=-1;
+									found=true;
+								}
+								if (!found && y-1>=0 && fire[x][y-1]==-1){
+									fire[x][y]=-1;
+									found=true;
+								}
+								if (found && terrain[i][j]!=3)terrain[x][y]=4;
+							}
 						}
 					}
-				CurrentRange++;
+				currentRange++;
 			} else { //Retrait de la lave
 				int cptLava=0;
 				
@@ -557,8 +583,10 @@ public class World extends JPanel{
 					int cptObsidian=0;
 					int cptDirt=0;
 					int cptGrass=0;
-					for ( int i = 0 ; i < terrain[0].length && cptObsidian<dirtRejuvenate; i++ )
-						for ( int j = 0 ; j < terrain.length && cptObsidian<dirtRejuvenate; j++ ) {
+					
+					//Boucle permettant de compter le nombre de chaque type de sol restant sur terre
+					for ( int i = 0 ; i < terrain[0].length; i++ )
+						for ( int j = 0 ; j < terrain.length ; j++ ) {
 							if (terrain[i][j]==4) cptObsidian++;
 							if (cptObsidian == 0 && terrain[i][j]==5) cptDirt++;
 							if (cptDirt == 0 && cptObsidian ==0  && terrain[i][j]==1) cptGrass++;
@@ -575,7 +603,7 @@ public class World extends JPanel{
 							}
 							if (cptObsidian>=dirtRejuvenate) dirtFill=true;
 							
-							if (cptObsidian==0) {
+							if (cptObsidian==0) { //Si c'est une obsidienne, elle se transforme en terre
 								if (terrain[x][y]==5) {
 									terrain[x][y]=1;
 									dirtFill=true;
@@ -605,6 +633,7 @@ public class World extends JPanel{
 					
 					if (!dirtFill && cptObsidian<=0 && cptDirt<=0 && currentSandFill>=addSandFill) {
 						currentSandFill=0;
+						currentRange=0;
 						newCycle=false;
 						newCycleLastStep=false;
 						addInitiate();
@@ -643,18 +672,28 @@ public class World extends JPanel{
 		
 		for ( int i = 0 ; i < environnement[0].length ; i++ )
 			for ( int j = 0 ; j < environnement.length ; j++ ) {
-			if (environnement[i][j] instanceof Item)
-				/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
-				 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
-				 */
-				g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+				if (environnement[i][j] instanceof Item) {
+					/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
+					 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
+					 */
+					try {
+						g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+					} catch ( Exception e ) {
+						System.out.println(environnement[i][j].getClass());
+					}
+				}
 			}
 		
 		//Le clone permet d'eviter les problemes rencontres lors d'affichage des agents et des modifications qui ont lieu en meme temps
 		ArrayList<Agent> clone = new ArrayList<Agent>(agents);
 		for (Agent a : clone) {
 			if (a.getAlive() && a!=null) {
-				a.draw(g2, frame);
+				try {
+					a.draw(g2, frame);
+				} catch (Exception e ) {
+					System.out.println(a.getAlive());
+					System.out.println(a.getX() + " " + a.getY() + " " + a.getPSpriteX() + " " + a.getPSpriteY() + " " + a.getSpriteX() + " " + a.getSpriteY());
+				}
 			}
 		}
 		
@@ -686,7 +725,7 @@ public class World extends JPanel{
 			try {
 				Thread.sleep(delai3);
 			} catch ( Exception e ) {};
-			System.out.println("it : " + i);
+			//System.out.println("it : " + i);
 			i++;
 		}
 	}
