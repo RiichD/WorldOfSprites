@@ -55,7 +55,9 @@ public class Human extends Agent{
 	public Human(int x, int y) {
 		super(x,y);
 		try {
-			humanSprite = ImageIO.read(new File("human1.png"));
+			if (getSexe()==0)humanSprite = ImageIO.read(new File("human1.png"));
+			else humanSprite = ImageIO.read(new File("human2.png"));
+			fireSprite = ImageIO.read(new File("fire.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);

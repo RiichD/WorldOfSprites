@@ -48,8 +48,8 @@ public class World extends JPanel{
 	private int delai=0; //delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //delai du main ( iteration )
-	private int lavaDelai=100; //delai permettant d'afficher la propagation de la lave progressivement
-	private int newCycleLSDelai=0;
+	private int lavaDelai=0; //delai permettant d'afficher la propagation de la lave progressivement
+	private int newCycleLSDelai=1; //delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25;
@@ -67,9 +67,9 @@ public class World extends JPanel{
 	private int addSnakeHealth = 105;
 	
 	private int nbChangementTerrain = 20; //Augmente la chance d'avoir des modifications du terrain. 1 par defaut
-	private int volcanoSpawn = 1; //Il faut avoir au moins volcanoSpawn de Grass pour un nouveau cycle
+	private int volcanoSpawn = 0; //Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
 	private int volcanoX, volcanoY; //Coordonnees du volcan
-	private int volcanoRange = (int)(X/1.2); //Distance de propagation de la lave sur le terrain
+	private int volcanoRange = (int)(X/1.3); //Distance de propagation de la lave sur le terrain
 	private int currentRange = 0; //Ne pas changer. Variable permettant de creer un effet de propagation de la lave
 	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
 	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissant chaque iteration
@@ -89,8 +89,8 @@ public class World extends JPanel{
 	private double pRose = 0.05;
 	
 	private double pGrass = 0.2;
-	private double pSand = 0.8;
-	private double pWater = 0.5;
+	private double pSand = 0.6; //probabilite qu'une herbe devienne du sable
+	private double pWater = 0.4; //probabilite que du sable devienne de l'eau
 	
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
@@ -265,24 +265,11 @@ public class World extends JPanel{
 		environnement[x][y] = null;
 	}
 	
-	//Affichage du altitude pour debuger
-	public void showAltitude() {
-		for ( int i = 0 ; i < Y ; i++ ) {
-			for ( int j = 0 ; j < X ; j++ ) {
-				if (altitude[i][j]>=0)
-					System.out.print("  "+ altitude[i][j]);
-				else
-					System.out.print(" " + altitude[i][j]);
-			}
-			System.out.println();
-		}
-	}
-	
 	// Mise a jour de chaque Item et Agents
 	public void update() {
 		int nbGrass = 0;
 		int nbSand = 0;
-		
+		int nbWater = 0 ;
 		//Si newCycle est vrai, le nouveau cycle commence donc on n'a plus besoin de modifier le monde
 		if (!newCycle) {
 			//Mise a jour des donnees de l'environnement
@@ -313,7 +300,8 @@ public class World extends JPanel{
 						terrain[i][j] = 4;
 					}
 					if (terrain[i][j]==1) nbGrass++;
-					else if (nbSand==0 && terrain[i][j]==2) nbSand++;
+					else if (terrain[i][j]==2) nbSand++;
+					else if (terrain[i][j]==0) nbWater++;
 				}
 			
 			//Liste permettant d'ajouter les nouveaux enfants
@@ -486,8 +474,34 @@ public class World extends JPanel{
 			}
 		}
 		
-		//Le nouveau cycle commence si le nombre de sable vaut 0
-		if ((nbSand == 0 && nbGrass >= volcanoSpawn) || (newCycle)) {
+		//S'il n'y a plus d'eau, un flac d'eau apparait
+		if (nbWater==0 && !newCycle) {
+			int x=(int)(Math.random()*X);
+			int y=(int)(Math.random()*Y);
+			terrain[x][y]=0;
+			if (Math.random()<0.75) {
+				if (Math.random()<0.5) {
+					if (Math.random()<0.25) {
+						if (x+1 < X && terrain[x+1][y]==1)
+							terrain[x+1][y]=2;
+					} else {
+						if (x-1 >=0 && terrain[x-1][y]==1)
+							terrain[x-1][y]=2;
+					}
+				} else {
+					if (y+1 < Y && terrain[x][y+1]==1)
+						terrain[x][y+1]=2;
+				}
+			} else {
+				if (y-1 >=0 && terrain[x][y-1]==1)
+					terrain[x][y-1]=2;
+			}
+		} else if (nbSand==0 && nbGrass<volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre
+			newCycle = true;
+			volcanoX = X/2;
+			volcanoY = Y/2;
+			terrain[volcanoX][volcanoY]=3;
+		} else if (nbSand == 0 || newCycle) {//Le nouveau cycle commence si le nombre de sable vaut 0
 			if (agents.size()>0) {
 				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
 				for (Agent a : copy) agents.remove(a);
@@ -500,7 +514,6 @@ public class World extends JPanel{
 					newCycle = true;
 					volcanoX = x;
 					volcanoY = y;
-					volcanoRange++;
 				}
 			}
 			
@@ -515,29 +528,29 @@ public class World extends JPanel{
 				//Boucle 
 				for ( int i = 0 ; i < copyFire[0].length ; i++ )
 					for ( int j = 0 ; j < copyFire.length ; j++ ) {
-						if (fire[i][j]!=-1) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de +
+						if (fire[i][j]!=-1 && terrain[i][j]!=3) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de +
 							//Remplacement de la lave par de l'obsdienne
-							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i][j]==3) ) {
+							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i+1][j]==3) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
 								fire[i][j]=-1;
-								if (terrain[i][j]!=3)terrain[i][j]=4;
+								terrain[i][j]=4;
 							}
-							if (i-1>=0 && (copyFire[i-1][j]==-1 || terrain[i][j]==3) ) {
+							if (i-1>=0 && (copyFire[i-1][j]==-1 || terrain[i-1][j]==3) ) {
 								fire[i][j]=-1;
-								if (terrain[i][j]!=3)terrain[i][j]=4;
+								terrain[i][j]=4;
 							}
-							if (j+1<Y && (copyFire[i][j+1]==-1 || terrain[i][j]==3) ) {
+							if (j+1<Y && (copyFire[i][j+1]==-1 || terrain[i][j+1]==3) ) {
 								fire[i][j]=-1;
-								if (terrain[i][j]!=3)terrain[i][j]=4;
+								terrain[i][j]=4;
 							}
-							if (j-1>=0 && (copyFire[i][j-1]==-1 || terrain[i][j]==3) ) {
+							if (j-1>=0 && (copyFire[i][j-1]==-1 || terrain[i][j-1]==3) ) {
 								fire[i][j]=-1;
-								if (terrain[i][j]!=3)terrain[i][j]=4;
+								terrain[i][j]=4;
 							}
 							if (Math.random()<pLavaNoise) {
 								int x = (int)(Math.random()*(X));
 								int y = (int)(Math.random()*(Y));
 								boolean found=false;
-								if (terrain[i][j]!=3) {
+								if (terrain[x][y]!=3) {
 									if (x+1<X && fire[x][y]==-1) {
 										fire[x][y]=-1;
 										found=true;
@@ -694,9 +707,7 @@ public class World extends JPanel{
 					 */
 					try {
 						g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
-					} catch ( Exception e ) {
-						System.out.println(i + " " + j);
-					}
+					} catch ( Exception e ) {}
 				}
 			}
 		
@@ -735,7 +746,6 @@ public class World extends JPanel{
 	public static void main(String[] args) {
 		World world = new World(X,Y);
 		int i=0;
-		//world.showAltitude(); //A utiliser en cas de probleme avec l'affichage des deplacements possibles avec les entiers
 		while (true) {
 			world.update();
 			try {
