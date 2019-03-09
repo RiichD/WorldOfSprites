@@ -13,11 +13,11 @@ import java.util.ArrayList;
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
-	public static final int X = 48, Y = 48;//taille de world
+	public static final int X = 48, Y = 48; //taille de world
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 28;
+	public static final int spriteLength = 28; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -40,16 +40,16 @@ public class World extends JPanel{
 	
 	private int[][] terrain; //Le terrain uniquement : terre, mer, volcan
 	private ArrayList<Agent> agents; //Les agents
-	private Item[][] environnement; //environnement contient les arbres, le feu etc..
-	private int[][] altitude; //altitude du monde
-	private int[][] fire; ///si 0 rien, si >0 feu, sinon lave
+	private Item[][] environnement; //Environnement contient les arbres, le feu etc..
+	private int[][] altitude; //Altitude du monde
+	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai=1; //delai pour la vitesse de deplacement d'agent
-	private int delai2=0; //delai pour la vitesse d'execution (d'affichage)
-	public static final int delai3=0; //delai du main ( iteration )
-	private int lavaDelai=200; //delai permettant d'afficher la propagation de la lave progressivement
-	private int newCycleLSDelai=5; //delai lors du passage de la lave a la nouvelle terre
+	private int delai=1; //Delai pour la vitesse de deplacement d'agent
+	private int delai2=0; //Delai pour la vitesse d'execution (d'affichage)
+	public static final int delai3=0; //Delai du main ( iteration )
+	private int lavaDelai=200; //Delai permettant d'afficher la propagation de la lave progressivement
+	private int newCycleLSDelai=5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25;
@@ -61,29 +61,29 @@ public class World extends JPanel{
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	
-	private int addHumanHealth = 50; //La sante que recupere chaque agent lorsqu'ils se soignent
+	//La sante que recupere chaque agent lorsqu'ils se soignent
+	private int addHumanHealth = 50; 
 	private int addChickenHealth = 45;
 	private int addFoxHealth = 56;
 	private int addViperHealth = 105;
 	
-	private int nbChangementTerrain = 20; //Augmente la chance d'avoir des modifications du terrain. 1 par defaut
 	private int volcanoSpawn = 0; //Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
 	private int volcanoX, volcanoY; //Coordonnees du volcan
 	private int volcanoRange = (int)(X/1.3); //Distance de propagation de la lave sur le terrain
-	private int currentRange = 0; //Ne pas changer. Variable permettant de creer un effet de propagation de la lave
+	
 	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
 	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissant chaque iteration
 	private int grassRejuvenate = 5; //Nombre d'herbes maximum qui apparaissant chaque iteration
-	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur 
-	private int currentSandFill = 0; //Ne pas changer. Assure une apparition de sables de maniere progressive
-	private boolean newCycle = false; //Nouveau cycle du monde, avec un terrain qui se recree avec l'aide d'un volcan
-	private boolean newCycleLastStep = false; //Dernier etape du nouveau cycle avant que tout reprenne normalement
 	
-	//Probabilite d'ajout
-	private double pHuman = 0.55; //probabilite d'apparation d'un humain aleatoirement
-	private double pEnfant = 1; //probabilite d'apparation de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
+	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur
 	
-	private double pFlower = 0.25; //probabilite d'apparation d'une fleur
+	private int nbChangementTerrain = 20; //Augmente la chance de changer le type du terrain. 1 par defaut
+	
+	//Probabilite d'apparition des agents
+	private double pEnfant = 1; //probabilite de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
+	
+	//Probabilite d'apparation des items
+	private double pFlower = 0.25;
 	private double pTulipe = 0.05;
 	private double pMarguerite = 0.05;
 	private double pRose = 0.05;
@@ -97,9 +97,17 @@ public class World extends JPanel{
 	
 	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
 	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
+	
+	public double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave.
+	
+	//Variables en rapport aux degats sur chaque agents
 	public static final int fireDamage = 10;
 	
-	public double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave
+	//A ne pas modifier
+	private int currentRange = 0; // Variable permettant de creer un effet de propagation de la lave
+	private int currentSandFill = 0; //Assure une apparition de sables de maniere progressive
+	private boolean newCycle = false; //Nouveau cycle du monde, avec un terrain qui se recree avec l'aide d'un volcan
+	private boolean newCycleLastStep = false; //Dernier etape du nouveau cycle avant que tout reprenne normalement
 	
 	public World(int x, int y){
 		
@@ -294,7 +302,7 @@ public class World extends JPanel{
 					if (fire[i][j]>0) {
 						if (fire[i][j]>=fireStop) { //Le feu s'eteint
 							fire[i][j]=0;
-						} else { //Sinon le feu continu
+						} else { //Sinon le feu continue
 							fire[i][j]++;
 						}
 					}
