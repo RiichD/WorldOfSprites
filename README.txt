@@ -1,4 +1,4 @@
-# WorldOfSprites
+﻿# WorldOfSprites
 2I013 - WorldOfSprites
 
 src contient tous les codes. World.java contient le main.
@@ -6,7 +6,7 @@ allPictures contient toutes les sources de chaque images.
 pictures contient toutes les images utilisées.
 rapports contient tous les documents (sprints, product backlog, etc.).
 
-Source :
+Sources :
 Les images prisent proviennent d'internet, dont les liens sont les suivants : 
 https://opengameart.org/content/basic-map-32x32-by-silver-iv
 http://zfgc.com/forum/index.php?topic=39863.420
