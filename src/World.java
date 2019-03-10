@@ -371,7 +371,7 @@ public class World extends JPanel{
 				//Boucle permettant la naissance des enfants
 				for (Agent a2 : agents) {
 					if (!(a.equals(a2)) && Math.random()<pEnfant) { //Verifie si les deux agents sont de meme espece
-						if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) {
+						if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) { //Sexe different et a la meme position
 							if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
 								int cptNbAgents = 0;
 								for (Agent a3 : agents) { //Verifie que le nombre d'agent a la meme case ne depasse pas nbAgentsMaxPos
@@ -380,7 +380,7 @@ public class World extends JPanel{
 										break; //Permet de sortir de la boucle for et eviter de faire des boucles inutilement car la limite est depassee
 									}
 								}
-								if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant
+								if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant. Limite du nombre d'agent a la meme case
 									if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
 									else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
 									else if (a instanceof Fox) nEnfant.add(new Fox(a.getX(), a.getY()));
@@ -430,9 +430,9 @@ public class World extends JPanel{
 				
 				if (Math.random()<pSand) {
 					if (terrain[p][q]==1) {
-						for (int i = -1; i < 2 && !false;i++ ) //Rayon de 3x3 
-							for (int j = -1; j < 2 && !false; j++) {
-								if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2) {
+						for (int i = -1; i < 2 && !presenceSand;i++ ) //Rayon de 3x3 (Voisinage de Moore)
+							for (int j = -1; j < 2 && !presenceSand; j++) {
+								if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2 && !(p+i==p && q+j==q)) {
 									presenceSand=true;
 								}
 							}
@@ -445,7 +445,7 @@ public class World extends JPanel{
 				if (Math.random()<pWater) {
 					if (terrain[p][q]==2) { //Remplace uniquement le sable
 						boolean presenceWater = false;
-						//Recherche d'eau sous forme de +
+						//Recherche d'eau sous forme de + (Voisinage de Von Neumann)
 						if (p+1<X ) {
 							if (terrain[p+1][q]==0)
 								presenceWater = true;
@@ -541,7 +541,7 @@ public class World extends JPanel{
 				//Boucle 
 				for ( int i = 0 ; i < copyFire[0].length ; i++ )
 					for ( int j = 0 ; j < copyFire.length ; j++ ) {
-						if (fire[i][j]!=-1 && terrain[i][j]!=3) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de +
+						if (fire[i][j]!=-1 && terrain[i][j]!=3) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de + (Voisinage de Von Neumann)
 							//Remplacement de la lave par de l'obsdienne
 							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i+1][j]==3) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
 								fire[i][j]=-1;
@@ -716,7 +716,7 @@ public class World extends JPanel{
 			for ( int j = 0 ; j < environnement.length ; j++ ) {
 				if (environnement[i][j] instanceof Item) {
 					/* Pour centrer l'image en fonction de la taille, avec 1 la taille maximale d'un sprite,
-					 * Il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
+					 * il faut faire : ( 1-SpriteSize ) * ( (spriteLength/2) + 1)
 					 */
 					try {
 						g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
