@@ -45,7 +45,7 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai=5; //Delai pour la vitesse de deplacement d'agent
+	private int delai=2; //Delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //Delai du main ( iteration )
 	private int lavaDelai=200; //Delai permettant d'afficher la propagation de la lave progressivement
@@ -108,6 +108,9 @@ public class World extends JPanel{
 	private int currentSandFill = 0; //Assure une apparition de sables de maniere progressive
 	private boolean newCycle = false; //Nouveau cycle du monde, avec un terrain qui se recree avec l'aide d'un volcan
 	private boolean newCycleLastStep = false; //Dernier etape du nouveau cycle avant que tout reprenne normalement
+	private int nbWater=0;
+	private int nbSand=0;
+	private int nbGrass=0;
 	
 	public World(int x, int y){
 		
@@ -273,11 +276,214 @@ public class World extends JPanel{
 		environnement[x][y] = null;
 	}
 	
+	//Nouveau cycle de vie
+	private void newLifeCycle() {
+		//S'il n'y a plus d'eau, un flac d'eau apparait
+		if (nbWater==0 && !newCycle) {
+			int x=(int)(Math.random()*X);
+			int y=(int)(Math.random()*Y);
+			terrain[x][y]=0;
+			if (Math.random()<0.75) {
+				if (Math.random()<0.5) {
+					if (Math.random()<0.25) {
+						if (x+1 < X && terrain[x+1][y]==1)
+							terrain[x+1][y]=2;
+					} else {
+						if (x-1 >=0 && terrain[x-1][y]==1)
+							terrain[x-1][y]=2;
+					}
+				} else {
+					if (y+1 < Y && terrain[x][y+1]==1)
+						terrain[x][y+1]=2;
+				}
+			} else {
+				if (y-1 >=0 && terrain[x][y-1]==1)
+					terrain[x][y-1]=2;
+			}
+		} else if (nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre
+			newCycle = true;
+			volcanoX = X/2;
+			volcanoY = Y/2;
+			terrain[volcanoX][volcanoY]=3;
+		} else if (nbSand == 0 || newCycle) {//Le nouveau cycle commence si le nombre de sable vaut 0
+			if (agents.size()>0) {
+				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
+				for (Agent a : copy) agents.remove(a);
+			}
+			while (!newCycle) {
+				int x = (int)(Math.random()*(X));
+				int y = (int)(Math.random()*(Y));
+				if (terrain[x][y]==1) { //Enregistre les coordonnees du volcan pour la suite
+					terrain[x][y] = 3;
+					newCycle = true;
+					volcanoX = x;
+					volcanoY = y;
+				}
+			}
+			
+			if (currentRange < volcanoRange) { //Tant que le rayon de propagation de la lave n'atteint pas volcanoRange, on continue dans cette condition
+				//On copie le tableau fire pour eviter d'ajouter de la lave en meme temps que de modifier le tableau, cela remplirait le tableau entierement de lave
+				int[][] copyFire = new int[X][Y]; 
+				//Boucle copiant le contenu de fire dans copyFire
+				for ( int i = 0 ; i < copyFire[0].length ; i++ )
+					for ( int j = 0 ; j < copyFire.length ; j++ )
+						copyFire[i][j] = fire[i][j];
+				
+				//Boucle 
+				for ( int i = 0 ; i < copyFire[0].length ; i++ )
+					for ( int j = 0 ; j < copyFire.length ; j++ ) {
+						if (fire[i][j]!=-1 && terrain[i][j]!=3) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de + (Voisinage de Von Neumann)
+							//Remplacement de la lave par de l'obsdienne
+							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i+1][j]==3) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
+								fire[i][j]=-1;
+								terrain[i][j]=4;
+							}
+							if (i-1>=0 && (copyFire[i-1][j]==-1 || terrain[i-1][j]==3) ) {
+								fire[i][j]=-1;
+								terrain[i][j]=4;
+							}
+							if (j+1<Y && (copyFire[i][j+1]==-1 || terrain[i][j+1]==3) ) {
+								fire[i][j]=-1;
+								terrain[i][j]=4;
+							}
+							if (j-1>=0 && (copyFire[i][j-1]==-1 || terrain[i][j-1]==3) ) {
+								fire[i][j]=-1;
+								terrain[i][j]=4;
+							}
+							if (Math.random()<pLavaNoise) {
+								int x = (int)(Math.random()*(X));
+								int y = (int)(Math.random()*(Y));
+								boolean found=false;
+								if (terrain[x][y]!=3) {
+									if (x+1<X && fire[x][y]==-1) {
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (!found && x-1>=0 && fire[x-1][y]==-1) {
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (!found && y+1<Y && fire[x][y+1]==-1) {
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (!found && y-1>=0 && fire[x][y-1]==-1){
+										fire[x][y]=-1;
+										found=true;
+									}
+									if (found)terrain[x][y]=4;
+								}
+							}
+						}
+					}
+				currentRange++;
+				try {
+					Thread.sleep(lavaDelai);
+				} catch ( Exception e ) {};
+			} else { //Retrait de la lave
+				int cptLava=0;
+				
+				//Verifie qu'il y a assez de lave pour eviter une boucle infinie dans la boucle while suivant
+				for ( int i = 0 ; i < fire[0].length && cptLava<lavaDissipate; i++ )
+					for ( int j = 0 ; j < fire.length && cptLava<lavaDissipate; j++ )
+						if (fire[i][j]==-1) cptLava++; //Compte le nombre de lava restant dans le monde
+				
+				boolean fireDone = false;
+				int nbTerr=0; //Le nombre de modification faites a chaque iteration
+				while (!fireDone && cptLava>0) {
+					int x = (int)(Math.random()*(X));
+					int y = (int)(Math.random()*(Y));
+						if (fire[x][y]==-1) { //Si c'est de la lave, elle s'eteint pour laisser place a l'obsidienne
+							fire[x][y]=0;
+							nbTerr++;
+							if (cptLava<lavaDissipate) fireDone=true; //Si cptLava ne peut plus depasser lavaDissipate, on sort de la boucle pour eviter une boucle infinie
+						}
+						if (nbTerr>=lavaDissipate) fireDone=true; //Le nombre de laves qui disparaissent a chaque iteration a ete atteint, on sort de la boucle
+				}
+				//Dernier etape du nouveau cycle
+				if (!newCycleLastStep && cptLava==0) {
+					terrain[volcanoX][volcanoY]=4; //Le volcan devient de l'obsidienne lorsqu'il n'y a plus de lave
+					volcanoX=0;
+					volcanoY=0;
+					newCycleLastStep=true; //Actionne la derniere etape du nouveau cycle
+				}
+				
+				if (newCycleLastStep && cptLava==0) {
+					int cptObsidian=0;
+					int cptDirt=0;
+					int cptGrass=0;
+					//Boucle permettant de compter le nombre de chaque type de sol restant sur terre
+					for ( int i = 0 ; i < terrain[0].length; i++ )
+						for ( int j = 0 ; j < terrain.length ; j++ ) {
+							if (terrain[i][j]==4) cptObsidian++;
+							if (cptObsidian == 0 && terrain[i][j]==5) cptDirt++;
+							if (cptDirt == 0 && cptObsidian == 0  && terrain[i][j]==1) cptGrass++;
+						}
+					
+					boolean fillTerr=false; //Remplissage du terrain
+					nbTerr=0;
+					while (!fillTerr && (cptObsidian>0 || cptDirt>0 || cptGrass>0) && currentSandFill<addSandFill) {
+						int x = (int)(Math.random()*(X));
+						int y = (int)(Math.random()*(Y));
+							if (cptObsidian>0) { //Tant qu'il y a de l'obsidienne, on cherche a le remplacer par de la terre(dirt)
+								if (terrain[x][y]==4) {
+									terrain[x][y]=5;
+									nbTerr++;
+									if (cptObsidian<dirtRejuvenate) fillTerr = true;
+								}
+								if (nbTerr>=dirtRejuvenate) fillTerr = true;
+							} else {
+								//Si terrain[x][y] est de la terre(dirt), elle se transforme en herbe
+								if (terrain[x][y]==5) {
+									terrain[x][y]=1;
+									nbTerr++;
+									if (cptDirt<grassRejuvenate) fillTerr = true;
+								}
+								if (nbTerr>=grassRejuvenate) fillTerr = true;
+								
+								if (cptDirt==0) { //S'il n'y a plus de terre(dirt), on cherche a ajouter du sable aux bordures de la nouvelle zone terrestre
+									x = (int)(Math.random()*(X));
+									y = (int)(Math.random()*(Y));
+									if (terrain[x][y]==1) {
+										if (x+1<X && (terrain[x+1][y]==2 || terrain[x+1][y]==0) ) {
+											terrain[x][y]=2;
+										}
+										if (x-1>=0 && (terrain[x-1][y]==2 || terrain[x-1][y]==0) ) {
+											terrain[x][y]=2;
+										}
+										if (y+1<Y && (terrain[x][y+1]==2 || terrain[x][y+1]==0) ) {
+											terrain[x][y]=2;
+										}
+										if (y-1>=0 && (terrain[x][y-1]==2 || terrain[x][y-1]==0) ) {
+											terrain[x][y]=2;
+										}
+										currentSandFill++;
+									}
+								}
+							}
+						}
+					
+					//Condition permettant de tout reinitialiser et de debuter ce nouveau cycle
+					if (!fillTerr && cptObsidian<=0 && cptDirt<=0 && currentSandFill>=addSandFill) {
+						currentSandFill=0;
+						currentRange=0;
+						newCycle=false;
+						newCycleLastStep=false;
+						addInitiate();
+					}
+				}
+				try {
+					Thread.sleep(newCycleLSDelai);
+				} catch ( Exception e ) {};
+			}
+		}
+	}
+	
 	// Mise a jour de chaque Item et Agents
 	public void update() {
-		int nbGrass = 0;
-		int nbSand = 0;
-		int nbWater = 0 ;
+		nbGrass = 0;
+		nbSand = 0;
+		nbWater = 0;
 		//Si newCycle est vrai, le nouveau cycle commence donc on n'a plus besoin de modifier le monde
 		if (!newCycle) {
 			//Mise a jour des donnees de l'environnement
@@ -486,206 +692,7 @@ public class World extends JPanel{
 				repaint();
 			}
 		}
-		
-		//S'il n'y a plus d'eau, un flac d'eau apparait
-		if (nbWater==0 && !newCycle) {
-			int x=(int)(Math.random()*X);
-			int y=(int)(Math.random()*Y);
-			terrain[x][y]=0;
-			if (Math.random()<0.75) {
-				if (Math.random()<0.5) {
-					if (Math.random()<0.25) {
-						if (x+1 < X && terrain[x+1][y]==1)
-							terrain[x+1][y]=2;
-					} else {
-						if (x-1 >=0 && terrain[x-1][y]==1)
-							terrain[x-1][y]=2;
-					}
-				} else {
-					if (y+1 < Y && terrain[x][y+1]==1)
-						terrain[x][y+1]=2;
-				}
-			} else {
-				if (y-1 >=0 && terrain[x][y-1]==1)
-					terrain[x][y-1]=2;
-			}
-		} else if (nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre
-			newCycle = true;
-			volcanoX = X/2;
-			volcanoY = Y/2;
-			terrain[volcanoX][volcanoY]=3;
-		} else if (nbSand == 0 || newCycle) {//Le nouveau cycle commence si le nombre de sable vaut 0
-			if (agents.size()>0) {
-				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
-				for (Agent a : copy) agents.remove(a);
-			}
-			while (!newCycle) {
-				int x = (int)(Math.random()*(X));
-				int y = (int)(Math.random()*(Y));
-				if (terrain[x][y]==1) { //Enregistre les coordonnees du volcan pour la suite
-					terrain[x][y] = 3;
-					newCycle = true;
-					volcanoX = x;
-					volcanoY = y;
-				}
-			}
-			
-			if (currentRange < volcanoRange) { //Tant que le rayon de propagation de la lave n'atteint pas volcanoRange, on continue dans cette condition
-				//On copie le tableau fire pour eviter d'ajouter de la lave en meme temps que de modifier le tableau, cela remplirait le tableau entierement de lave
-				int[][] copyFire = new int[X][Y]; 
-				//Boucle copiant le contenu de fire dans copyFire
-				for ( int i = 0 ; i < copyFire[0].length ; i++ )
-					for ( int j = 0 ; j < copyFire.length ; j++ )
-						copyFire[i][j] = fire[i][j];
-				
-				//Boucle 
-				for ( int i = 0 ; i < copyFire[0].length ; i++ )
-					for ( int j = 0 ; j < copyFire.length ; j++ ) {
-						if (fire[i][j]!=-1 && terrain[i][j]!=3) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de + (Voisinage de Von Neumann)
-							//Remplacement de la lave par de l'obsdienne
-							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i+1][j]==3) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
-								fire[i][j]=-1;
-								terrain[i][j]=4;
-							}
-							if (i-1>=0 && (copyFire[i-1][j]==-1 || terrain[i-1][j]==3) ) {
-								fire[i][j]=-1;
-								terrain[i][j]=4;
-							}
-							if (j+1<Y && (copyFire[i][j+1]==-1 || terrain[i][j+1]==3) ) {
-								fire[i][j]=-1;
-								terrain[i][j]=4;
-							}
-							if (j-1>=0 && (copyFire[i][j-1]==-1 || terrain[i][j-1]==3) ) {
-								fire[i][j]=-1;
-								terrain[i][j]=4;
-							}
-							if (Math.random()<pLavaNoise) {
-								int x = (int)(Math.random()*(X));
-								int y = (int)(Math.random()*(Y));
-								boolean found=false;
-								if (terrain[x][y]!=3) {
-									if (x+1<X && fire[x][y]==-1) {
-										fire[x][y]=-1;
-										found=true;
-									}
-									if (!found && x-1>=0 && fire[x-1][y]==-1) {
-										fire[x][y]=-1;
-										found=true;
-									}
-									if (!found && y+1<Y && fire[x][y+1]==-1) {
-										fire[x][y]=-1;
-										found=true;
-									}
-									if (!found && y-1>=0 && fire[x][y-1]==-1){
-										fire[x][y]=-1;
-										found=true;
-									}
-									if (found)terrain[x][y]=4;
-								}
-							}
-						}
-					}
-				currentRange++;
-				try {
-					Thread.sleep(lavaDelai);
-				} catch ( Exception e ) {};
-			} else { //Retrait de la lave
-				int cptLava=0;
-				
-				//Verifie qu'il y a assez de lave pour eviter une boucle infinie dans la boucle while suivant
-				for ( int i = 0 ; i < fire[0].length && cptLava<lavaDissipate; i++ )
-					for ( int j = 0 ; j < fire.length && cptLava<lavaDissipate; j++ )
-						if (fire[i][j]==-1) cptLava++; //Compte le nombre de lava restant dans le monde
-				
-				boolean fireDone = false;
-				int nbTerr=0; //Le nombre de modification faites a chaque iteration
-				while (!fireDone && cptLava>0) {
-					int x = (int)(Math.random()*(X));
-					int y = (int)(Math.random()*(Y));
-						if (fire[x][y]==-1) { //Si c'est de la lave, elle s'eteint pour laisser place a l'obsidienne
-							fire[x][y]=0;
-							nbTerr++;
-							if (cptLava<lavaDissipate) fireDone=true; //Si cptLava ne peut plus depasser lavaDissipate, on sort de la boucle pour eviter une boucle infinie
-						}
-						if (nbTerr>=lavaDissipate) fireDone=true; //Le nombre de laves qui disparaissent a chaque iteration a ete atteint, on sort de la boucle
-				}
-				//Dernier etape du nouveau cycle
-				if (!newCycleLastStep && cptLava==0) {
-					terrain[volcanoX][volcanoY]=4; //Le volcan devient de l'obsidienne lorsqu'il n'y a plus de lave
-					volcanoX=0;
-					volcanoY=0;
-					newCycleLastStep=true; //Actionne la derniere etape du nouveau cycle
-				}
-				
-				if (newCycleLastStep && cptLava==0) {
-					int cptObsidian=0;
-					int cptDirt=0;
-					int cptGrass=0;
-					//Boucle permettant de compter le nombre de chaque type de sol restant sur terre
-					for ( int i = 0 ; i < terrain[0].length; i++ )
-						for ( int j = 0 ; j < terrain.length ; j++ ) {
-							if (terrain[i][j]==4) cptObsidian++;
-							if (cptObsidian == 0 && terrain[i][j]==5) cptDirt++;
-							if (cptDirt == 0 && cptObsidian == 0  && terrain[i][j]==1) cptGrass++;
-						}
-					
-					boolean fillTerr=false; //Remplissage du terrain
-					nbTerr=0;
-					while (!fillTerr && (cptObsidian>0 || cptDirt>0 || cptGrass>0) && currentSandFill<addSandFill) {
-						int x = (int)(Math.random()*(X));
-						int y = (int)(Math.random()*(Y));
-							if (cptObsidian>0) { //Tant qu'il y a de l'obsidienne, on cherche a le remplacer par de la terre(dirt)
-								if (terrain[x][y]==4) {
-									terrain[x][y]=5;
-									nbTerr++;
-									if (cptObsidian<dirtRejuvenate) fillTerr = true;
-								}
-								if (nbTerr>=dirtRejuvenate) fillTerr = true;
-							} else {
-								//Si terrain[x][y] est de la terre(dirt), elle se transforme en herbe
-								if (terrain[x][y]==5) {
-									terrain[x][y]=1;
-									nbTerr++;
-									if (cptDirt<grassRejuvenate) fillTerr = true;
-								}
-								if (nbTerr>=grassRejuvenate) fillTerr = true;
-								
-								if (cptDirt==0) { //S'il n'y a plus de terre(dirt), on cherche a ajouter du sable aux bordures de la nouvelle zone terrestre
-									x = (int)(Math.random()*(X));
-									y = (int)(Math.random()*(Y));
-									if (terrain[x][y]==1) {
-										if (x+1<X && (terrain[x+1][y]==2 || terrain[x+1][y]==0) ) {
-											terrain[x][y]=2;
-										}
-										if (x-1>=0 && (terrain[x-1][y]==2 || terrain[x-1][y]==0) ) {
-											terrain[x][y]=2;
-										}
-										if (y+1<Y && (terrain[x][y+1]==2 || terrain[x][y+1]==0) ) {
-											terrain[x][y]=2;
-										}
-										if (y-1>=0 && (terrain[x][y-1]==2 || terrain[x][y-1]==0) ) {
-											terrain[x][y]=2;
-										}
-										currentSandFill++;
-									}
-								}
-							}
-						}
-					
-					//Condition permettant de tout reinitialiser et de debuter ce nouveau cycle
-					if (!fillTerr && cptObsidian<=0 && cptDirt<=0 && currentSandFill>=addSandFill) {
-						currentSandFill=0;
-						currentRange=0;
-						newCycle=false;
-						newCycleLastStep=false;
-						addInitiate();
-					}
-				}
-				try {
-					Thread.sleep(newCycleLSDelai);
-				} catch ( Exception e ) {};
-			}
-		}
+		newLifeCycle();
 		
 		repaint();
 		try {
