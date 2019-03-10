@@ -52,7 +52,7 @@ public class World extends JPanel{
 	private int newCycleLSDelai=5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
-	private int nbHumanDepart = 25;
+	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
 	private int nbChickenDepart = 10;
 	private int nbFoxDepart = 10;
 	private int nbViperDepart = 10;
@@ -108,9 +108,9 @@ public class World extends JPanel{
 	private int currentSandFill = 0; //Assure une apparition de sables de maniere progressive
 	private boolean newCycle = false; //Nouveau cycle du monde, avec un terrain qui se recree avec l'aide d'un volcan
 	private boolean newCycleLastStep = false; //Dernier etape du nouveau cycle avant que tout reprenne normalement
-	private int nbWater=0;
-	private int nbSand=0;
-	private int nbGrass=0;
+	private int nbWater=0; //Compte le nombre d'eau
+	private int nbSand=0; //Compte le nombre de sable
+	private int nbGrass=0; //Compte le nombre d'herbe
 	
 	public World(int x, int y){
 		
