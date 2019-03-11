@@ -3,6 +3,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.ImageObserver;
 import java.io.File;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JApplet;
@@ -139,6 +140,11 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		}
 		spriteX= x*World.spriteLength;
 		spriteY= y*World.spriteLength;
+	}
+	
+	//Deplacement lie a une recherche de proie
+	public void chasingPrey(int[][] terrain, Item[][] environnement, ArrayList<Agent> agents) {
+		
 	}
 	
 	//Fluidite des deplacements
