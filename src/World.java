@@ -52,10 +52,10 @@ public class World extends JPanel{
 	private int newCycleLSDelai=5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
-	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
-	private int nbChickenDepart = 10;
-	private int nbFoxDepart = 10;
-	private int nbViperDepart = 10;
+	private int nbHumanDepart = 0;//25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbChickenDepart = 25;
+	private int nbFoxDepart = 0;
+	private int nbViperDepart = 25;
 	
 	private int nbEnvDepart = 20; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
@@ -594,6 +594,7 @@ public class World extends JPanel{
 		for (Agent a : agents) {
 			boolean chasingMode = false;
 			boolean escapingMode = false;
+			int [][] position = new int[X][Y];
 			if (a.getAlive()) { //Verifie si l'agent est en vie, et le met a jour
 				if (! (a instanceof Human) ) { //L'humain fait sa vie et n'a pas de predateur ou de proie
 					for (Agent b: agents) {
@@ -617,15 +618,25 @@ public class World extends JPanel{
 									a.setAlive(false);
 								}
 							}
-							
+						}
+						if ( Math.abs(a.getX()-b.getX())<=1 && Math.abs(a.getY()-b.getY())<=1 ){
+							//Chasse
+							if (a instanceof Chicken && b instanceof Viper) chasingMode=true;
+							else if (a instanceof Fox && b instanceof Chicken) chasingMode=true;
+							else if (a instanceof Viper && b instanceof Fox) chasingMode=true;
+							//Fuite
+							else if (a instanceof Viper && b instanceof Chicken) escapingMode=true;
+							else if (a instanceof Chicken && b instanceof Fox) escapingMode=true;
+							else if (a instanceof Fox && b instanceof Viper) escapingMode=true;
+							position[b.getX()][b.getY()] = 1; //On rentre la valeur 1 pour indiquer que l'agent se trouve a cette position
 						}
 					}
 				}
 				if (a.getAlive()) {
 					if (chasingMode) {
-						a.chasingPrey(terrain, environnement, agents);
+						a.chasingPrey(terrain, environnement, position);
 					} else if (escapingMode){
-					
+						a.escapingPredator(terrain, environnement, position);
 					} else {
 						a.move(terrain, environnement);
 					}
