@@ -159,10 +159,13 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	public void move(int[][] terrain, Item[][] environnement, ArrayList<Agent> agents) {
 		boolean chase = false; //Une proie est a proximite, le predateur va le chasser
 		boolean escape = false; //Un predateur cible sa proie, qui doit fuir. escape est prioritaire a chase.
+		
+		//Deux tableaux de boolean indiquant si un agent est a une position, sinon c'est vide ( donc false )
 		boolean[][] posPrey = new boolean[World.X][World.Y];
 		boolean[][] posPred = new boolean[World.X][World.Y];
+		
 		if (! (this instanceof Human) ) { //L'humain fait sa vie et n'a pas de predateur ou de proie
-			for (Agent b: agents) {
+			for (Agent b: agents) { //On compare l'agent actuel a un autre agent
 				if (!(b instanceof Human) && !this.equals(b) && x==b.getX() && y==b.getY()) { //Verifie que l'agent a et b sont a la meme case
 					if (this instanceof Chicken) {
 						if (b instanceof Viper) { //La poule mange la vipere
@@ -201,6 +204,8 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 						posPrey[b.getX()][b.getY()] = true;
 					}
 				}
+				
+				//Recherche d'un predateur autour de l'agent
 				if (Math.abs(x-b.getX())<=1 && Math.abs(y-b.getY())<=1) {
 					if (this instanceof Viper && b instanceof Chicken) {
 						chase = false;
@@ -218,6 +223,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 				}
 			}
 		}
+		
 		if (!chase && !escape) {
 			move(terrain,environnement); //Deplacement aleatoire
 		} else if (!escape && chase){
@@ -247,7 +253,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		spriteY = y*World.spriteLength;
 	}
 	
-	public void chasingPrey(int[][] terrain, Item[][] environnement, boolean[][] position) {
+	private void chasingPrey(int[][] terrain, Item[][] environnement, boolean[][] position) {
 		boolean found = false;
 		int n=0;
 		int m=0;
@@ -257,7 +263,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		if (currChasing>=0) {
 			for (int i = -rayon; i <= rayon; i++)
 				for (int j = -rayon ; j <= rayon ; j++) {
-					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j]) {
+					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j] && (terrain[x+i][y+j]==1 || terrain[x+i][y+j]==2 || terrain[x+i][y+j]==5) && ( environnement[x+i][y+j] instanceof Flower || environnement[x+i][y+j]==null)) {
 						if (!found) {
 							n=x+i;
 							m=y+j;
@@ -272,6 +278,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 					}
 				}
 			if (found) move(terrain, environnement, position, n, m);
+			else move(terrain, environnement); //Cas si aucun chemin ne permet d'atteindre la cible
 		} else {
 			move(terrain, environnement);
 		}
@@ -280,7 +287,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		spriteY = y*World.spriteLength;
 	}
 	
-	public void escapingPredator(int[][] terrain, Item[][] environnement, boolean[][] position) {
+	private void escapingPredator(int[][] terrain, Item[][] environnement, boolean[][] position) {
 		boolean found = false;
 		boolean N = false, S = false, W = false, E = false;
 		if (x+1<World.X && !position[x+1][y] && ( terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y]==null || environnement[x+1][y] instanceof Flower) )
