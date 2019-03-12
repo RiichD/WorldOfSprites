@@ -52,7 +52,7 @@ public class World extends JPanel{
 	private int newCycleLSDelai=5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
-	private int nbHumanDepart = 25;//25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
 	private int nbChickenDepart = 25;
 	private int nbFoxDepart = 25;
 	private int nbViperDepart = 25;

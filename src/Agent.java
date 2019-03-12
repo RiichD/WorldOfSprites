@@ -25,8 +25,11 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
 	
+	private int chasingPause = 5; //Duree avant chaque poursuite
+	private int chasingTime = 15; //Nombre d'iterations de chasses maximale. Le predateur arrete ensuite de chasser.
+	
+	//A ne pas modifier
 	private int currChasing = 0;
-	private int nbChasingMax = 2; //Nombre d'iterations de chasses maximale. Le predateur arrete ensuite de chasser.
 	
 	public Agent() {
 		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
@@ -164,18 +167,21 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 					if (this instanceof Chicken) {
 						if (b instanceof Viper) { //La poule mange la vipere
 							b.setAlive(false);
+							currChasing = -chasingPause;
 						} else if (b instanceof Fox) { //Le renard mange la poule
 							setAlive(false);
 						}
 					} else if (this instanceof Fox) {
 						if (b instanceof Chicken) { //Le renard mange la poule
 							b.setAlive(false);
+							currChasing = -chasingPause;
 						} else if (b instanceof Viper) { //La vipere mange le renard
 							setAlive(false);
 						}
 					} else if (this instanceof Viper) {
 						if (b instanceof Fox) { //La vipere mange le renard
 							b.setAlive(false);
+							currChasing = -chasingPause;
 						} else if (b instanceof Chicken) { //La poule mange la vipere
 							setAlive(false);
 						}
@@ -212,10 +218,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 				}
 			}
 		}
-		if (currChasing == nbChasingMax) {
-			chase = false;
-			currChasing=0;
-		}
 		if (!chase && !escape) {
 			move(terrain,environnement); //Deplacement aleatoire
 		} else if (!escape && chase){
@@ -249,23 +251,30 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		boolean found = false;
 		int n=0;
 		int m=0;
-		for (int i = -rayon; i <= rayon; i++)
-			for (int j = -rayon ; j <= rayon ; j++) {
-				if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j]) {
-					if (!found) {
-						n=x+i;
-						m=y+j;
-						found = true;
-					} else {
-						//Comparaison entre la distance de chaque proie. On prend la distance la plus faible
-						if (Math.abs(x-n)+Math.abs(y-m)>Math.abs(x-x+i)+Math.abs(y-y+j)) {
+		if (currChasing == chasingTime) {
+			currChasing = -chasingPause;
+		}
+		if (currChasing>=0) {
+			for (int i = -rayon; i <= rayon; i++)
+				for (int j = -rayon ; j <= rayon ; j++) {
+					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j]) {
+						if (!found) {
 							n=x+i;
 							m=y+j;
+							found = true;
+						} else {
+							//Comparaison entre la distance de chaque proie. On prend la distance la plus faible
+							if (Math.abs(x-n)+Math.abs(y-m)>Math.abs(x-x+i)+Math.abs(y-y+j)) {
+								n=x+i;
+								m=y+j;
+							}
 						}
 					}
 				}
-			}
-		if (found) move(terrain, environnement, position, n, m);
+			if (found) move(terrain, environnement, position, n, m);
+		} else {
+			move(terrain, environnement);
+		}
 		currChasing++;
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
