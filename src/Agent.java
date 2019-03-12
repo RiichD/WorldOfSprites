@@ -21,6 +21,13 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	private int sexe; //0 Male, 1 Female
 	
+	private int rayon = 3; //Rayon des predateurs
+	
+	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
+	
+	private int currChasing = 0;
+	private int nbChasingMax = 2; //Nombre d'iterations de chasses maximale. Le predateur arrete ensuite de chasser.
+	
 	public Agent() {
 		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
 	}
@@ -142,67 +149,176 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		spriteY= y*World.spriteLength;
 	}
 	
-	//Deplacement lie a une recherche de proie
+	//Deplacement lie a une recherche de proie ou a un deplacement aleatoire | Deplacement principal
 	/*
 	 * Une poule chasse en suivant la proie jusqu'a qu'elle soit bloquee
 	 */
-	public void chasingPrey(int[][] terrain, Item[][] environnement, int[][] position) {
-		for (int i = -1 ; i < 2 ; i++ ) {
-			for (int j = -1 ; j < 2 ; j++ ) {
-				if (position[x+i][y+j]==1 && x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y) {
-					if (terrain[x+i][y+j]==1 || terrain[x+i][y+j]==2 || terrain[x+i][y+j]==5) {
-						if (environnement[x+i][y+j] instanceof Flower || environnement[x+i][y+j]==null) {
-							if (i!=0 && j!=0) { //Pas de deplacement diagonal
-								if (Math.random()<0.5) {
-									x+=i;
-								} else {
-									y+=j;
-								}
-							} else {
-								if (i==0) {
-									y+=j;
-								} else {
-									x+=i;
-								}
-							}
+	public void move(int[][] terrain, Item[][] environnement, ArrayList<Agent> agents) {
+		boolean chase = false; //Une proie est a proximite, le predateur va le chasser
+		boolean escape = false; //Un predateur cible sa proie, qui doit fuir. escape est prioritaire a chase.
+		boolean[][] posPrey = new boolean[World.X][World.Y];
+		boolean[][] posPred = new boolean[World.X][World.Y];
+		if (! (this instanceof Human) ) { //L'humain fait sa vie et n'a pas de predateur ou de proie
+			for (Agent b: agents) {
+				if (!(b instanceof Human) && !this.equals(b) && x==b.getX() && y==b.getY()) { //Verifie que l'agent a et b sont a la meme case
+					if (this instanceof Chicken) {
+						if (b instanceof Viper) { //La poule mange la vipere
+							b.setAlive(false);
+						} else if (b instanceof Fox) { //Le renard mange la poule
+							setAlive(false);
+						}
+					} else if (this instanceof Fox) {
+						if (b instanceof Chicken) { //Le renard mange la poule
+							b.setAlive(false);
+						} else if (b instanceof Viper) { //La vipere mange le renard
+							setAlive(false);
+						}
+					} else if (this instanceof Viper) {
+						if (b instanceof Fox) { //La vipere mange le renard
+							b.setAlive(false);
+						} else if (b instanceof Chicken) { //La poule mange la vipere
+							setAlive(false);
 						}
 					}
 				}
+				
+				//Recherche d'une proie autour de l'agent
+				if (!escape && Math.abs(x-b.getX())<=rayon && Math.abs(y-b.getY())<=rayon) {
+					if (this instanceof Chicken && b instanceof Viper) {
+						chase = true;
+						posPrey[b.getX()][b.getY()] = true;
+					}else if (this instanceof Fox && b instanceof Chicken) {
+						chase = true;
+						posPrey[b.getX()][b.getY()] = true;
+					}else if (this instanceof Viper && b instanceof Fox) {
+						chase = true;
+						posPrey[b.getX()][b.getY()] = true;
+					}
+				}
+				if (Math.abs(x-b.getX())<=1 && Math.abs(y-b.getY())<=1) {
+					if (this instanceof Viper && b instanceof Chicken) {
+						chase = false;
+						escape = true;
+						posPred[b.getX()][b.getY()] = true;
+					}else if (this instanceof Chicken && b instanceof Fox) {
+						chase = false;
+						escape = true;
+						posPred[b.getX()][b.getY()] = true;
+					}else if (this instanceof Fox && b instanceof Viper) {
+						chase = false;
+						escape = true;
+						posPred[b.getX()][b.getY()] = true;
+					}
+				}
+			}
+		}
+		if (currChasing == nbChasingMax) {
+			chase = false;
+			currChasing=0;
+		}
+		if (!chase && !escape) {
+			move(terrain,environnement); //Deplacement aleatoire
+		} else if (!escape && chase){
+			chasingPrey(terrain, environnement, posPrey); //Chasse
+		} else {
+			escapingPredator(terrain, environnement, posPred); //Fuite
+		}
+	}
+	
+	private void move(int[][] terrain, Item[][] environnement, boolean[][] position, int i, int j) {
+		if (x-i==0) {
+			if (y<j && y+1<World.Y) y++;
+			else if (y>j && y-1>=0) y--;
+		} else if (y-j==0){
+			if (x<i && x+1<World.X) x++;
+			else if (x>i && x-1>=0) x--;
+		} else {
+			if (Math.random()<0.5) { //Meme distance de chemin pour atteindre la position, alors on choisit au hasard l'un des deux chemins possibles
+				if (y<j && y+1<World.Y) y++;
+				else if (y>j && y-1>=0) y--;
+			} else {
+				if (x<i && x+1<World.X) x++;
+				else if (x>i && x-1>=0) x--;
 			}
 		}
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
 	}
 	
-	public void escapingPredator(int[][] terrain, Item[][] environnement, int[][] position) {
-		for (int i = -1 ; i < 2 ; i++ ) {
-			for (int j = -1 ; j < 2 ; j++ ) {
-				if (position[x+i][y+j]==1 && x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y) {
-					int n=i;
-					int m=j;
-					if (n<0) n=Math.abs(i);
-					else if (n>0) n=-i;
-					if (m<0) m=Math.abs(j);
-					else if (m>0) m=-j;
-					if (terrain[x+n][y+m]==1 || terrain[x+n][y+m]==2 || terrain[x+n][y+m]==5) {
-						if (environnement[x+n][y+m] instanceof Flower || environnement[x+n][y+m]==null) {
-							if (n!=0 && m!=0) { //Pas de deplacement diagonal
-								if (Math.random()<0.5) {
-									x+=n;
-								} else {
-									y+=m;
-								}
-							} else {
-								if (n==0) {
-									y+=m;
-								} else {
-									x+=n;
-								}
-							}
+	public void chasingPrey(int[][] terrain, Item[][] environnement, boolean[][] position) {
+		boolean found = false;
+		int n=0;
+		int m=0;
+		for (int i = -rayon; i <= rayon; i++)
+			for (int j = -rayon ; j <= rayon ; j++) {
+				if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j]) {
+					if (!found) {
+						n=x+i;
+						m=y+j;
+						found = true;
+					} else {
+						//Comparaison entre la distance de chaque proie. On prend la distance la plus faible
+						if (Math.abs(x-n)+Math.abs(y-m)>Math.abs(x-x+i)+Math.abs(y-y+j)) {
+							n=x+i;
+							m=y+j;
 						}
 					}
 				}
 			}
+		if (found) move(terrain, environnement, position, n, m);
+		currChasing++;
+		spriteX = x*World.spriteLength;
+		spriteY = y*World.spriteLength;
+	}
+	
+	public void escapingPredator(int[][] terrain, Item[][] environnement, boolean[][] position) {
+		boolean found = false;
+		boolean N = false, S = false, W = false, E = false;
+		if (x+1<World.X && !position[x+1][y] && ( terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y]==null || environnement[x+1][y] instanceof Flower) )
+			E = true;
+		if (x-1>=0 && !position[x-1][y] && ( terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) && ( environnement[x-1][y]==null || environnement[x-1][y] instanceof Flower) )
+			W = true;
+		if (y+1<World.Y && !position[x][y+1] && ( terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) && ( environnement[x][y+1]==null || environnement[x][y+1] instanceof Flower) )
+			S = true;
+		if (y-1>=0 && !position[x][y-1] && ( terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) && ( environnement[x][y-1]==null || environnement[x][y-1] instanceof Flower) )
+			N = true;
+		
+		if (N || S || E || W) {
+			found = false;
+			int n=0;
+			while (!found) {
+				if (!found && N && Math.random()<0.25) {
+					if (!position[x+1][y-1] && !position[x-1][y-1]) {
+						y--;
+						found = true;
+					}
+					n++;
+				}
+				if (!found && S && Math.random()<0.25) {
+					if (!position[x+1][y+1] && !position[x-1][y+1]) {
+						y++;
+						found = true;
+					}
+					n++;
+				}
+				if (!found && E && Math.random()<0.25) {
+					if (!position[x+1][y+1] && !position[x+1][y-1]) {
+						x++;
+						found = true;
+					}
+					n++;
+				}
+				if (!found && W && Math.random()<0.25) {
+					if (!position[x-1][y+1] && !position[x-1][y-1]) {
+						x--;
+						found = true;
+					}
+					n++;
+				}
+				if (n>nbItMax && !found) found = true;
+			}
+		} else {
+			move(terrain,environnement);
 		}
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;

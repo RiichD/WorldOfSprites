@@ -52,9 +52,9 @@ public class World extends JPanel{
 	private int newCycleLSDelai=5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
-	private int nbHumanDepart = 0;//25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbHumanDepart = 25;//25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
 	private int nbChickenDepart = 25;
-	private int nbFoxDepart = 0;
+	private int nbFoxDepart = 25;
 	private int nbViperDepart = 25;
 	
 	private int nbEnvDepart = 20; //Arbres, Fleurs ...
@@ -592,54 +592,9 @@ public class World extends JPanel{
 		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
 		//Met a jour les agents
 		for (Agent a : agents) {
-			boolean chasingMode = false;
-			boolean escapingMode = false;
-			int [][] position = new int[X][Y];
 			if (a.getAlive()) { //Verifie si l'agent est en vie, et le met a jour
-				if (! (a instanceof Human) ) { //L'humain fait sa vie et n'a pas de predateur ou de proie
-					for (Agent b: agents) {
-						if (!(b instanceof Human) &&!a.equals(b) && a.getX()==b.getX() && a.getY()==b.getY()) { //Verifie que l'agent a et b sont a la meme case
-							if (a instanceof Chicken) {
-								if (b instanceof Viper) { //La poule mange la vipere
-									b.setAlive(false);
-								} else if (b instanceof Fox) { //Le renard mange la poule
-									a.setAlive(false);
-								}
-							} else if (a instanceof Fox) {
-								if (b instanceof Chicken) { //Le renard mange la poule
-									b.setAlive(false);
-								} else if (b instanceof Viper) { //La vipere mange le renard
-									a.setAlive(false);
-								}
-							} else if (a instanceof Viper) {
-								if (b instanceof Fox) { //La vipere mange le renard
-									b.setAlive(false);
-								} else if (b instanceof Chicken) { //La poule mange la vipere
-									a.setAlive(false);
-								}
-							}
-						}
-						if ( Math.abs(a.getX()-b.getX())<=1 && Math.abs(a.getY()-b.getY())<=1 ){
-							//Chasse
-							if (a instanceof Chicken && b instanceof Viper) chasingMode=true;
-							else if (a instanceof Fox && b instanceof Chicken) chasingMode=true;
-							else if (a instanceof Viper && b instanceof Fox) chasingMode=true;
-							//Fuite
-							else if (a instanceof Viper && b instanceof Chicken) escapingMode=true;
-							else if (a instanceof Chicken && b instanceof Fox) escapingMode=true;
-							else if (a instanceof Fox && b instanceof Viper) escapingMode=true;
-							position[b.getX()][b.getY()] = 1; //On rentre la valeur 1 pour indiquer que l'agent se trouve a cette position
-						}
-					}
-				}
-				if (a.getAlive()) {
-					if (chasingMode) {
-						a.chasingPrey(terrain, environnement, position);
-					} else if (escapingMode){
-						a.escapingPredator(terrain, environnement, position);
-					} else {
-						a.move(terrain, environnement);
-					}
+				a.move(terrain, environnement, agents);
+				if (a.getAlive()) { //Verifie si l'agent est toujours en vie
 					a.update();
 				}
 			}
