@@ -234,19 +234,36 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	}
 	
 	private void move(int[][] terrain, Item[][] environnement, boolean[][] position, int i, int j) {
+		boolean moved = false;
 		if (x-i==0) {
-			if (y<j && y+1<World.Y) y++;
-			else if (y>j && y-1>=0) y--;
+			if (y<j && y+1<World.Y && (terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
+				y++;
+			}
+			else if (y>j && y-1>=0 && (terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
+				y--;
+			}
 		} else if (y-j==0){
-			if (x<i && x+1<World.X) x++;
-			else if (x>i && x-1>=0) x--;
+			if (x<i && x+1<World.X && (terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) { 
+				x++;
+			}
+			else if (x>i && x-1>=0 && (terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
+				x--;
+			}
 		} else {
 			if (Math.random()<0.5) { //Meme distance de chemin pour atteindre la position, alors on choisit au hasard l'un des deux chemins possibles
-				if (y<j && y+1<World.Y) y++;
-				else if (y>j && y-1>=0) y--;
+				if (y<j && y+1<World.Y && (terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
+					y++;
+				}
+				else if (y>j && y-1>=0 && (terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
+					y--;
+				}
 			} else {
-				if (x<i && x+1<World.X) x++;
-				else if (x>i && x-1>=0) x--;
+				if (x<i && x+1<World.X && (terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) {
+					x++;
+				}
+				else if (x>i && x-1>=0 && (terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
+					x--;
+				}
 			}
 		}
 		spriteX = x*World.spriteLength;
