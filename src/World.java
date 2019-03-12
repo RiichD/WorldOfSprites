@@ -45,7 +45,7 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai=2; //Delai pour la vitesse de deplacement d'agent
+	private int delai=5; //Delai pour la vitesse de deplacement d'agent
 	private int delai2=0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3=0; //Delai du main ( iteration )
 	private int lavaDelai=200; //Delai permettant d'afficher la propagation de la lave progressivement
@@ -53,9 +53,9 @@ public class World extends JPanel{
 	
 	//Attributs du monde
 	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
-	private int nbChickenDepart = 10;
-	private int nbFoxDepart = 10;
-	private int nbViperDepart = 10;
+	private int nbChickenDepart = 25;
+	private int nbFoxDepart = 25;
+	private int nbViperDepart = 25;
 	
 	private int nbEnvDepart = 20; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
@@ -479,6 +479,217 @@ public class World extends JPanel{
 		}
 	}
 	
+	private void updateEnvironnement() {
+		//Mise a jour des donnees de l'environnement
+		for (int i = 0 ; i < Y ; i++ )
+			for (int j = 0 ; j < X ; j++ ) {
+				if (environnement[i][j] instanceof Flower) {
+					if (terrain[i][j]!=1 || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j]=null; //Si le terrain ne correspond pas a de l'herbe, ou que la fleur est morte, ou que le feu se s'arrete, la fleur meurt
+					else if (fire[i][j]>0) ((Flower)environnement[i][j]).setFire(true); //S'il y a du feu et une fleur, la fleur est en feu
+					else environnement[i][j].update(); //Met a jour la fleur
+				} else if (environnement[i][j] instanceof Tree) {
+					if (terrain[i][j]!=1 || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j]=null;
+					else if (fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
+					else environnement[i][j].update();
+				} else if (environnement[i][j] instanceof Cactus) {
+					if (terrain[i][j]!=2 || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j]=null;
+					else environnement[i][j].update();
+				} else if (environnement[i][j] instanceof Tsunami) {
+					if (!environnement[i][j].getAlive()) environnement[i][j]=null;
+					else environnement[i][j].update();
+				}
+				
+				if (fire[i][j]>0) {
+					if (fire[i][j]>=fireStop) { //Le feu s'eteint
+						fire[i][j]=0;
+					} else { //Sinon le feu continue
+						fire[i][j]++;
+					}
+				}
+				
+				if (fire[i][j]<0) {
+					terrain[i][j] = 4; //Le terrain devient de l'obsidienne
+				}
+				
+				if (terrain[i][j]==1) nbGrass++;
+				else if (terrain[i][j]==2) nbSand++;
+				else if (terrain[i][j]==0) nbWater++;
+			}
+		//Environnement aleatoire
+		if (Math.random()<pFlower) {
+			if (Math.random()<pRose) addItem(new Rose());
+			if (Math.random()<pTulipe) addItem(new Tulip());
+			if (Math.random()<pMarguerite) addItem(new Daisy());
+		}
+		
+		//Variables pour le changement de terrain aleatoire
+		for (int a=0; a < nbChangementTerrain ; a++) {
+			int p=(int)(Math.random()*X);
+			int q=(int)(Math.random()*Y);
+			boolean presenceSand = false;
+			
+			if (Math.random()<pSand) {
+				if (terrain[p][q]==1) {
+					for (int i = -1; i < 2 && !presenceSand;i++ ) //Rayon de 3x3 (Voisinage de Moore)
+						for (int j = -1; j < 2 && !presenceSand; j++) {
+							if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2 && !(p+i==p && q+j==q)) {
+								presenceSand=true;
+							}
+						}
+					if (presenceSand) { //On ne remplace que grass
+						terrain[p][q]=2;
+					}
+				}
+			}
+			
+			if (Math.random()<pWater) {
+				if (terrain[p][q]==2) { //Remplace uniquement le sable
+					boolean presenceWater = false;
+					//Recherche d'eau sous forme de + (Voisinage de Von Neumann)
+					if (p+1<X ) {
+						if (terrain[p+1][q]==0)
+							presenceWater = true;
+					}
+					if (!false && p-1 >= 0) {
+						if (terrain[p-1][q]==0)
+							presenceWater = true;
+					}
+					if (!false && q+1 < Y) {
+						if (terrain[p][q+1]==0)
+							presenceWater = true;
+					}
+					if (!false && q-1 >= 0) {
+						if (terrain[p][q-1]==0)
+							presenceWater = true;
+					}
+					if (presenceWater) { //Uniquement s'il y a de l'eau a cote (les angles ne sont pas pris en compte)
+						terrain[p][q] = 0;
+					}
+				}
+			}
+			
+			//Variables aleatoires
+			p=(int)(Math.random()*X);
+			q=(int)(Math.random()*Y);
+			
+			if (Math.random()<pTree) { //Probabilite d'ajouter un arbre aux coordonnees (p,q)
+				if (terrain[p][q]==1) addItem(new Tree());
+			}
+			
+			if (Math.random()<pTree) {
+				if (terrain[p][q]==2) addItem(new Cactus());
+			}
+			
+			if (Math.random()<pFire) {
+				if (terrain[p][q]!=0) fire[p][q]=1;
+			}
+			repaint();
+		}
+	}
+	
+	private void updateAgents() {
+		//Liste permettant d'ajouter les nouveaux enfants
+		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
+		//Met a jour les agents
+		for (Agent a : agents) {
+			if (a.getAlive()) { //Verifie si l'agent est en vie, et le met a jour
+				a.move(terrain, environnement, agents);
+				if (a.getAlive()) { //Verifie si l'agent est toujours en vie
+					a.update();
+				}
+			}
+			
+			//Quelques regles du monde pour les agents
+			if (a instanceof Human && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning(); //si le terrain est de l'eau, l'agent incremente la noyade
+				else ((Human)a).setDrowning(0); //Reinitialise la noyade de l'agent
+				if (environnement[a.getX()][a.getY()] instanceof Rose && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les humains ne mangent que les roses, et si celle-ci n'est pas en feu
+					((Human)a).addHealth(addHumanHealth); //Soigne l'agent
+					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY()); //Retire la fleur
+				}
+				if (fire[a.getX()][a.getY()]!=0) { //L'agent est en feu s'il marche sur du feu ou de la lave
+					a.setOnFire(true);
+					((Human)a).setFire(0);
+				}
+			} else if (a instanceof Chicken && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Chicken)a).addDrowning();
+				else ((Chicken)a).setDrowning(0);
+				if (environnement[a.getX()][a.getY()] instanceof Tulip && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les poules ne mangent que les tulipes
+					((Chicken)a).addHealth(addChickenHealth);
+					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Chicken)a).setFire(0);
+				}
+			}  else if (a instanceof Fox && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Fox)a).addDrowning();
+				else ((Fox)a).setDrowning(0);
+				if (environnement[a.getX()][a.getY()] instanceof Daisy && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les renards ne mangent que les marguerites
+					((Fox)a).addHealth(addFoxHealth);
+					removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
+				}
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Fox)a).setFire(0);
+				}
+			}  else if (a instanceof Viper && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==0) ((Viper)a).addDrowning();
+				else ((Viper)a).setDrowning(0);
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Viper)a).setFire(0);
+				}
+			}
+			
+			//Boucle permettant la naissance des enfants
+			for (Agent a2 : agents) {
+				if (!(a.equals(a2)) && Math.random()<pEnfant) { //Verifie si les deux agents sont de meme espece
+					if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) { //Sexe different et a la meme position
+						if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
+							int cptNbAgents = 0;
+							for (Agent a3 : agents) { //Verifie que le nombre d'agent a la meme case ne depasse pas nbAgentsMaxPos
+								if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbAgents++;
+								if (cptNbAgents>nbAgentsMaxPos) {
+									break; //Permet de sortir de la boucle for et eviter de faire des boucles inutilement car la limite est depassee
+								}
+							}
+							if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant. Limite du nombre d'agent a la meme case
+								if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
+								else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
+								else if (a instanceof Fox) nEnfant.add(new Fox(a.getX(), a.getY()));
+								else if (a instanceof Viper) nEnfant.add(new Viper(a.getX(), a.getY()));
+								a.setStime(); //Reinitialise le stime des deux agents
+								a2.setStime();
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//Boucle permettant d'afficher les agents fluidement
+		for (int nb=0; nb < spriteLength; nb++) {
+			try {
+				Thread.sleep(delai);
+			} catch ( Exception e ) {}
+			for (Agent a : agents) {
+				if (a.getAlive()) a.smoothMove();
+				repaint();
+			}
+		}
+		
+		//S'il y a des agents qui sont morts, alors on le retire de la liste
+		for (int i = 0; i < agents.size(); i++) {
+			if (agents.get(i).getAlive() == false) removeAgent(agents.get(i));
+		}
+		
+		//Ajout les enfants dans la liste d'agent
+		for ( Agent a : nEnfant ) {
+			addAgent(a);
+		}
+	}
+	
 	// Mise a jour de chaque Item et Agents
 	public void update() {
 		nbGrass = 0;
@@ -486,214 +697,10 @@ public class World extends JPanel{
 		nbWater = 0;
 		//Si newCycle est vrai, le nouveau cycle commence donc on n'a plus besoin de modifier le monde
 		if (!newCycle) {
-			//Mise a jour des donnees de l'environnement
-			for (int i = 0 ; i < Y ; i++ )
-				for (int j = 0 ; j < X ; j++ ) {
-					if (environnement[i][j] instanceof Flower) {
-						if (terrain[i][j]!=1 || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j]=null; //Si le terrain ne correspond pas a de l'herbe, ou que la fleur est morte, ou que le feu se s'arrete, la fleur meurt
-						else if (fire[i][j]>0) ((Flower)environnement[i][j]).setFire(true); //S'il y a du feu et une fleur, la fleur est en feu
-						else environnement[i][j].update(); //Met a jour la fleur
-					} else if (environnement[i][j] instanceof Tree) {
-						if (terrain[i][j]!=1 || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j]=null;
-						else if (fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
-						else environnement[i][j].update();
-					} else if (environnement[i][j] instanceof Cactus) {
-						if (terrain[i][j]!=2 || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j]=null;
-						else environnement[i][j].update();
-					} else if (environnement[i][j] instanceof Tsunami) {
-						if (!environnement[i][j].getAlive()) environnement[i][j]=null;
-						else environnement[i][j].update();
-					}
-					
-					if (fire[i][j]>0) {
-						if (fire[i][j]>=fireStop) { //Le feu s'eteint
-							fire[i][j]=0;
-						} else { //Sinon le feu continue
-							fire[i][j]++;
-						}
-					}
-					
-					if (fire[i][j]<0) {
-						terrain[i][j] = 4; //Le terrain devient de l'obsidienne
-					}
-					
-					if (terrain[i][j]==1) nbGrass++;
-					else if (terrain[i][j]==2) nbSand++;
-					else if (terrain[i][j]==0) nbWater++;
-				}
-			
-			//Liste permettant d'ajouter les nouveaux enfants
-			ArrayList<Agent> nEnfant = new ArrayList<Agent>();
-			//Met a jour les agents
-			for (Agent a : agents) {
-				if (a.getAlive()) { //Verifie si l'agent est en vie, et le met a jour
-					a.move(terrain, environnement);
-					a.update();
-				}
-				
-				//Quelques regles du monde pour les agents
-				if (a instanceof Human && a.getAlive()) {
-					if (terrain[a.getX()][a.getY()]==0) ((Human)a).addDrowning(); //si le terrain est de l'eau, l'agent incremente la noyade
-					else ((Human)a).setDrowning(0); //Reinitialise la noyade de l'agent
-					if (environnement[a.getX()][a.getY()] instanceof Rose && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les humains ne mangent que les roses, et si celle-ci n'est pas en feu
-						((Human)a).addHealth(addHumanHealth); //Soigne l'agent
-						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY()); //Retire la fleur
-					}
-					if (fire[a.getX()][a.getY()]!=0) { //L'agent est en feu s'il marche sur du feu ou de la lave
-						a.setOnFire(true);
-						((Human)a).setFire(0);
-					}
-				} else if ( a instanceof Chicken && a.getAlive()) {
-					if (terrain[a.getX()][a.getY()]==0) ((Chicken)a).addDrowning();
-					else ((Chicken)a).setDrowning(0);
-					if (environnement[a.getX()][a.getY()] instanceof Tulip && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les poules ne mangent que les tulipes
-						((Chicken)a).addHealth(addChickenHealth);
-						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
-					}
-					if (fire[a.getX()][a.getY()]!=0) {
-						a.setOnFire(true);
-						((Chicken)a).setFire(0);
-					}
-				}  else if ( a instanceof Fox && a.getAlive()) {
-					if (terrain[a.getX()][a.getY()]==0) ((Fox)a).addDrowning();
-					else ((Fox)a).setDrowning(0);
-					if (environnement[a.getX()][a.getY()] instanceof Daisy && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les renards ne mangent que les marguerites
-						((Fox)a).addHealth(addFoxHealth);
-						removeItem(environnement[a.getX()][a.getY()], a.getX(), a.getY());
-					}
-					if (fire[a.getX()][a.getY()]!=0) {
-						a.setOnFire(true);
-						((Fox)a).setFire(0);
-					}
-				}  else if ( a instanceof Viper && a.getAlive()) {
-					if (terrain[a.getX()][a.getY()]==0) ((Viper)a).addDrowning();
-					else ((Viper)a).setDrowning(0);
-					if (fire[a.getX()][a.getY()]!=0) {
-						a.setOnFire(true);
-						((Viper)a).setFire(0);
-					}
-				}
-				
-				//Boucle permettant la naissance des enfants
-				for (Agent a2 : agents) {
-					if (!(a.equals(a2)) && Math.random()<pEnfant) { //Verifie si les deux agents sont de meme espece
-						if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) { //Sexe different et a la meme position
-							if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
-								int cptNbAgents = 0;
-								for (Agent a3 : agents) { //Verifie que le nombre d'agent a la meme case ne depasse pas nbAgentsMaxPos
-									if (a.getX()==a3.getX() && a3.getY()==a3.getY()) cptNbAgents++;
-									if (cptNbAgents>nbAgentsMaxPos) {
-										break; //Permet de sortir de la boucle for et eviter de faire des boucles inutilement car la limite est depassee
-									}
-								}
-								if (cptNbAgents <= nbAgentsMaxPos) { //S'il y a nbAgentsMaxPos agents a la meme position, il n'y a pas naissance d'enfant. Limite du nombre d'agent a la meme case
-									if (a instanceof Human) nEnfant.add(new Human(a.getX(), a.getY())); //nouveau ne 
-									else if (a instanceof Chicken) nEnfant.add(new Chicken(a.getX(), a.getY()));
-									else if (a instanceof Fox) nEnfant.add(new Fox(a.getX(), a.getY()));
-									else if (a instanceof Viper) nEnfant.add(new Viper(a.getX(), a.getY()));
-									a.setStime(); //Reinitialise le stime des deux agents
-									a2.setStime();
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			//Boucle permettant d'afficher les agents fluidement
-			for (int nb=0; nb < spriteLength; nb++) {
-				try {
-					Thread.sleep(delai);
-				} catch ( Exception e ) {}
-				for (Agent a : agents) {
-					if (a.getAlive()) a.smoothMove();
-					repaint();
-				}
-			}
-			
-			//S'il y a des agents qui sont morts, alors on le retire de la liste
-			for (int i = 0; i < agents.size(); i++) {
-				if (agents.get(i).getAlive() == false) removeAgent(agents.get(i));
-			}
-			
-			//Ajout les enfants dans la liste d'agent
-			for ( Agent a : nEnfant ) {
-				addAgent(a);
-			}
-			
-			//Environnement aleatoire
-			if (Math.random()<pFlower) {
-				if (Math.random()<pRose) addItem(new Rose());
-				if (Math.random()<pTulipe) addItem(new Tulip());
-				if (Math.random()<pMarguerite) addItem(new Daisy());
-			}
-			
-			//Variables pour le changement de terrain aleatoire
-			for (int a=0; a < nbChangementTerrain ; a++) {
-				int p=(int)(Math.random()*X);
-				int q=(int)(Math.random()*Y);
-				boolean presenceSand = false;
-				
-				if (Math.random()<pSand) {
-					if (terrain[p][q]==1) {
-						for (int i = -1; i < 2 && !presenceSand;i++ ) //Rayon de 3x3 (Voisinage de Moore)
-							for (int j = -1; j < 2 && !presenceSand; j++) {
-								if (p+i>=0 && p+i<X && q+j>=0 && q+j<Y && terrain[p+i][q+j]==2 && !(p+i==p && q+j==q)) {
-									presenceSand=true;
-								}
-							}
-						if (presenceSand) { //On ne remplace que grass
-							terrain[p][q]=2;
-						}
-					}
-				}
-				
-				if (Math.random()<pWater) {
-					if (terrain[p][q]==2) { //Remplace uniquement le sable
-						boolean presenceWater = false;
-						//Recherche d'eau sous forme de + (Voisinage de Von Neumann)
-						if (p+1<X ) {
-							if (terrain[p+1][q]==0)
-								presenceWater = true;
-						}
-						if (!false && p-1 >= 0) {
-							if (terrain[p-1][q]==0)
-								presenceWater = true;
-						}
-						if (!false && q+1 < Y) {
-							if (terrain[p][q+1]==0)
-								presenceWater = true;
-						}
-						if (!false && q-1 >= 0) {
-							if (terrain[p][q-1]==0)
-								presenceWater = true;
-						}
-						if (presenceWater) { //Uniquement s'il y a de l'eau a cote (les angles ne sont pas pris en compte)
-							terrain[p][q] = 0;
-						}
-					}
-				}
-				
-				//Variables aleatoires
-				p=(int)(Math.random()*X);
-				q=(int)(Math.random()*Y);
-				
-				if (Math.random()<pTree) { //Probabilite d'ajouter un arbre aux coordonnees (p,q)
-					if (terrain[p][q]==1) addItem(new Tree());
-				}
-				
-				if (Math.random()<pTree) {
-					if (terrain[p][q]==2) addItem(new Cactus());
-				}
-				
-				if (Math.random()<pFire) {
-					if (terrain[p][q]!=0) fire[p][q]=1;
-				}
-				repaint();
-			}
+			updateEnvironnement();
+			updateAgents();
 		}
 		newLifeCycle();
-		
 		repaint();
 		try {
 			Thread.sleep(delai2);
