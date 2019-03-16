@@ -28,6 +28,11 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private int chasingPause = 5; //Duree avant chaque poursuite
 	private int chasingTime = 15; //Nombre d'iterations de chasses maximale. Le predateur arrete ensuite de chasser.
 	
+	private double pN = 0.25; //Plus de probabilite pour aller a une certaine direction durant une fuite
+	private double pS = 0.25;
+	private double pW = 0.25;
+	private double pE = 0.25;
+	
 	//A ne pas modifier
 	private int currChasing = 0;
 	
@@ -125,24 +130,24 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 			if (rand < 0.75) {
 				if (rand < 0.5) {
 					if (rand < 0.25) {
-						if (x-1>=0 && (terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) ) {
+						if (x-1>=0 && (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) ) {
 							if (environnement[x-1][y] instanceof Flower || !(environnement[x-1][y] instanceof Item))
 								x--;
 						}
 					} else {
-						if (y+1<World.X && ( terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) ) {
+						if (y+1<World.X && ( terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) ) {
 							if (environnement[x][y+1] instanceof Flower || !(environnement[x][y+1] instanceof Item))
 								y++;
 						}
 					}
 				} else {
-					if (y-1>=0 && ( terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) ) {
+					if (y-1>=0 && ( terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) ) {
 						if (environnement[x][y-1] instanceof Flower || !(environnement[x][y-1] instanceof Item))
 							y--;
 					}
 				}
 			} else {
-				if (x+1<World.Y && ( terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5)) {
+				if (x+1<World.Y && ( terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt)) {
 					if (environnement[x+1][y] instanceof Flower || !(environnement[x+1][y] instanceof Item))
 						x++;
 				}
@@ -226,6 +231,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		
 		if (!chase && !escape) {
 			move(terrain,environnement); //Deplacement aleatoire
+			currChasing = 0;
 		} else if (!escape && chase){
 			chasingPrey(terrain, environnement, posPrey); //Chasse
 		} else {
@@ -236,32 +242,32 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private void move(int[][] terrain, Item[][] environnement, boolean[][] position, int i, int j) {
 		boolean moved = false;
 		if (x-i==0) {
-			if (y<j && y+1<World.Y && (terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
+			if (y<j && y+1<World.Y && (terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
 				y++;
 			}
-			else if (y>j && y-1>=0 && (terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
+			else if (y>j && y-1>=0 && (terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
 				y--;
 			}
 		} else if (y-j==0){
-			if (x<i && x+1<World.X && (terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) { 
+			if (x<i && x+1<World.X && (terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) { 
 				x++;
 			}
-			else if (x>i && x-1>=0 && (terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
+			else if (x>i && x-1>=0 && (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
 				x--;
 			}
 		} else {
 			if (Math.random()<0.5) { //Meme distance de chemin pour atteindre la position, alors on choisit au hasard l'un des deux chemins possibles
-				if (y<j && y+1<World.Y && (terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
+				if (y<j && y+1<World.Y && (terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
 					y++;
 				}
-				else if (y>j && y-1>=0 && (terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
+				else if (y>j && y-1>=0 && (terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
 					y--;
 				}
 			} else {
-				if (x<i && x+1<World.X && (terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) {
+				if (x<i && x+1<World.X && (terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) {
 					x++;
 				}
-				else if (x>i && x-1>=0 && (terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
+				else if (x>i && x-1>=0 && (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
 					x--;
 				}
 			}
@@ -280,16 +286,16 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		if (currChasing>=0) {
 			for (int i = -rayon; i <= rayon; i++)
 				for (int j = -rayon ; j <= rayon ; j++) {
-					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j] && (terrain[x+i][y+j]==1 || terrain[x+i][y+j]==2 || terrain[x+i][y+j]==5) && ( environnement[x+i][y+j] instanceof Flower || environnement[x+i][y+j]==null)) {
+					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j] && (terrain[x+i][y+j]==World.grass || terrain[x+i][y+j]==World.sand || terrain[x+i][y+j]==World.dirt) && ( environnement[x+i][y+j] instanceof Flower || environnement[x+i][y+j]==null)) {
 						if (!found) {
-							n=x+i;
-							m=y+j;
+							n = x+i;
+							m = y+j;
 							found = true;
 						} else {
 							//Comparaison entre la distance de chaque proie. On prend la distance la plus faible
 							if (Math.abs(x-n)+Math.abs(y-m)>Math.abs(x-x+i)+Math.abs(y-y+j)) {
-								n=x+i;
-								m=y+j;
+								n = x+i;
+								m = y+j;
 							}
 						}
 					}
@@ -307,42 +313,44 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private void escapingPredator(int[][] terrain, Item[][] environnement, boolean[][] position) {
 		boolean found = false;
 		boolean N = false, S = false, W = false, E = false;
-		if (x+1<World.X && !position[x+1][y] && ( terrain[x+1][y]==1 || terrain[x+1][y]==2 || terrain[x+1][y]==5) && ( environnement[x+1][y]==null || environnement[x+1][y] instanceof Flower) )
+		
+		//Recherche de la position d'un predateur avec un voisinage de Von Neumann, ensuite de Moore
+		if (x+1<World.X && !position[x+1][y] && ( terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt) && ( environnement[x+1][y]==null || environnement[x+1][y] instanceof Flower) )
 			E = true;
-		if (x-1>=0 && !position[x-1][y] && ( terrain[x-1][y]==1 || terrain[x-1][y]==2 || terrain[x-1][y]==5) && ( environnement[x-1][y]==null || environnement[x-1][y] instanceof Flower) )
+		if (x-1>=0 && !position[x-1][y] && ( terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) && ( environnement[x-1][y]==null || environnement[x-1][y] instanceof Flower) )
 			W = true;
-		if (y+1<World.Y && !position[x][y+1] && ( terrain[x][y+1]==1 || terrain[x][y+1]==2 || terrain[x][y+1]==5) && ( environnement[x][y+1]==null || environnement[x][y+1] instanceof Flower) )
+		if (y+1<World.Y && !position[x][y+1] && ( terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1]==null || environnement[x][y+1] instanceof Flower) )
 			S = true;
-		if (y-1>=0 && !position[x][y-1] && ( terrain[x][y-1]==1 || terrain[x][y-1]==2 || terrain[x][y-1]==5) && ( environnement[x][y-1]==null || environnement[x][y-1] instanceof Flower) )
+		if (y-1>=0 && !position[x][y-1] && ( terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) && ( environnement[x][y-1]==null || environnement[x][y-1] instanceof Flower) )
 			N = true;
 		
 		if (N || S || E || W) {
 			found = false;
 			int n=0;
 			while (!found) {
-				if (!found && N && Math.random()<0.25) {
-					if (!position[x+1][y-1] && !position[x-1][y-1]) {
+				if (!found && N && Math.random()<pN) {
+					if (x+1<World.X && y-1>=0 && x-1>=0 && !position[x+1][y-1] && !position[x-1][y-1]) { //Verifie en haut a gauche et en haut a droite avec un voisinage de Moore
 						y--;
 						found = true;
 					}
 					n++;
 				}
-				if (!found && S && Math.random()<0.25) {
-					if (!position[x+1][y+1] && !position[x-1][y+1]) {
+				if (!found && S && Math.random()<pS) {
+					if (x+1<World.X && x-1>=0 && y+1<World.Y && !position[x+1][y+1] && !position[x-1][y+1]) { //En bas a droite et en bas a gauche
 						y++;
 						found = true;
 					}
 					n++;
 				}
-				if (!found && E && Math.random()<0.25) {
-					if (!position[x+1][y+1] && !position[x+1][y-1]) {
+				if (!found && E && Math.random()<pE) {
+					if (x+1<World.X && y-1>=0 && y+1<World.Y && !position[x+1][y+1] && !position[x+1][y-1]) { //En bas a droite et en haut a droite
 						x++;
 						found = true;
 					}
 					n++;
 				}
-				if (!found && W && Math.random()<0.25) {
-					if (!position[x-1][y+1] && !position[x-1][y-1]) {
+				if (!found && W && Math.random()<pW) {
+					if (x-1>=0 && y+1<World.Y && y-1>=0 && !position[x-1][y+1] && !position[x-1][y-1]) { //En bas a gauche et en haut a gauche
 						x--;
 						found = true;
 					}
