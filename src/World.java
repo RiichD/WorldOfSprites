@@ -74,6 +74,7 @@ public class World extends JPanel{
 	private int addFoxHealth = 56;
 	private int addViperHealth = 105;
 	
+	//Attributs pour la reapparition de terrain, suite au volcan
 	private int volcanoSpawn = 0; //Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
 	private int volcanoX, volcanoY; //Coordonnees du volcan
 	private int volcanoRange = (int)(X/1.3); //Distance de propagation de la lave sur le terrain
@@ -651,7 +652,7 @@ public class World extends JPanel{
 			
 			//Boucle permettant la naissance des enfants
 			for (Agent a2 : agents) {
-				if (!(a.equals(a2)) && Math.random()<pEnfant) { //Verifie si les deux agents sont de meme espece
+				if ( (a.getClass()).equals(a2.getClass()) && Math.random()<pEnfant) { //Verifie si les deux agents sont de meme espece
 					if (a.getSexe()!=a2.getSexe() && a.getX()==a2.getX() && a.getY()==a2.getY()) { //Sexe different et a la meme position
 						if (a.getStime()==0 && a2.getStime()==0 ) { //Naissance d'un enfant
 							int cptNbAgents = 0;
