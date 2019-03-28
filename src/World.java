@@ -17,7 +17,7 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 28; //taille de chaque sprite
+	public static final int spriteLength = 20; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -52,7 +52,7 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai = 5; //Delai pour la vitesse de deplacement d'agent
+	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3 = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
@@ -96,12 +96,14 @@ public class World extends JPanel{
 	private double pMarguerite = 0.05;
 	private double pRose = 0.05;
 	
-	private double pGrass = 0.2;
-	private double pSand = 0.6; //probabilite qu'une herbe devienne du sable
-	private double pWater = 0.4; //probabilite que du sable devienne de l'eau
+	private double pGrass = 0.1;
+	private double pSand = 0.5; //probabilite qu'une herbe devienne du sable
+	private double pWater = 0.3; //probabilite que du sable devienne de l'eau
 	
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
+	private double pForest = 0.001;
+	private int rayonForest = 5;
 	
 	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
 	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
@@ -488,6 +490,12 @@ public class World extends JPanel{
 	}
 	
 	private void updateEnvironnement() {
+		int[][] cpFire = new int[X][Y];
+		for (int i = 0 ; i < Y ; i++)
+			for (int j = 0 ; j < X ; j++)
+				cpFire[i][j] = fire[i][j]; 
+				
+		
 		//Mise a jour des donnees de l'environnement
 		for (int i = 0 ; i < Y ; i++ )
 			for (int j = 0 ; j < X ; j++ ) {
@@ -497,7 +505,8 @@ public class World extends JPanel{
 					else environnement[i][j].update(); //Met a jour la fleur
 				} else if (environnement[i][j] instanceof Tree) {
 					if (terrain[i][j]!=grass || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j] = null;
-					else if (fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
+					else if (!((Tree)environnement[i][j]).getFire() && fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
+					else if (fire[i][j]== 0 && !((Tree)environnement[i][j]).getFire() && i+1<X && j+1<Y && i-1>=0 && j-1>=0 && (cpFire[i+1][j]!=0 || cpFire[i-1][j]!=0 ||  cpFire[i][j+1]!=0 || cpFire[i][j-1]!=0)) fire[i][j]=1;
 					else environnement[i][j].update();
 				} else if (environnement[i][j] instanceof Cactus) {
 					if (terrain[i][j]!=sand || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j] = null;
@@ -584,12 +593,23 @@ public class World extends JPanel{
 				if (terrain[p][q]==grass) addItem(new Tree());
 			}
 			
-			if (Math.random()<pTree) {
+			if (Math.random()<pCactus) {
 				if (terrain[p][q]==sand) addItem(new Cactus());
 			}
 			
 			if (Math.random()<pFire) {
 				if (terrain[p][q]!=water) fire[p][q] = 1;
+			}
+			
+			if(Math.random()< pForest ) {
+				p=(int)(Math.random()*X);
+				q=(int)(Math.random()*Y);
+				
+				for(int i=p-rayonForest;i<p+rayonForest;i++) {
+					for(int j=q-rayonForest;j<q+rayonForest;j++) {
+						if (i>=0 && j>=0 && i<X && j<Y) addItem(new Tree(), i, j);
+					}
+				}
 			}
 			repaint();
 		}
@@ -690,6 +710,7 @@ public class World extends JPanel{
 		//S'il y a des agents qui sont morts, alors on le retire de la liste
 		for (int i = 0; i < agents.size(); i++) {
 			if (agents.get(i).getAlive() == false) removeAgent(agents.get(i));
+			else if (agents.get(i).getAlive() == true && environnement[agents.get(i).getX()][agents.get(i).getY()]!= null) removeAgent(agents.get(i));
 		}
 		
 		//Ajout les enfants dans la liste d'agent
