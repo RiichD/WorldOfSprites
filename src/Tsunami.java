@@ -16,7 +16,7 @@ public class Tsunami extends NaturalDisaster{
 	private double maxSpriteSize=1;
 	private double minSpriteSize=0.2;
 	
-	private boolean alive;
+	private boolean actif;
 	
 	private int age;
 	private int deathAge=200;
@@ -25,7 +25,7 @@ public class Tsunami extends NaturalDisaster{
 	public Tsunami() {
 		super();
 		age=1;
-		alive=true;
+		actif=true;
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize+minSpriteSize);
 		try {
 			tsunamiSprite = ImageIO.read(new File("pictures/tsunami.png"));
@@ -40,7 +40,7 @@ public class Tsunami extends NaturalDisaster{
 	}
 	
 	public boolean getAlive() {
-		return alive;
+		return actif;
 	}
 	
 	public int getAge() {
@@ -58,7 +58,7 @@ public class Tsunami extends NaturalDisaster{
 	
 	public void update() {
 		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>=deathAge) alive=false;
+		if (age>=deathAge) actif=false;
 		age++;
 	}
 }

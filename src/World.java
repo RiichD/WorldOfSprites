@@ -17,7 +17,7 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 20; //taille de chaque sprite
+	public static final int spriteLength = 28; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -52,7 +52,7 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
+	private int delai = 1; //Delai pour la vitesse de deplacement d'agent
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3 = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
@@ -514,6 +514,9 @@ public class World extends JPanel{
 				} else if (environnement[i][j] instanceof Tsunami) {
 					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
 					else environnement[i][j].update();
+				} else if (environnement[i][j] instanceof Thunder) {
+					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
+					else environnement[i][j].update();
 				}
 				
 				if (fire[i][j]>0) {
@@ -598,6 +601,7 @@ public class World extends JPanel{
 			}
 			
 			if (Math.random()<pFire) {
+				environnement[p][q] = new Thunder();
 				if (terrain[p][q]!=water) fire[p][q] = 1;
 			}
 			
