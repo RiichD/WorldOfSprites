@@ -18,5 +18,6 @@ https://i.pinimg.com/originals/69/b1/fb/69b1fb2faf31adac1c8be47a5651dff6.png
 https://pngimage.net/fire-sprite-sheet-png/
 https://www.minecraft-france.fr/faithful-pack/
 https://www.realm667.com/images/content/repository/propstop/DeadSwampTrees.png
+https://www.spriters-resource.com/pc_computer/rpgmakervx/sheet/100102/
 
 NB: Les images peuvent subir des modifications afin de les adapter au monde.
