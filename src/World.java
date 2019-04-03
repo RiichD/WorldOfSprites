@@ -167,7 +167,10 @@ public class World extends JPanel{
 								if (terrain[i+n][j+m] == grass) foundGrass = true;
 							}
 						}
-					if (foundWater && foundGrass) terrain[i][j] = sand;
+					if (foundWater && foundGrass) {
+						terrain[i][j] = sand;
+						nbSand++;
+					}
 				}
 			}
 		}
@@ -184,33 +187,34 @@ public class World extends JPanel{
 	
 	public void addInitiate() {
 		//Agents de depart
+		//Il est possible d'utiliser addAgent mais il n'y aura pas forcement le nombre d'agent souhaite
 		for (int n=0;n<nbHumanDepart;n++) {
-			addAgent(new Human());
+			forceAddAgent(new Human());
 		}
 		
 		for (int n=0;n<nbChickenDepart;n++) {
-			addAgent(new Chicken());
+			forceAddAgent(new Chicken());
 		}
 		
 		for (int n=0;n<nbFoxDepart;n++) {
-			addAgent(new Fox());
+			forceAddAgent(new Fox());
 		}
 		
 		for (int n=0;n<nbViperDepart;n++) {
-			addAgent(new Viper());
+			forceAddAgent(new Viper());
 		}
 		
 		//Environnement de depart
 		for (int n=0;n<nbEnvDepart;n++) {
-			addItem(new Tree());
-			addItem(new Rose());
-			addItem(new Tulip());
-			addItem(new Daisy());
+			forceAddItem(new Tree());
+			forceAddItem(new Rose());
+			forceAddItem(new Tulip());
+			forceAddItem(new Daisy());
 			//addItem(new Tsunami());
 		}
 		
 		for (int n=0;n<nbCactusDepart;n++)
-			addItem(new Cactus(), (int)(Math.random()*X), (int)(Math.random()*Y));
+			forceAddItem(new Cactus());
 	}
 	
 	//Get
@@ -251,6 +255,30 @@ public class World extends JPanel{
 		addItem(i, (int)(Math.random()*X), (int)(Math.random()*Y));
 	}
 	
+	public void forceAddItem(Item i) {
+		boolean ajout = false;
+		while (!ajout) {
+			int x = (int)(Math.random()*X);
+			int y = (int)(Math.random()*Y);
+			if (environnement[x][y] == null ) {
+				if (terrain[x][y] != water) {
+					if (terrain[x][y] == sand) {
+						if (i instanceof Cactus) {
+							if (nbSand < nbCactusDepart) ajout = true; //S'il y a plus de cactus que de sable, on n'ajoute rien sinon il y a une boucle infinie
+							ajout = true;
+							environnement[x][y] = i;
+						}
+					} else if (terrain[x][y]==grass) {
+						if (i instanceof Tree || i instanceof Flower) {
+							ajout = true;
+							environnement[x][y] = i;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	public void addAgent(Agent a) {
 		if (!(terrain[a.getX()][a.getY()]==water))
 			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper)
@@ -261,9 +289,21 @@ public class World extends JPanel{
 	
 	public void forceAddAgent(Agent a) {
 		if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper) {
-			int tailleInit = agents.size();
-			while(agents.size() == tailleInit) {
-				if (!(terrain[a.getX()][a.getY()]==water)) agents.add(a);
+			int tailleInit = agents.size()+1;
+			while(agents.size() != tailleInit) {
+				if (a instanceof Human) {
+					Agent a2 = new Human();
+					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
+				} else if (a instanceof Chicken) {
+					Agent a2 = new Chicken();
+					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
+				} else if (a instanceof Fox) {
+					Agent a2 = new Fox();
+					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
+				} else if (a instanceof Viper) {
+					Agent a2 = new Viper();
+					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
+				}
 			}
 		} else System.out.println("Ajout forcee d'agent impossible");
 	}
@@ -566,7 +606,6 @@ public class World extends JPanel{
 		for (int i = 0 ; i < Y ; i++)
 			for (int j = 0 ; j < X ; j++)
 				cpFire[i][j] = fire[i][j]; 
-				
 		
 		//Mise a jour des donnees de l'environnement
 		for (int i = 0 ; i < Y ; i++ )
