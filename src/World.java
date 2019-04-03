@@ -13,11 +13,11 @@ import java.util.ArrayList;
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
-	public static final int X = 48, Y = 48; //taille de world
+	public static final int X = 128, Y = 128; //taille de world
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 28; //taille de chaque sprite
+	public static final int spriteLength = 10; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -59,7 +59,8 @@ public class World extends JPanel{
 	private int newCycleLSDelai = 5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
-	private int perlinSize = 30;
+	private int perlinSize = 20; //Taille du bruit de perlin
+	private double perlinFloor = Math.random()*(1-0.5)+0.5; // entre 0 et 1, plus c'est proche de 1, plus il ya de terre
 	
 	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
 	private int nbChickenDepart = 25;
@@ -150,7 +151,7 @@ public class World extends JPanel{
 		//Terrain aleatoire
 		for (i=0; i<X; i++) {
 			for (j=0; j<Y; j++) {
-				terrain[i][j]=((int)((Get2DPerlinNoiseValue(i, j, perlinSize)+1)*2))%2;
+				terrain[i][j]=((int)((Get2DPerlinNoiseValue(i, j, perlinSize)+1)*2*perlinFloor))%2;
 			}
 		}
 		
@@ -290,7 +291,7 @@ public class World extends JPanel{
 	        235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,
 	        127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,
 	        156,180};
-
+	    
 	    //Adapter pour la résolution
 	    x /= res;
 	    y /= res;
@@ -375,7 +376,7 @@ public class World extends JPanel{
 				if (y-1 >=0 && terrain[x][y-1]==grass)
 					terrain[x][y-1] = sand;
 			}
-		} else if (nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre
+		} else if (nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre du terrain
 			newCycle = true;
 			volcanoX = X/2;
 			volcanoY = Y/2;
@@ -384,6 +385,12 @@ public class World extends JPanel{
 			if (agents.size()>0) {
 				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
 				for (Agent a : copy) agents.remove(a);
+			}
+			if (!newCycle) {
+				for (int i = 0 ; i < X ; i++)
+					for (int j = 0 ; j < Y ; j++) {
+						environnement[i][j] = null;
+					}
 			}
 			while (!newCycle) {
 				int x = (int)(Math.random()*(X));
