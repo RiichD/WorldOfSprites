@@ -13,11 +13,11 @@ import java.util.ArrayList;
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
-	public static final int X = 32, Y = 32; //taille de world
+	public static final int X = 64, Y = 64; //taille de world
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 28; //taille de chaque sprite
+	public static final int spriteLength = 20; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -103,7 +103,7 @@ public class World extends JPanel{
 	private double pSand = 0.5; //probabilite qu'une herbe devienne du sable
 	private double pWater = 0.3; //probabilite que du sable devienne de l'eau
 	
-	private double pTree = 1;
+	private double pTree = 0.01;
 	private double pCactus = 0.1;
 	private double pForest = 0.0001;
 	private int rayonForest = 5;
