@@ -13,11 +13,11 @@ import java.util.ArrayList;
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
-	public static final int X = 128, Y = 128; //taille de world
+	public static final int X = 32, Y = 32; //taille de world
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 10; //taille de chaque sprite
+	public static final int spriteLength = 28; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -52,7 +52,7 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
+	private int delai = 5; //Delai pour la vitesse de deplacement d'agent
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3 = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
@@ -60,7 +60,7 @@ public class World extends JPanel{
 	
 	//Attributs du monde
 	private int perlinSize = 20; //Taille du bruit de perlin
-	private double perlinFloor = Math.random()*(1-0.5)+0.5; // entre 0 et 1, plus c'est proche de 1, plus il ya de terre
+	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1, plus c'est proche de 1, plus il ya de terre
 	
 	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
 	private int nbChickenDepart = 25;
@@ -83,8 +83,8 @@ public class World extends JPanel{
 	private int volcanoRange = (int)(X/1.3); //Distance de propagation de la lave sur le terrain
 	
 	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
-	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissant chaque iteration
-	private int grassRejuvenate = 5; //Nombre d'herbes maximum qui apparaissant chaque iteration
+	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissent chaque iteration
+	private int grassRejuvenate = 5; //Nombre d'herbes maximum qui apparaissent chaque iteration
 	
 	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur
 	
@@ -103,9 +103,9 @@ public class World extends JPanel{
 	private double pSand = 0.5; //probabilite qu'une herbe devienne du sable
 	private double pWater = 0.3; //probabilite que du sable devienne de l'eau
 	
-	private double pTree = 0.01;
+	private double pTree = 1;
 	private double pCactus = 0.1;
-	private double pForest = 0.001;
+	private double pForest = 0.0001;
 	private int rayonForest = 5;
 	
 	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
@@ -189,32 +189,54 @@ public class World extends JPanel{
 		//Agents de depart
 		//Il est possible d'utiliser addAgent mais il n'y aura pas forcement le nombre d'agent souhaite
 		for (int n=0;n<nbHumanDepart;n++) {
-			forceAddAgent(new Human());
+			if (nbHumanDepart<= nbGrass + nbSand)
+				forceAddAgent(new Human());
+			else 
+				addAgent(new Human());
 		}
 		
 		for (int n=0;n<nbChickenDepart;n++) {
-			forceAddAgent(new Chicken());
+			if (nbChickenDepart<= nbGrass + nbSand)
+				forceAddAgent(new Chicken());
+			else
+				addAgent(new Chicken());
 		}
 		
 		for (int n=0;n<nbFoxDepart;n++) {
-			forceAddAgent(new Fox());
+			if (nbFoxDepart<= nbGrass + nbSand)
+				forceAddAgent(new Fox());
+			else
+				addAgent(new Fox());
 		}
 		
 		for (int n=0;n<nbViperDepart;n++) {
-			forceAddAgent(new Viper());
+			if (nbViperDepart<= nbGrass + nbSand)
+				forceAddAgent(new Viper());
+			else
+				addAgent(new Viper());
 		}
 		
 		//Environnement de depart
 		for (int n=0;n<nbEnvDepart;n++) {
-			forceAddItem(new Tree());
-			forceAddItem(new Rose());
-			forceAddItem(new Tulip());
-			forceAddItem(new Daisy());
+			if (nbEnvDepart<= nbGrass) {
+				forceAddItem(new Tree());
+				forceAddItem(new Rose());
+				forceAddItem(new Tulip());
+				forceAddItem(new Daisy());
+			} else {
+				addItem(new Tree());
+				addItem(new Rose());
+				addItem(new Tulip());
+			}
 			//addItem(new Tsunami());
 		}
 		
-		for (int n=0;n<nbCactusDepart;n++)
-			forceAddItem(new Cactus());
+		for (int n=0;n<nbCactusDepart;n++) {
+			if (nbCactusDepart<= nbSand)
+				forceAddItem(new Cactus());
+			else 
+				addItem(new Cactus());
+		}
 	}
 	
 	//Get
@@ -603,13 +625,13 @@ public class World extends JPanel{
 	
 	private void updateEnvironnement() {
 		int[][] cpFire = new int[X][Y];
-		for (int i = 0 ; i < Y ; i++)
-			for (int j = 0 ; j < X ; j++)
+		for (int i = 0 ; i < X ; i++)
+			for (int j = 0 ; j < Y ; j++)
 				cpFire[i][j] = fire[i][j]; 
 		
 		//Mise a jour des donnees de l'environnement
-		for (int i = 0 ; i < Y ; i++ )
-			for (int j = 0 ; j < X ; j++ ) {
+		for (int i = 0 ; i < X ; i++ )
+			for (int j = 0 ; j < Y ; j++ ) {
 				if (environnement[i][j] instanceof Flower) {
 					if (terrain[i][j]!=grass || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j] = null; //Si le terrain ne correspond pas a de l'herbe, ou que la fleur est morte, ou que le feu se s'arrete, la fleur meurt
 					else if (fire[i][j]>0) ((Flower)environnement[i][j]).setFire(true); //S'il y a du feu et une fleur, la fleur est en feu
@@ -617,7 +639,12 @@ public class World extends JPanel{
 				} else if (environnement[i][j] instanceof Tree) {
 					if (terrain[i][j]!=grass || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j] = null;
 					else if (!((Tree)environnement[i][j]).getFire() && fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
-					else if (fire[i][j]== 0 && !((Tree)environnement[i][j]).getFire() && i+1<X && j+1<Y && i-1>=0 && j-1>=0 && (cpFire[i+1][j]!=0 || cpFire[i-1][j]!=0 ||  cpFire[i][j+1]!=0 || cpFire[i][j-1]!=0)) fire[i][j]=1;
+					else if (fire[i][j]== 0 && !((Tree)environnement[i][j]).getFire()) {
+						if (i+1<X && cpFire[i+1][j]!=0) fire[i][j] = 1;
+						else if (i-1>=0 && cpFire[i-1][j]!=0) fire[i][j] = 1;
+						else if (j+1<Y && cpFire[i][j+1]!=0) fire[i][j] = 1;
+						else if (j-1>=0 && cpFire[i][j-1]!=0) fire[i][j] = 1;
+					}
 					else environnement[i][j].update();
 				} else if (environnement[i][j] instanceof Cactus) {
 					if (terrain[i][j]!=sand || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j] = null;
