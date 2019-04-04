@@ -17,7 +17,7 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 15; //taille de chaque sprite
+	public static final int spriteLength = 20; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -62,10 +62,10 @@ public class World extends JPanel{
 	private int perlinSize = 10; //Taille du bruit de perlin
 	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1, plus c'est proche de 1, plus il ya de terre
 	
-	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
-	private int nbChickenDepart = 25;
-	private int nbFoxDepart = 25;
-	private int nbViperDepart = 25;
+	private int nbHumanDepart = 50; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbChickenDepart = 50;
+	private int nbFoxDepart = 50;
+	private int nbViperDepart = 50;
 	
 	private int nbEnvDepart = 20; //Arbres, Fleurs ...
 	private int nbCactusDepart = 25;
