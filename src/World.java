@@ -62,12 +62,15 @@ public class World extends JPanel{
 	private int perlinSize = 10; //Taille du bruit de perlin
 	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1, plus c'est proche de 1, plus il ya de terre
 	
-	private int nbHumanDepart = 50; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
-	private int nbChickenDepart = 50;
-	private int nbFoxDepart = 50;
-	private int nbViperDepart = 50;
+	private boolean forceAdd = true; //Programme plus lent au demarrage si la valeur est true. Force l'ajout du nombre exact d'agents et d'items.
 	
-	private int nbEnvDepart = 20; //Arbres, Fleurs ...
+	private int nbHumanDepart = 75; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbChickenDepart = 75;
+	private int nbFoxDepart = 75;
+	private int nbViperDepart = 75;
+	
+	private int nbFlowerDepart = 60; //Nombre de fleurs au depart
+	private int nbTreeDepart = 700;
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	
@@ -105,13 +108,11 @@ public class World extends JPanel{
 	
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
-	private double pForest = 0.0;
-	private int rayonForest = 5;
 	
 	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
 	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
 	
-	public double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave.
+	private double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave.
 	
 	//Variables en rapport aux degats sur chaque agents
 	public static final int fireDamage = 10;
@@ -127,6 +128,7 @@ public class World extends JPanel{
 	private int nbGrass=0; //Compte le nombre d'herbe
 	private boolean perlinReady = false; //Verifie que la lave peut s'ecouler
 	private int[][] perlinTable;
+	
 	public World(int x, int y){
 		
 		terrain = new int[x][y];
@@ -168,7 +170,10 @@ public class World extends JPanel{
 						for (int m = -1; m <= 1 ; m++) {
 							if (i+n>=0 && i+n<X && j+m>=0 && j+m<Y) {
 								if (terrain[i+n][j+m] == water) foundWater = true;
-								if (terrain[i+n][j+m] == grass) foundGrass = true;
+								if (terrain[i+n][j+m] == grass) {
+									foundGrass = true;
+									nbGrass++;
+								}
 							}
 						}
 					if (foundWater && foundGrass) {
@@ -193,54 +198,61 @@ public class World extends JPanel{
 		//Agents de depart
 		//Il est possible d'utiliser addAgent mais il n'y aura pas forcement le nombre d'agent souhaite
 		for (int n=0;n<nbHumanDepart;n++) {
-			if (nbHumanDepart<= nbGrass + nbSand)
+			if (forceAdd && nbHumanDepart<= nbGrass + nbSand)
 				forceAddAgent(new Human());
 			else 
 				addAgent(new Human());
 		}
 		
 		for (int n=0;n<nbChickenDepart;n++) {
-			if (nbChickenDepart<= nbGrass + nbSand)
+			if (forceAdd && nbChickenDepart<= nbGrass + nbSand)
 				forceAddAgent(new Chicken());
 			else
 				addAgent(new Chicken());
 		}
 		
 		for (int n=0;n<nbFoxDepart;n++) {
-			if (nbFoxDepart<= nbGrass + nbSand)
+			if (forceAdd && nbFoxDepart<= nbGrass + nbSand)
 				forceAddAgent(new Fox());
 			else
 				addAgent(new Fox());
 		}
 		
 		for (int n=0;n<nbViperDepart;n++) {
-			if (nbViperDepart<= nbGrass + nbSand)
+			if (forceAdd && nbViperDepart<= nbGrass + nbSand)
 				forceAddAgent(new Viper());
 			else
 				addAgent(new Viper());
 		}
 		
 		//Environnement de depart
-		for (int n=0;n<nbEnvDepart;n++) {
-			if (nbEnvDepart<= nbGrass) {
-				forceAddItem(new Tree());
+		for (int n=0;n<nbFlowerDepart;n++) {
+			if (forceAdd && nbFlowerDepart<= nbGrass) {
 				forceAddItem(new Rose());
 				forceAddItem(new Tulip());
 				forceAddItem(new Daisy());
 			} else {
-				addItem(new Tree());
 				addItem(new Rose());
 				addItem(new Tulip());
 			}
-			//addItem(new Tsunami());
+		}
+		
+		for (int n=0;n<nbTreeDepart;n++) {
+			if (forceAdd && nbTreeDepart<= nbGrass)
+				forceAddItem(new Tree());
+			else 
+				addItem(new Tree());
 		}
 		
 		for (int n=0;n<nbCactusDepart;n++) {
-			if (nbCactusDepart<= nbSand)
+			if (forceAdd && nbCactusDepart<= nbSand)
 				forceAddItem(new Cactus());
 			else 
 				addItem(new Cactus());
 		}
+		//Reinitialise les variables
+		nbGrass = 0;
+		nbSand = 0;
 	}
 	
 	//Get
@@ -527,7 +539,7 @@ public class World extends JPanel{
 								int y = (int)(Math.random()*(Y));
 								boolean found = false;
 								if (terrain[x][y]!=volcano) {
-									if (x+1<X && fire[x][y]==-1) {
+									if (x+1<X && fire[x+1][y]==-1) {
 										fire[x][y] = -1;
 										found = true;
 									}
@@ -771,17 +783,6 @@ public class World extends JPanel{
 			if (Math.random()<pFire) {
 				environnement[p][q] = new Thunder();
 				if (terrain[p][q]!=water) fire[p][q] = 1;
-			}
-			
-			if(Math.random()< pForest ) {
-				p=(int)(Math.random()*X);
-				q=(int)(Math.random()*Y);
-				
-				for(int i=p-rayonForest;i<p+rayonForest;i++) {
-					for(int j=q-rayonForest;j<q+rayonForest;j++) {
-						if (i>=0 && j>=0 && i<X && j<Y) addItem(new Tree(), i, j);
-					}
-				}
 			}
 			repaint();
 		}
