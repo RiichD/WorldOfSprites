@@ -17,7 +17,7 @@ public class World extends JPanel{
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 20; //taille de chaque sprite
+	public static final int spriteLength = 15; //taille de chaque sprite
 	
 	//Sprites
 	private Image waterSprite;
@@ -52,14 +52,14 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai = 5; //Delai pour la vitesse de deplacement d'agent
+	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int delai3 = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
 	private int newCycleLSDelai = 5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
-	private int perlinSize = 20; //Taille du bruit de perlin
+	private int perlinSize = 10; //Taille du bruit de perlin
 	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1, plus c'est proche de 1, plus il ya de terre
 	
 	private int nbHumanDepart = 25; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
@@ -105,7 +105,7 @@ public class World extends JPanel{
 	
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
-	private double pForest = 0.0001;
+	private double pForest = 0.0;
 	private int rayonForest = 5;
 	
 	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
@@ -115,6 +115,7 @@ public class World extends JPanel{
 	
 	//Variables en rapport aux degats sur chaque agents
 	public static final int fireDamage = 10;
+	public static final int thunderDamage = 50;
 	
 	//A ne pas modifier
 	private int currentRange = 0; // Variable permettant de creer un effet de propagation de la lave
@@ -124,7 +125,8 @@ public class World extends JPanel{
 	private int nbWater=0; //Compte le nombre d'eau
 	private int nbSand=0; //Compte le nombre de sable
 	private int nbGrass=0; //Compte le nombre d'herbe
-	
+	private boolean perlinReady = false; //Verifie que la lave peut s'ecouler
+	private int[][] perlinTable;
 	public World(int x, int y){
 		
 		terrain = new int[x][y];
@@ -132,6 +134,7 @@ public class World extends JPanel{
 		environnement = new Item[x][y];
 		altitude = new int[x][y];
 		fire = new int[x][y];
+		perlinTable = new int[x][y];
 		int i, j;
 		
 		try {
@@ -152,6 +155,7 @@ public class World extends JPanel{
 		for (i=0; i<X; i++) {
 			for (j=0; j<Y; j++) {
 				terrain[i][j]=((int)((Get2DPerlinNoiseValue(i, j, perlinSize)+1)*2*perlinFloor))%2;
+				perlinTable[i][j] = 0;
 			}
 		}
 		
@@ -354,11 +358,11 @@ public class World extends JPanel{
 	        127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,
 	        156,180};
 	    
-	    //Adapter pour la résolution
+	    //Adapter pour la rï¿½solution
 	    x /= res;
 	    y /= res;
 
-	    //On récupère les positions de la grille associée à (x,y)
+	    //On rï¿½cupï¿½re les positions de la grille associï¿½e ï¿½ (x,y)
 	    x0 = (int)(x);
 	    y0 = (int)(y);
 
@@ -366,13 +370,13 @@ public class World extends JPanel{
 	    ii = x0 & 255;
 	    jj = y0 & 255;
 
-	    //Pour récupérer les vecteurs
+	    //Pour rï¿½cupï¿½rer les vecteurs
 	    gi0 = perm[ii + perm[jj]] % 8;
 	    gi1 = perm[ii + 1 + perm[jj]] % 8;
 	    gi2 = perm[ii + perm[jj + 1]] % 8;
 	    gi3 = perm[ii + 1 + perm[jj + 1]] % 8;
 
-	    //on récupère les vecteurs et on pondère
+	    //on rï¿½cupï¿½re les vecteurs et on pondï¿½re
 	    tempX = x-x0;
 	    tempY = y-y0;
 	    s = gradient2[gi0][0]*tempX + gradient2[gi0][1]*tempY;
@@ -414,6 +418,21 @@ public class World extends JPanel{
 		environnement[x][y] = null;
 	}
 	
+	private void newPerlinTable() { //Creer une table de Perlin, entre 0 et 1
+		double perlinRandom = Math.random()*(1-0.5)+0.5;
+		for (int i = 0 ; i < X ; i++) {
+			for (int j = 0 ; j < Y ;j++) {
+				perlinTable[i][j] = ((int)((Get2DPerlinNoiseValue(i, j, perlinSize)+1)*2*perlinRandom))%2;
+			}
+		}
+	}
+	
+	private void removePerlinTable() { //Met le tableau de Perlin avec les valeurs par defaut
+		for (int i = 0 ; i < X ; i++)
+			for (int j = 0 ; j < Y ; j++)
+				perlinTable[i][j] = 0;
+	}
+	
 	//Nouveau cycle de vie
 	private void newLifeCycle() {
 		//S'il n'y a plus d'eau, un flac d'eau apparait
@@ -438,7 +457,7 @@ public class World extends JPanel{
 				if (y-1 >=0 && terrain[x][y-1]==grass)
 					terrain[x][y-1] = sand;
 			}
-		} else if (nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre du terrain
+		} else if ( nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre du terrain
 			newCycle = true;
 			volcanoX = X/2;
 			volcanoY = Y/2;
@@ -448,10 +467,11 @@ public class World extends JPanel{
 				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
 				for (Agent a : copy) agents.remove(a);
 			}
+
 			if (!newCycle) {
 				for (int i = 0 ; i < X ; i++)
 					for (int j = 0 ; j < Y ; j++) {
-						environnement[i][j] = null;
+						environnement[i][j] = null; //Retire tous les items du monde
 					}
 			}
 			while (!newCycle) {
@@ -463,6 +483,14 @@ public class World extends JPanel{
 					volcanoX = x;
 					volcanoY = y;
 				}
+			}
+			
+			while (!perlinReady) { //On verifie que la lave peut bien s'ecouler, sinon on genere une autre table de Perlin
+				newPerlinTable();
+				if (volcanoX+1<X && perlinTable[volcanoX+1][volcanoY]!=0) perlinReady = true;
+				else if (volcanoX-1>=0 && perlinTable[volcanoX-1][volcanoY]!=0) perlinReady = true;
+				else if (volcanoY+1<Y && perlinTable[volcanoX][volcanoY+1]!=0) perlinReady = true;
+				else if (volcanoY-1>=0 && perlinTable[volcanoX][volcanoY-1]!=0) perlinReady = true;
 			}
 			
 			if (currentRange < volcanoRange) { //Tant que le rayon de propagation de la lave n'atteint pas volcanoRange, on continue dans cette condition
@@ -478,19 +506,19 @@ public class World extends JPanel{
 					for ( int j = 0 ; j < copyFire.length ; j++ ) {
 						if (fire[i][j]!=-1 && terrain[i][j]!=volcano) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de + (Voisinage de Von Neumann)
 							//Remplacement de la lave par de l'obsdienne
-							if (i+1<X && (copyFire[i+1][j]==-1 || terrain[i+1][j]==volcano) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
+							if (i+1<X && perlinTable[i][j]==1 && (copyFire[i+1][j]==-1 || terrain[i+1][j]==volcano) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
 								fire[i][j] = -1;
 								terrain[i][j] = obsidian;
 							}
-							if (i-1>=0 && (copyFire[i-1][j]==-1 || terrain[i-1][j]==volcano) ) {
+							if (i-1>=0 && perlinTable[i][j]==1 && (copyFire[i-1][j]==-1 || terrain[i-1][j]==volcano) ) {
 								fire[i][j] = -1;
 								terrain[i][j] = obsidian;
 							}
-							if (j+1<Y && (copyFire[i][j+1]==-1 || terrain[i][j+1]==volcano) ) {
+							if (j+1<Y && perlinTable[i][j]==1 && (copyFire[i][j+1]==-1 || terrain[i][j+1]==volcano) ) {
 								fire[i][j] = -1;
 								terrain[i][j] = obsidian;
 							}
-							if (j-1>=0 && (copyFire[i][j-1]==-1 || terrain[i][j-1]==volcano) ) {
+							if (j-1>=0 && perlinTable[i][j]==1 && (copyFire[i][j-1]==-1 || terrain[i][j-1]==volcano) ) {
 								fire[i][j] = -1;
 								terrain[i][j] = obsidian;
 							}
@@ -614,6 +642,8 @@ public class World extends JPanel{
 						newCycle = false;
 						newCycleLastStep = false;
 						addInitiate();
+						perlinReady = false;
+						removePerlinTable();
 					}
 				}
 				try {
@@ -767,6 +797,7 @@ public class World extends JPanel{
 				if (a.getAlive()) { //Verifie si l'agent est toujours en vie
 					a.update();
 				}
+				if (environnement[a.getX()][a.getY()] instanceof Thunder) a.addHealth(-thunderDamage);
 			}
 			
 			//Quelques regles du monde pour les agents
@@ -949,7 +980,6 @@ public class World extends JPanel{
 			try {
 				Thread.sleep(delai3);
 			} catch ( Exception e ) {};
-			//System.out.println("it : " + i);
 			i++;
 		}
 	}
