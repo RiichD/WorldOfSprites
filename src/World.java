@@ -172,13 +172,11 @@ public class World extends JPanel{
 								if (terrain[i+n][j+m] == water) foundWater = true;
 								if (terrain[i+n][j+m] == grass) {
 									foundGrass = true;
-									nbGrass++;
 								}
 							}
 						}
 					if (foundWater && foundGrass) {
 						terrain[i][j] = sand;
-						nbSand++;
 					}
 				}
 			}
@@ -195,6 +193,13 @@ public class World extends JPanel{
 	}
 	
 	public void addInitiate() {
+		//Compte le nombre de sables et d'herbes present sur le monde
+		for (int i = 0 ; i < X ; i++)
+			for (int j = 0 ; j < Y ; j++){
+				if (terrain[i][j] == grass ) nbGrass++;
+				if (terrain[i][j] == sand ) nbSand++;
+			}
+		
 		//Agents de depart
 		//Il est possible d'utiliser addAgent mais il n'y aura pas forcement le nombre d'agent souhaite
 		for (int n=0;n<nbHumanDepart;n++) {
