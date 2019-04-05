@@ -123,6 +123,8 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	//Add
 	public abstract void addAge();
 	
+	public abstract void addHealth(int n);
+	
 	//Deplacement aleatoire
 	public void move(int[][] terrain, Item[][] environnement) {
 		if (pspriteX==spriteX && pspriteY==spriteY) {
