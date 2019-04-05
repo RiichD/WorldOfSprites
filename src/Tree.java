@@ -28,7 +28,10 @@ public class Tree implements Item{
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize)+minSpriteSize;
 		fire=false;
 		try {
-			treeSprite = ImageIO.read(new File("pictures/tree.png"));
+			if (Math.random()<0.5)
+				treeSprite = ImageIO.read(new File("pictures/tree1.png"));
+			else
+				treeSprite = ImageIO.read(new File("pictures/tree2.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
