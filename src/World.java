@@ -889,7 +889,7 @@ public class World extends JPanel{
 		//S'il y a des agents qui sont morts, alors on le retire de la liste
 		for (int i = 0; i < agents.size(); i++) {
 			if (agents.get(i).getAlive() == false) removeAgent(agents.get(i));
-			else if (agents.get(i).getAlive() == true && environnement[agents.get(i).getX()][agents.get(i).getY()]!= null) removeAgent(agents.get(i));
+			else if (agents.get(i).getAlive() == true && ( environnement[agents.get(i).getX()][agents.get(i).getY()] instanceof Tree || environnement[agents.get(i).getX()][agents.get(i).getY()] instanceof Cactus ) ) removeAgent(agents.get(i));
 		}
 		
 		//Ajout les enfants dans la liste d'agent
