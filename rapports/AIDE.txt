@@ -1,0 +1,5 @@
+Voici les étapes pour exécuter le programme : 
+- Ouvrir le terminal
+- Entrer dans le dossier WorldOfSprites dans le terminal
+- Compiler le programme avec la commande suivante : javac *.java
+- Exécuter le programme avec la commande suivante : java World
