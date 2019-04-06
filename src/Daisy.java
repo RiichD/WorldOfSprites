@@ -28,7 +28,10 @@ public class Daisy extends Flower {
 		alive=true;
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize+minSpriteSize);
 		try {
-			spriteDaisy = ImageIO.read(new File("pictures/flower2.png"));
+			if (Math.random()<0.5)
+				spriteDaisy = ImageIO.read(new File("pictures/daisy1.png"));
+			else
+				spriteDaisy = ImageIO.read(new File("pictures/daisy2.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);

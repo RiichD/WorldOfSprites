@@ -28,7 +28,10 @@ public class Tulip extends Flower {
 		alive=true;
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize+minSpriteSize);
 		try {
-			spriteTulip = ImageIO.read(new File("pictures/flower3.png"));
+			if (Math.random()<0.5)
+				spriteTulip = ImageIO.read(new File("pictures/tulip1.png"));
+			else
+				spriteTulip = ImageIO.read(new File("pictures/tulip2.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);

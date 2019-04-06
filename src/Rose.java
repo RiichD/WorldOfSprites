@@ -28,7 +28,10 @@ public class Rose extends Flower {
 		alive=true;
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize+minSpriteSize);
 		try {
-			spriteRose = ImageIO.read(new File("pictures/flower1.png"));
+			if (Math.random()<0.5)
+				spriteRose = ImageIO.read(new File("pictures/rose1.png"));
+			else
+				spriteRose = ImageIO.read(new File("pictures/rose2.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);

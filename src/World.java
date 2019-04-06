@@ -19,6 +19,8 @@ public class World extends JPanel{
 	
 	public static final int spriteLength = 20; //taille de chaque sprite
 	
+	private int ite = 0; //Le nombre d'iteration
+	
 	//Sprites
 	private Image waterSprite;
 	private Image grassSprite;
@@ -142,7 +144,7 @@ public class World extends JPanel{
 		int i, j;
 		
 		try {
-			waterSprite = ImageIO.read(new File("pictures/water.png"));
+			waterSprite = ImageIO.read(new File("pictures/water1.png"));
 			grassSprite = ImageIO.read(new File("pictures/grass.png"));
 			sandSprite = ImageIO.read(new File("pictures/sand.png"));
 			fireSprite = ImageIO.read(new File("pictures/fire.png"));
@@ -917,6 +919,24 @@ public class World extends JPanel{
 		try {
 			Thread.sleep(delai2);
 		} catch ( Exception e ) {};
+		ite++;
+		
+		//Creation d'animations
+		if (ite%4==0) {
+			try {
+				waterSprite = ImageIO.read(new File("pictures/water1.png"));
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		} else if (ite%4==2) {
+			try {
+				waterSprite = ImageIO.read(new File("pictures/water2.png"));
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		}
 	}
 	
 	public void paint(Graphics g){
@@ -990,13 +1010,11 @@ public class World extends JPanel{
 	//Main
 	public static void main(String[] args) {
 		World world = new World(X,Y);
-		int i = 0;
 		while (true) {
 			world.update();
 			try {
 				Thread.sleep(delai3);
 			} catch ( Exception e ) {};
-			i++;
 		}
 	}
 }

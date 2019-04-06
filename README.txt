@@ -19,5 +19,6 @@ https://pngimage.net/fire-sprite-sheet-png/
 https://www.minecraft-france.fr/faithful-pack/
 https://www.realm667.com/images/content/repository/propstop/DeadSwampTrees.png
 https://www.spriters-resource.com/pc_computer/rpgmakervx/sheet/100102/
-
+https://opengameart.org/content/seamless-beach-sand
+https://opengameart.org/content/seamless-grass-texture
 NB: Les images peuvent subir des modifications afin de les adapter au monde.
