@@ -25,7 +25,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
 	
-	private int chasingPause = 5; //Duree avant chaque poursuite
+	private int chasingPause = 10; //Duree avant chaque poursuite
 	private int chasingTime = 15; //Nombre d'iterations de chasses maximale. Le predateur arrete ensuite de chasser.
 	
 	private double pN = 0.25; //Plus de probabilite pour aller a une certaine direction durant une fuite

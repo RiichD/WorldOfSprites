@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 public class Tree implements Item{
 	private Image treeSprite;
 	private double spriteSize;
-	private double maxSpriteSize=2; //Taille maximale du sprite
+	private double maxSpriteSize=1; //Taille maximale du sprite
 	private double minSpriteSize=0.2; //Taille minimale du sprite
 	private boolean fire; //Si l'arbre est en feu
 	private boolean alive; //Si l'arbre est en vie
