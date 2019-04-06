@@ -19,7 +19,7 @@ public class World extends JPanel{
 	
 	public static final int spriteLength = 20; //taille de chaque sprite
 	
-	private int ite = 0; //Le nombre d'iteration
+	private int ite = 0; //Nombre d'iteration
 	
 	//Sprites
 	private Image waterSprite;
@@ -31,7 +31,7 @@ public class World extends JPanel{
 	private Image obsidianSprite;
 	private Image dirtSprite;
 	
-	/* terrain :
+	/* valeurs attribuees au terrain :
 	 * 0 : water
 	 * 1 : grass
 	 * 2 : sand
@@ -63,7 +63,7 @@ public class World extends JPanel{
 	
 	//Attributs du monde
 	private int perlinSize = 10; //Taille du bruit de perlin
-	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1, plus c'est proche de 1, plus il ya de terre
+	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1
 	
 	private boolean forceAdd = true; //Programme plus lent au demarrage si la valeur est true. Force l'ajout du nombre exact d'agents et d'items.
 	
@@ -291,9 +291,6 @@ public class World extends JPanel{
 						environnement[x][y] = i;
 				}
 			} else {
-				if (i instanceof Tsunami) {
-					environnement[x][y] = i;
-				}
 			}
 		}
 	}
@@ -699,9 +696,6 @@ public class World extends JPanel{
 					else environnement[i][j].update();
 				} else if (environnement[i][j] instanceof Cactus) {
 					if (terrain[i][j]!=sand || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j] = null;
-					else environnement[i][j].update();
-				} else if (environnement[i][j] instanceof Tsunami) {
-					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
 					else environnement[i][j].update();
 				}
 				
