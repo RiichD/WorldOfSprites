@@ -11,28 +11,30 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Viper extends Agent{
-	private Image viperSprite;
-	private Image fireSprite;
 	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
-	private int drowning;
 	private int drowningTime = 70;//Se noie s'il reste drowningtime dans l'eau
 	
-	private int fire;
 	private int fireTime = 16;
 	
-	private int age;
 	private int deathAge = 470; //age maximum
 	
-	private int health;
 	private int maxHealth = 500;
 	private int minHealth = 300;
 	private double ploseHealth = 0.4; //probabilite de perdre de la vie
 	
-	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
-	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	private int minStime = 80;
 	private int maxStime = 105;
+	
+	//A ne pas modifier
+	private Image viperSprite;
+	private Image fireSprite;
+	private int drowning;
+	private int fire;
+	private int age;
+	private int health;
+	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
+	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	
 	public Viper() {
 		super();

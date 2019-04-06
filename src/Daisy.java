@@ -11,17 +11,19 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Daisy extends Flower {
-	private Image spriteDaisy;
-	private double spriteSize;
 	private double maxSpriteSize=1;
 	private double minSpriteSize=0.2;
 	
-	private boolean alive;
-	
-	private int age;
 	private int deathAge=500;
+	
 	private double pGrow=0.01;
-
+	
+	//A ne pas modifier
+	private Image spriteDaisy;
+	private double spriteSize;
+	private boolean alive;
+	private int age;
+	
 	public Daisy() {
 		super();
 		age=1;

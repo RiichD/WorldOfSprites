@@ -11,17 +11,19 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Rose extends Flower {
-	private Image spriteRose;
-	private double spriteSize;
 	private double maxSpriteSize=1;
 	private double minSpriteSize=0.2;
 	
-	private boolean alive;
-	
-	private int age;
 	private int deathAge=500;
+	
 	private double pGrow=0.01;
-
+	
+	//A ne pas modifier
+	private Image spriteRose;
+	private double spriteSize;
+	private boolean alive;
+	private int age;
+	
 	public Rose() {
 		super();
 		age=1;

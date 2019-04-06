@@ -11,16 +11,19 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Tree implements Item{
-	private Image treeSprite;
-	private double spriteSize;
 	private double maxSpriteSize=1; //Taille maximale du sprite
 	private double minSpriteSize=0.2; //Taille minimale du sprite
+	
+	private int deathAge=1500; //L'age de deces
+	
+	private double pGrow=0.01; //Chance de gagner en taille
+	
+	//A ne pas modifier
+	private Image treeSprite;
+	private double spriteSize;
 	private boolean fire; //Si l'arbre est en feu
 	private boolean alive; //Si l'arbre est en vie
-	
 	private int age; //L'age de l'arbre
-	private int deathAge=1500; //L'age de deces
-	private double pGrow=0.01; //Chance de gagner en taille
 	
 	public Tree() {
 		age=1;

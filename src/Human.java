@@ -11,28 +11,30 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Human extends Agent{
-	private Image humanSprite;
-	private Image fireSprite;
 	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale
 	
-	private int drowning;
 	private int drowningTime = 22;//Se noie s'il reste drowningtime dans l'eau
-	
-	private int fire;
+
 	private int fireTime = 10;
-	
-	private int age;
+
 	private int deathAge = 600; //age maximum
-	
-	private int health;
+
 	private int maxHealth = 300;
 	private int minHealth = 150;
 	private double ploseHealth = 0.75; //probabilite de perdre de la vie
-	
-	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
-	private int stime; //possibilite d'avoir un enfant a partir de stime=0
+
 	private int minStime = 15;
 	private int maxStime = 30;
+	
+	//A ne pas modifier
+	private Image humanSprite;
+	private Image fireSprite;
+	private int drowning;
+	private int fire;
+	private int age;
+	private int health;
+	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
+	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	
 	public Human() {
 		super();

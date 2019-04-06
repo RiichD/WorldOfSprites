@@ -11,28 +11,30 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Chicken extends Agent{
-	private Image chickenSprite;
-	private Image fireSprite;
 	private double spriteSize = 0.9; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
-	private int drowning;
 	private int drowningTime = 40;//Se noie s'il reste drowningtime dans l'eau
 	
-	private int fire;
 	private int fireTime = 15;
 	
-	private int age;
 	private int deathAge = 500; //age maximum
 	
-	private int health;
 	private int maxHealth = 280;
 	private int minHealth = 140;
 	private double ploseHealth = 0.6; //probabilite de perdre de la vie
 	
-	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
-	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	private int minStime = 20;
 	private int maxStime = 35;
+	
+	//A ne pas modifier
+	private Image chickenSprite;
+	private Image fireSprite;
+	private int drowning;
+	private int fire;
+	private int age;
+	private int health;
+	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
+	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	
 	public Chicken() {
 		super();

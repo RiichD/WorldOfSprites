@@ -12,16 +12,9 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public abstract class Agent{ //Agents sera abstract, avec differents types d'agents
-	private boolean alive;
-	private boolean onFire;
-	
-	private int x, y;
-	private int spriteX, spriteY; // position du Sprite
-	private int pspriteX, pspriteY; // ancienne position du Sprite qui permet de deplacer fluidement
-	
 	private int sexe; //0 Male, 1 Female
 	
-	private int rayon = 3; //Rayon des predateurs
+	private int rayon = 3; //Rayon de chasse des predateurs
 	
 	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
 	
@@ -34,6 +27,13 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private double pE = 0.25;
 	
 	//A ne pas modifier
+	private boolean alive;
+	private boolean onFire;
+	
+	private int x, y;
+	private int spriteX, spriteY; // position du Sprite
+	private int pspriteX, pspriteY; // ancienne position du Sprite qui permet de deplacer fluidement
+
 	private int currChasing = 0;
 	
 	public Agent() {

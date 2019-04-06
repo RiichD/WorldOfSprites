@@ -11,7 +11,10 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public abstract class Flower implements Item {
+	
+	//A ne pas modifier
 	private boolean fire;
+	
 	public Flower() {
 		fire=false;
 	}

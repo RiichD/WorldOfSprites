@@ -11,17 +11,19 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Cactus implements Item{
-	private Image cactusSprite;
-	private double spriteSize;
 	private double maxSpriteSize=1;
 	private double minSpriteSize=0.2;
-	
-	private boolean alive;
-	
-	private int age;
-	private int deathAge=1750;
-	private double pGrow=0.01;
 
+	private int deathAge=1750;
+	
+	private double pGrow=0.01;
+	
+	//A ne pas modifier
+	private Image cactusSprite;
+	private double spriteSize;
+	private boolean alive;
+	private int age;
+	
 	public Cactus() {
 		age=1;
 		alive=true;
