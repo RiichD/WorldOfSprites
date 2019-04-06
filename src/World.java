@@ -71,6 +71,7 @@ public class World extends JPanel{
 	private int nbChickenDepart = 75;
 	private int nbFoxDepart = 75;
 	private int nbViperDepart = 75;
+	private int nbZombieDepart = 1;
 	
 	private int nbFlowerDepart = 60; //Nombre de fleurs au depart
 	private int nbTreeDepart = 700;
@@ -235,6 +236,13 @@ public class World extends JPanel{
 				forceAddAgent(new Viper());
 			else
 				addAgent(new Viper());
+		}
+		
+		for (int n=0;n<nbZombieDepart;n++) {
+			if (forceAdd && nbZombieDepart<= nbGrass + nbSand)
+				forceAddAgent(new Zombie());
+			else
+				addAgent(new Zombie());
 		}
 		
 		//Environnement de depart
@@ -921,8 +929,9 @@ public class World extends JPanel{
 		try {
 			Thread.sleep(delai2);
 		} catch ( Exception e ) {};
-		ite++;
 		
+		ite++;
+		System.out.println("Iteration : " + ite);
 		//Creation d'animations
 		if (ite%4==0) {
 			try {
