@@ -175,9 +175,9 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		boolean[][] posPrey = new boolean[World.X][World.Y];
 		boolean[][] posPred = new boolean[World.X][World.Y];
 		
-		if (! (this instanceof Human) ) { //L'humain fait sa vie et n'a pas de predateur ou de proie
+		if ( !(this instanceof Human) ) { //L'humain fait sa vie et n'a pas de predateur ou de proie
 			for (Agent b: agents) { //On compare l'agent actuel a un autre agent
-				if (!(b instanceof Human) && !this.equals(b) && x==b.getX() && y==b.getY()) { //Verifie que l'agent a et b sont a la meme case
+				if (!(b instanceof Human) && !this.equals(b) && x==b.getX() && y==b.getY()) { //Verifie que l'agent a et b sont a la meme case et qu'on ait pas selectionne le meme agent que a
 					if (this instanceof Chicken) {
 						if (b instanceof Viper) { //La poule mange la vipere
 							b.setAlive(false);
@@ -239,13 +239,36 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 					}
 				}
 			}
+		} else {
+			if (this instanceof Human) {
+				for (Agent b: agents) {
+					if (b instanceof Zombie && x==b.getX() && y==b.getY()) {
+						this.setAlive(false);
+					}
+					
+					if (Math.abs(x-b.getX())<=1 && Math.abs(y-b.getY())<=1) {
+						if (this instanceof Human && b instanceof Zombie) {
+							escape = true;
+							posPred[b.getX()][b.getY()] = true;
+						}
+					}
+				}
+			} else if (this instanceof Zombie) {
+				for (Agent b: agents) {
+					if (b instanceof Human) {
+						chase = true; //Le zombie poursuit un humain de n'importe quelle distance
+						posPrey[b.getX()][b.getY()] = true;
+					}
+				}
+			}
 		}
 		
 		if (!chase && !escape) {
 			move(terrain,environnement); //Deplacement aleatoire
 			currChasing = 0;
 		} else if (!escape && chase){
-			chasingPrey(terrain, environnement, posPrey); //Chasse
+			if (this instanceof Zombie) chasingPreyS(x, y, terrain, environnement, posPrey);
+			else chasingPrey(terrain, environnement, posPrey); //Chasse
 		} else {
 			escapingPredator(terrain, environnement, posPred); //Fuite
 		}
@@ -375,6 +398,29 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		}
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
+	}
+	
+	private int chasingPreyS(int x, int y, int[][] terrain, Item[][] environnement, boolean[][] position) {
+		boolean found = false;
+		if (x+1<World.X && terrain[x+1][y] > 0 && (environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null) ) {
+			found = true;
+			chasingPreyS(x+1, y, terrain, environnement, position);
+		}
+		if (x-1>=0 && terrain[x-1][y] > 0 && (environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null) ) {
+			found = true;
+		}
+		if (y+1<World.Y && terrain[x][y+1] > 0 && (environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null) ) {
+			found = true;
+		}
+		if (y-1>=0 && terrain[x][y-1] > 0 && (environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null) ) {
+			found = true;
+		}
+		
+		if (!found) {
+			return 0;
+		} else {
+			return -1;
+		}
 	}
 	
 	//Fluidite des deplacements
