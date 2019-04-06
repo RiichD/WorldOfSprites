@@ -57,7 +57,7 @@ public class World extends JPanel{
 	//Vitesse d'execution
 	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
-	public static final int delai3 = 0; //Delai du main ( iteration )
+	public static final int delaiMain = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
 	private int newCycleLSDelai = 5; //Delai lors du passage de la lave a la nouvelle terre
 	
@@ -1007,7 +1007,7 @@ public class World extends JPanel{
 		while (true) {
 			world.update();
 			try {
-				Thread.sleep(delai3);
+				Thread.sleep(delaiMain);
 			} catch ( Exception e ) {};
 		}
 	}
