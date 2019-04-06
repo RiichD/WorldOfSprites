@@ -100,7 +100,7 @@ public class World extends JPanel{
 	//Probabilite d'apparition des agents
 	private double pEnfant = 1; //probabilite de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
 	
-	private double pZombie = 0.001; //Probabilite d'apparition d'un zombie
+	private double pZombie = 0.1; //Probabilite d'apparition d'un zombie
 	
 	//Probabilite d'apparation des items
 	private double pFlower = 0.25;
