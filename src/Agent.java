@@ -26,6 +26,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private double pW = 0.25;
 	private double pE = 0.25;
 	
+	private int addChickenHealth = 65; //Sante que recupere chaque agent pour avoir manger leur proie
+	private int addFoxHealth = 81;
+	private int addViperHealth = 178; 
+	
 	//A ne pas modifier
 	private boolean alive;
 	private boolean onFire;
@@ -177,23 +181,29 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 					if (this instanceof Chicken) {
 						if (b instanceof Viper) { //La poule mange la vipere
 							b.setAlive(false);
+							addHealth(addChickenHealth);
 							currChasing = -chasingPause;
 						} else if (b instanceof Fox) { //Le renard mange la poule
 							setAlive(false);
+							b.addHealth(addFoxHealth);
 						}
 					} else if (this instanceof Fox) {
 						if (b instanceof Chicken) { //Le renard mange la poule
 							b.setAlive(false);
+							addHealth(addFoxHealth);
 							currChasing = -chasingPause;
 						} else if (b instanceof Viper) { //La vipere mange le renard
 							setAlive(false);
+							b.addHealth(addViperHealth);
 						}
 					} else if (this instanceof Viper) {
 						if (b instanceof Fox) { //La vipere mange le renard
 							b.setAlive(false);
+							addHealth(addViperHealth);
 							currChasing = -chasingPause;
 						} else if (b instanceof Chicken) { //La poule mange la vipere
 							setAlive(false);
+							b.addHealth(addChickenHealth);
 						}
 					}
 				}

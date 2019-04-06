@@ -81,7 +81,6 @@ public class World extends JPanel{
 	private int addHumanHealth = 50; 
 	private int addChickenHealth = 45;
 	private int addFoxHealth = 56;
-	private int addViperHealth = 105;
 	
 	//Attributs pour la reapparition de terrain, suite au volcan
 	private int volcanoSpawn = 0; //Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
