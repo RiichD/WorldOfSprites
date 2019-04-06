@@ -104,7 +104,6 @@ public class World extends JPanel{
 	private double pMarguerite = 0.05;
 	private double pRose = 0.05;
 	
-	private double pGrass = 0.1;
 	private double pSand = 0.5; //probabilite qu'une herbe devienne du sable
 	private double pWater = 0.3; //probabilite que du sable devienne de l'eau
 	
