@@ -45,9 +45,10 @@ public class World extends JPanel{
 	public static final int volcano = -1;
 	public static final int obsidian = -2;
 	
-	private int[][] terrain; //Le terrain uniquement : terre, mer, volcan
+	private int[][] terrain; //Le terrain uniquement : herbe, sable, terre, eau, volcan, etc...
 	private ArrayList<Agent> agents; //Les agents
-	private Item[][] environnement; //Environnement contient les arbres, le feu etc..
+	private Item[][] environnement; //Environnement contient les arbres, les fleurs etc...
+	private Item[][] evenement; //Foudre, etc...
 	private int[][] altitude; //Altitude du monde
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
@@ -109,7 +110,7 @@ public class World extends JPanel{
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
 	
-	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
+	private double pThunder = 0.01; //Probabilite qu'un tonnerre apparaisse
 	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
 	
 	private double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave.
@@ -134,6 +135,7 @@ public class World extends JPanel{
 		terrain = new int[x][y];
 		agents = new ArrayList<Agent>();
 		environnement = new Item[x][y];
+		evenement = new Item[x][y];
 		altitude = new int[x][y];
 		fire = new int[x][y];
 		perlinTable = new int[x][y];
@@ -687,10 +689,10 @@ public class World extends JPanel{
 					if (terrain[i][j]!=grass || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j] = null;
 					else if (!((Tree)environnement[i][j]).getFire() && fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
 					else if (fire[i][j]== 0 && !((Tree)environnement[i][j]).getFire()) {
-						if (i+1<X && cpFire[i+1][j]!=0) fire[i][j] = 1;
-						else if (i-1>=0 && cpFire[i-1][j]!=0) fire[i][j] = 1;
-						else if (j+1<Y && cpFire[i][j+1]!=0) fire[i][j] = 1;
-						else if (j-1>=0 && cpFire[i][j-1]!=0) fire[i][j] = 1;
+						if (i+1<X && cpFire[i+1][j]!=0 && environnement[i+1][j] instanceof Tree) fire[i][j] = 1;
+						else if (i-1>=0 && cpFire[i-1][j]!=0 && environnement[i-1][j] instanceof Tree) fire[i][j] = 1;
+						else if (j+1<Y && cpFire[i][j+1]!=0 && environnement[i][j+1] instanceof Tree) fire[i][j] = 1;
+						else if (j-1>=0 && cpFire[i][j-1]!=0 && environnement[i][j-1] instanceof Tree) fire[i][j] = 1;
 					}
 					else environnement[i][j].update();
 				} else if (environnement[i][j] instanceof Cactus) {
@@ -699,9 +701,11 @@ public class World extends JPanel{
 				} else if (environnement[i][j] instanceof Tsunami) {
 					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
 					else environnement[i][j].update();
-				} else if (environnement[i][j] instanceof Thunder) {
-					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
-					else environnement[i][j].update();
+				}
+				
+				if (evenement[i][j] instanceof Thunder) {
+					if (!evenement[i][j].getAlive()) evenement[i][j] = null;
+					else evenement[i][j].update();
 				}
 				
 				if (fire[i][j]>0) {
@@ -785,8 +789,8 @@ public class World extends JPanel{
 				if (terrain[p][q]==sand) addItem(new Cactus());
 			}
 			
-			if (Math.random()<pFire) {
-				environnement[p][q] = new Thunder();
+			if (Math.random()<pThunder) {
+				evenement[p][q] = new Thunder();
 				if (terrain[p][q]!=water) fire[p][q] = 1;
 			}
 			repaint();
@@ -803,7 +807,7 @@ public class World extends JPanel{
 				if (a.getAlive()) { //Verifie si l'agent est toujours en vie
 					a.update();
 				}
-				if (environnement[a.getX()][a.getY()] instanceof Thunder) a.addHealth(-thunderDamage);
+				if (evenement[a.getX()][a.getY()] instanceof Thunder) a.addHealth(-thunderDamage);
 			}
 			
 			//Quelques regles du monde pour les agents
@@ -942,6 +946,12 @@ public class World extends JPanel{
 					 */
 					try {
 						g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+					} catch ( Exception e ) {}
+				}
+				
+				if (evenement[i][j] instanceof Item) {
+					try {
+						g2.drawImage((evenement[i][j]).getImage(),(int)(spriteLength*i+(1-evenement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-evenement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*evenement[i][j].getSpriteSize()),(int)(spriteLength*evenement[i][j].getSpriteSize()), frame);
 					} catch ( Exception e ) {}
 				}
 			}
