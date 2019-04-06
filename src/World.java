@@ -77,6 +77,8 @@ public class World extends JPanel{
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	
+	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
+	
 	//La sante que recupere chaque agent lorsqu'ils se soignent
 	private int addHumanHealth = 50; 
 	private int addChickenHealth = 45;
@@ -98,6 +100,8 @@ public class World extends JPanel{
 	//Probabilite d'apparition des agents
 	private double pEnfant = 1; //probabilite de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
 	
+	private double pZombie = 0.001; //Probabilite d'apparition d'un zombie
+	
 	//Probabilite d'apparation des items
 	private double pFlower = 0.25;
 	private double pTulipe = 0.05;
@@ -111,7 +115,6 @@ public class World extends JPanel{
 	private double pCactus = 0.1;
 	
 	private double pThunder = 0.01; //Probabilite qu'un tonnerre apparaisse
-	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
 	
 	private double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave.
 	
@@ -312,14 +315,14 @@ public class World extends JPanel{
 	
 	public void addAgent(Agent a) {
 		if (!(terrain[a.getX()][a.getY()]==water))
-			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper)
+			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper || a instanceof Zombie)
 				agents.add(a);
 		else
 			System.out.println("Ajout d'agent impossible");
 	}
 	
 	public void forceAddAgent(Agent a) {
-		if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper) {
+		if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper || a instanceof Zombie) {
 			int tailleInit = agents.size()+1;
 			while(agents.size() != tailleInit) {
 				if (a instanceof Human) {
@@ -333,6 +336,9 @@ public class World extends JPanel{
 					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
 				} else if (a instanceof Viper) {
 					Agent a2 = new Viper();
+					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
+				} else if (a instanceof Zombie) {
+					Agent a2 = new Zombie();
 					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
 				}
 			}
@@ -820,7 +826,7 @@ public class World extends JPanel{
 					a.setOnFire(true);
 					((Chicken)a).setFire(0);
 				}
-			}  else if (a instanceof Fox && a.getAlive()) {
+			} else if (a instanceof Fox && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==water) ((Fox)a).addDrowning();
 				else ((Fox)a).setDrowning(0);
 				if (environnement[a.getX()][a.getY()] instanceof Daisy && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les renards ne mangent que les marguerites
@@ -831,12 +837,19 @@ public class World extends JPanel{
 					a.setOnFire(true);
 					((Fox)a).setFire(0);
 				}
-			}  else if (a instanceof Viper && a.getAlive()) {
+			} else if (a instanceof Viper && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==water) ((Viper)a).addDrowning();
 				else ((Viper)a).setDrowning(0);
 				if (fire[a.getX()][a.getY()]!=0) {
 					a.setOnFire(true);
 					((Viper)a).setFire(0);
+				}
+			} else if (a instanceof Zombie && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==water) ((Zombie)a).addDrowning();
+				else ((Zombie)a).setDrowning(0);
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Zombie)a).setFire(0);
 				}
 			}
 			
@@ -864,6 +877,10 @@ public class World extends JPanel{
 					}
 				}
 			}
+		}
+		
+		if (Math.random()<pZombie) {
+			forceAddAgent(new Zombie());
 		}
 		
 		//Boucle permettant d'afficher les agents fluidement

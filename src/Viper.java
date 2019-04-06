@@ -65,7 +65,7 @@ public class Viper extends Agent{
 		age=1;
 		drowning=0;
 		fire=0;
-		health=(int)(Math.random()*(maxHealth+1)+minHealth);
+		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
 	}
