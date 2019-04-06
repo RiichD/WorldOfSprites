@@ -15,8 +15,8 @@ public class Zombie extends Agent{
 	
 	private int drowningTime = 10;//Se noie s'il reste drowningtime dans l'eau
 
-	private int maxAppearenceTime = 10000; //Le temps d'apparition du zombie. L'age represente le temps d'apparition du zombie
-	private int minAppearenceTime = 5000;
+	private int maxAppearenceTime = 500; //Le temps d'apparition du zombie. L'age represente le temps d'apparition du zombie
+	private int minAppearenceTime = 200;
 	
 	//A ne pas modifier
 	private Image zombieSprite;

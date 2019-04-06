@@ -92,7 +92,7 @@ public class World extends JPanel{
 	
 	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
 	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissent chaque iteration
-	private int grassRejuvenate = 5; //Nombre d'herbes maximum qui apparaissent chaque iteration
+	private int grassRejuvenate = 20; //Nombre d'herbes maximum qui apparaissent chaque iteration
 	
 	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur
 	
@@ -101,7 +101,7 @@ public class World extends JPanel{
 	//Probabilite d'apparition des agents
 	private double pEnfant = 1; //probabilite de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
 	
-	private double pZombie = 0.1; //Probabilite d'apparition d'un zombie
+	private double pZombie = 0.01; //Probabilite d'apparition d'un zombie
 	
 	//Probabilite d'apparation des items
 	private double pFlower = 0.25;
@@ -931,7 +931,6 @@ public class World extends JPanel{
 		} catch ( Exception e ) {};
 		
 		ite++;
-		System.out.println("Iteration : " + ite);
 		//Creation d'animations
 		if (ite%4==0) {
 			try {

@@ -273,8 +273,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 						}
 					}
 				}
-				walk[target.getX()][target.getY()] = 4;
-				chase = true;
+				if (target!= null) {
+					walk[target.getX()][target.getY()] = 4;
+					chase = true;
+				}
 			}
 		}
 		
