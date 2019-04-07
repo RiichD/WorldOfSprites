@@ -67,14 +67,14 @@ public class World extends JPanel{
 	
 	private boolean forceAdd = true; //Programme plus lent au demarrage si la valeur est true. Force l'ajout du nombre exact d'agents et d'items.
 	
-	private int nbHumanDepart = 75; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
-	private int nbChickenDepart = 75;
-	private int nbFoxDepart = 75;
-	private int nbViperDepart = 75;
+	private int nbHumanDepart = 1; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbChickenDepart = 0;
+	private int nbFoxDepart = 0;
+	private int nbViperDepart = 0;
 	private int nbZombieDepart = 1;
 	
 	private int nbFlowerDepart = 60; //Nombre de fleurs au depart
-	private int nbTreeDepart = 700;
+	private int nbTreeDepart = 00;
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	
@@ -101,7 +101,7 @@ public class World extends JPanel{
 	//Probabilite d'apparition des agents
 	private double pEnfant = 1; //probabilite de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
 	
-	private double pZombie = 0.01; //Probabilite d'apparition d'un zombie
+	private double pZombie = 0.00; //Probabilite d'apparition d'un zombie
 	
 	//Probabilite d'apparation des items
 	private double pFlower = 0.25; //Probabilite qu'une fleur apparaisse
