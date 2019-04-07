@@ -104,13 +104,13 @@ public class World extends JPanel{
 	private double pZombie = 0.01; //Probabilite d'apparition d'un zombie
 	
 	//Probabilite d'apparation des items
-	private double pFlower = 0.25;
-	private double pTulipe = 0.05;
-	private double pMarguerite = 0.05;
-	private double pRose = 0.05;
+	private double pFlower = 0.25; //Probabilite qu'une fleur apparaisse
+	private double pTulipe = 0.05; //Si une fleur apparait, il y a une probabilite que la tulipe apparaisse
+	private double pDaisy = 0.05; //Si une fleur apparait, il y a une probabilite que la Marguerite apparaisse
+	private double pRose = 0.05; //Si une fleur apparait, il y a une probabilite que la Rose apparaisse
 	
-	private double pSand = 0.5; //probabilite qu'une herbe devienne du sable
-	private double pWater = 0.3; //probabilite que du sable devienne de l'eau
+	private double pSand = 0.5; //Probabilite qu'une herbe devienne du sable, pSand doit avoir une probabilite strictement superieure a pWater
+	private double pWater = 0.3; //Probabilite que du sable devienne de l'eau
 	
 	private double pTree = 0.01;
 	private double pCactus = 0.1;
@@ -193,7 +193,7 @@ public class World extends JPanel{
 		addInitiate();
 		
 		//Creation du frame et affichage de la fenetre
-		frame = new JFrame("World Of Sprite");
+		frame = new JFrame("World Of Sprites");
 		frame.add(this);
 		frame.setSize((spriteLength+1)*(X),(spriteLength+1)*(Y));
 		frame.setVisible(true);
@@ -216,35 +216,35 @@ public class World extends JPanel{
 			else 
 				addAgent(new Human());
 		}
-		System.out.println("1");
+
 		for (int n=0;n<nbChickenDepart;n++) {
 			if (forceAdd && nbChickenDepart<= nbGrass + nbSand)
 				forceAddAgent(new Chicken());
 			else
 				addAgent(new Chicken());
 		}
-		System.out.println("2");
+
 		for (int n=0;n<nbFoxDepart;n++) {
 			if (forceAdd && nbFoxDepart<= nbGrass + nbSand)
 				forceAddAgent(new Fox());
 			else
 				addAgent(new Fox());
 		}
-		System.out.println("3");
+		
 		for (int n=0;n<nbViperDepart;n++) {
 			if (forceAdd && nbViperDepart<= nbGrass + nbSand)
 				forceAddAgent(new Viper());
 			else
 				addAgent(new Viper());
 		}
-		System.out.println("4");
+		
 		for (int n=0;n<nbZombieDepart;n++) {
 			if (forceAdd && nbZombieDepart<= nbGrass + nbSand)
 				forceAddAgent(new Zombie());
 			else
 				addAgent(new Zombie());
 		}
-		System.out.println("5");
+		
 		//Environnement de depart
 		for (int n=0;n<nbFlowerDepart;n++) {
 			if (forceAdd && nbFlowerDepart<= nbGrass) {
@@ -256,20 +256,20 @@ public class World extends JPanel{
 				addItem(new Tulip());
 			}
 		}
-		System.out.println("6");
+		
 		for (int n=0;n<nbTreeDepart;n++) {
 			if (forceAdd && nbTreeDepart<= nbGrass) {
 				forceAddItem(new Tree());
 			} else 
 				addItem(new Tree());
 		}
-		System.out.println("7");
+		
 		for (int n=0;n<nbCactusDepart;n++) {
 			if (forceAdd && nbCactusDepart<= nbSand)
 				forceAddItem(new Cactus());
 			else 
 				addItem(new Cactus());
-		}System.out.println("8");
+		}
 		//Reinitialise les variables
 		nbGrass = 0;
 		nbSand = 0;
@@ -729,7 +729,7 @@ public class World extends JPanel{
 		if (Math.random()<pFlower) {
 			if (Math.random()<pRose) addItem(new Rose());
 			if (Math.random()<pTulipe) addItem(new Tulip());
-			if (Math.random()<pMarguerite) addItem(new Daisy());
+			if (Math.random()<pDaisy) addItem(new Daisy());
 		}
 		
 		//Variables pour le changement de terrain aleatoire
