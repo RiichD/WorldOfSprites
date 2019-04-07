@@ -15,13 +15,11 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private int sexe; //0 Male, 1 Female
 	
 	private int rayon = 3; //Rayon de chasse des predateurs
-	
-	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
-	
+
 	private int chasingPause = 10; //Duree avant chaque poursuite
 	private int chasingTime = 15; //Nombre d'iterations de chasses maximale. Le predateur arrete ensuite de chasser.
 	
-	private double pN = 0.25; //Plus de probabilite pour aller a une certaine direction durant une fuite
+	private double pN = 0.25; //Probabilite pour aller a une certaine direction durant une fuite, si plusieurs chemins sont valides
 	private double pS = 0.25;
 	private double pW = 0.25;
 	private double pE = 0.25;
@@ -39,6 +37,8 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private int pspriteX, pspriteY; //Ancienne position du Sprite qui permet de deplacer fluidement
 
 	private int currChasing = 0; //Nombre d'iteration que l'agent est en train de chasser
+	
+	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
 	
 	//Orientation prioritaire des proies
 	boolean N = false;

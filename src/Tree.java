@@ -18,6 +18,7 @@ public class Tree implements Item{
 	
 	private double pGrow=0.01; //Chance de gagner en taille
 	
+	private int agingSpeed = 20; //Lorsque l'arbre est brule, il vieillit plus vite
 	//A ne pas modifier
 	private Image treeSprite;
 	private double spriteSize;
@@ -83,7 +84,8 @@ public class Tree implements Item{
 		if (!fire && Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
 		if (age>=deathAge) alive=false;
 		if (alive) {
-			age++;
+			if (fire) age+=agingSpeed; //Vieillit plus vite
+			else age++;
 		}
 	}
 }

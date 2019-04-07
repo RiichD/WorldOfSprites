@@ -216,35 +216,35 @@ public class World extends JPanel{
 			else 
 				addAgent(new Human());
 		}
-		
+		System.out.println("1");
 		for (int n=0;n<nbChickenDepart;n++) {
 			if (forceAdd && nbChickenDepart<= nbGrass + nbSand)
 				forceAddAgent(new Chicken());
 			else
 				addAgent(new Chicken());
 		}
-		
+		System.out.println("2");
 		for (int n=0;n<nbFoxDepart;n++) {
 			if (forceAdd && nbFoxDepart<= nbGrass + nbSand)
 				forceAddAgent(new Fox());
 			else
 				addAgent(new Fox());
 		}
-		
+		System.out.println("3");
 		for (int n=0;n<nbViperDepart;n++) {
 			if (forceAdd && nbViperDepart<= nbGrass + nbSand)
 				forceAddAgent(new Viper());
 			else
 				addAgent(new Viper());
 		}
-		
+		System.out.println("4");
 		for (int n=0;n<nbZombieDepart;n++) {
 			if (forceAdd && nbZombieDepart<= nbGrass + nbSand)
 				forceAddAgent(new Zombie());
 			else
 				addAgent(new Zombie());
 		}
-		
+		System.out.println("5");
 		//Environnement de depart
 		for (int n=0;n<nbFlowerDepart;n++) {
 			if (forceAdd && nbFlowerDepart<= nbGrass) {
@@ -256,20 +256,20 @@ public class World extends JPanel{
 				addItem(new Tulip());
 			}
 		}
-		
+		System.out.println("6");
 		for (int n=0;n<nbTreeDepart;n++) {
-			if (forceAdd && nbTreeDepart<= nbGrass)
+			if (forceAdd && nbTreeDepart<= nbGrass) {
 				forceAddItem(new Tree());
-			else 
+			} else 
 				addItem(new Tree());
 		}
-		
+		System.out.println("7");
 		for (int n=0;n<nbCactusDepart;n++) {
 			if (forceAdd && nbCactusDepart<= nbSand)
 				forceAddItem(new Cactus());
 			else 
 				addItem(new Cactus());
-		}
+		}System.out.println("8");
 		//Reinitialise les variables
 		nbGrass = 0;
 		nbSand = 0;
