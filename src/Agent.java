@@ -24,13 +24,14 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private double pW = 0.25;
 	private double pE = 0.25;
 	
-	private int addChickenHealth = 65; //Sante que recupere chaque agent pour avoir manger leur proie
+	//Sante que recupere chaque agent pour avoir manger leur proie
+	private int addChickenHealth = 65; 
 	private int addFoxHealth = 81;
 	private int addViperHealth = 178; 
 	
 	//A ne pas modifier
-	private boolean alive;
-	private boolean onFire;
+	private boolean alive; //Agent en vie
+	private boolean onFire; //Agent en feu
 	
 	private int x, y;
 	private int spriteX, spriteY; //Position du Sprite
@@ -40,19 +41,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
 	
-	//Orientation prioritaire des proies
-	private boolean N = false;
-	private boolean S = false;
-	private boolean W = false;
-	private boolean E = false;
-	
-	private Agent target = null; //Cible du zombie
-	private boolean targeted = false; //Le zombie possede une cible
-	
-	private int nbPas;
-	private int[][] path;
-	
-	public Agent() {
+	public Agent() { //Constructeur sans argument qui permet d'ajouter l'agent a des positions aleatoires
 		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
 	}
 	
@@ -66,8 +55,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		pspriteX = spriteX;
 		pspriteY = spriteY;
 		sexe = (int)(Math.random()*2);
-		path = new int[World.X][World.Y];
-		nbPas = 0;
 	}
 	
 	//Get
@@ -145,12 +132,12 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	//Deplacement aleatoire
 	public void move(int[][] terrain, Item[][] environnement) {
-		if (pspriteX==spriteX && pspriteY==spriteY) {
+		if ( (pspriteX==spriteX && pspriteY==spriteY) || this instanceof Zombie) {
 			double rand = Math.random();
 			if (rand < 0.75) {
 				if (rand < 0.5) {
 					if (rand < 0.25) {
-						if (x-1>=0 && (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) ) {
+						if (x-1>=0 && terrain[x-1][y]>0) {//(terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) ) {
 							if (environnement[x-1][y] instanceof Flower || !(environnement[x-1][y] instanceof Item))
 								x--;
 						}
@@ -184,7 +171,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	public void move(int[][] terrain, Item[][] environnement, ArrayList<Agent> agents) {
 		boolean chase = false; //Une proie est a proximite, le predateur va le chasser
 		boolean escape = false; //Un predateur cible sa proie, qui doit fuir. escape est prioritaire a chase.
-		int[][] walk = new int[World.X][World.Y];
 		
 		//Deux tableaux de boolean indiquant si un agent est a une position, sinon c'est vide ( donc false )
 		boolean[][] posPrey = new boolean[World.X][World.Y];
@@ -268,115 +254,26 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 						}
 					}
 				}
-			} else if (this instanceof Zombie) {
-				if (!targeted) {
-					for (Agent a: agents) {
-						if (a instanceof Human) {
-							target = a;
-							targeted = true;
-							break;
-						}
-					}
-				}
-				if (target!= null) {
-					walk[target.getX()][target.getY()] = 4;
-					chase = true;
-				}
 			}
 		}
 		
 		if (!chase && !escape) {
-			move(terrain,environnement); //Deplacement aleatoire
+			if (this instanceof Zombie) {
+				for (int i = 0 ; i < ((Zombie)this).getZombieIte() ; i++) {
+					this.move(terrain,environnement);
+				}
+			} else {
+				move(terrain,environnement); //Deplacement aleatoire
+			}
 			currChasing = 0;
 		} else if (!escape && chase){
-			if (this instanceof Zombie) {
-				//Reinitialise les priorites
-				N = false;
-				S = false;
-				E = false;
-				W = false;
-				
-				//Recherche les cases ou l'agent peut avancer
-				for (int i = 0 ; i < World.X ; i++) {
-					for (int j = 0 ; j < World.Y ; j++) {
-						if (walk[i][j]!=4 && terrain[i][j] > 0 && (environnement[i][j] instanceof Flower || environnement[i][j]==null)) {
-							walk[i][j] = 1;
-						}
-					}
-				}
-				try {
-					Thread.sleep(200);
-				} catch ( Exception e) {};
-				
-				//Tableau representant le resultat de la recherche de proie
-				if (nbPas >= 10) nbPas = 0;
-				if (nbPas == 0) {
-					path = chasingPreyS(x, y, walk);
-					nbPas++;
-				} else {
-					nbPas++;
-				}
-				
-				//Boucle pour afficher les cibles dans la console
-				for (int i = 0 ; i < World.X && path!=null; i++) {
-					for (int j = 0 ; j < World.Y ; j++) {
-						System.out.print(path[j][i] + " ");
-					}System.out.println();
-				}
-				
-				if (path!=null) { //Si path vaut null, alors il n'y aucun humain trouve
-					if (x+1<World.X && E &&(path[x+1][y]==2 || path[x+1][y]==5) ) {
-						path[x+1][y]=1;
-						x++;
-					}
-					else if (x-1>=0 && W && (path[x-1][y]==2 || path[x-1][y]==5) ) {
-						 path[x-1][y]=1;
-						x--;
-					}
-					else if (y+1<World.Y && S &&( path[x][y+1]==2 || path[x][y+1]==5) ) {
-						path[x][y+1]=1;
-						y++;
-					}
-					else if (y-1>=0 && N && (path[x][y-1]==2 || path[x][y-1]==5) ) {
-						path[x][y-1]=1;
-						y--;
-					}
-					else { //Si les priorites ne peuvent pas etre realisees, l'agent prend un chemin malgre tout
-						if (x+1<World.X &&(path[x+1][y]==2 || path[x+1][y]==5) ) {
-							path[x+1][y]=1;
-							x++;
-						}
-						else if (x-1>=0 && (path[x-1][y]==2 || path[x-1][y]==5) ) {
-							path[x-1][y]=1;
-							x--;
-						}
-						else if (y+1<World.Y &&( path[x][y+1]==2 || path[x][y+1]==5) ) {
-							path[x][y+1]=1;
-							y++;
-						}
-						else if (y-1>=0 && (path[x][y-1]==2 || path[x][y-1]==5) ) {
-							path[x][y-1]=1;
-							y--;
-						}
-					}
-					if (!target.getAlive()) { //La cible est morte, le zombie change de cible
-						target = null;
-						targeted = false;
-					}
-					//Pb de sprite pour le zombie + pb de recherche encore
-					spriteX = x*World.spriteLength;
-					spriteY = y*World.spriteLength;
-				} else {
-					move(terrain,environnement); //La cible n'est pas atteignable, le zombie se deplace aleatoirement
-				}
-			} else chasingPrey(terrain, environnement, posPrey); //Chasse
+			chasingPrey(terrain, environnement, posPrey); //Chasse
 		} else {
 			escapingPredator(terrain, environnement, posPred); //Fuite
 		}
 	}
 	
 	private void move(int[][] terrain, Item[][] environnement, boolean[][] position, int i, int j) {
-		boolean moved = false;
 		if (x-i==0) {
 			if (y<j && y+1<World.Y && (terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
 				y++;
@@ -499,116 +396,6 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 		}
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
-	}
-	
-	//Recherche de proie intelligent
-	private int[][] chasingPreyS(int i, int j, int[][] walk) {
-		boolean N = false; //Choix prioritaire de chemin
-		boolean S = false;
-		boolean W = false;
-		boolean E = false;
-		
-		int px = 0, py = 0; //Position de la proie
-		
-		boolean notWalkable = false;
-		for (int n = 0 ; n < World.X; n++) {
-			for (int m = 0 ; m < World.Y; m++) {
-				if (walk[n][m]==4) {
-					px = n;
-					py = m;
-					notWalkable = true;
-				}
-				if (walk[n][m]==1) notWalkable = true;
-			}
-		}
-		
-		//Choix prioritaire en fonction de la position de la proie et du predateur
-		if (px<i) W = true;
-		else if (px>i) E = true;
-		if (py<j) N = true;
-		else if (py>j) S = true;
-		
-		if (!notWalkable) { //S'il n'y a aucun terrain de type sable ou herbe dans le monde, l'agent ne peut pas bouger
-			return null;
-		}
-		
-		//Proie trouvee
-		if (i+1<World.X && walk[i+1][j]==4) {
-			this.S = S;
-			walk[i+1][j] = 5; //5 est le resultat de la recherche, donc proie trouvee
-			return walk;
-		}
-		if (i-1>=0 && walk[i-1][j]==4) {
-			this.W=W;
-			walk[i-1][j] = 5; //5 est le resultat de la recherche, donc proie trouvee
-			return walk;
-		}
-		if (j+1<World.Y && walk[i][j+1]==4) {
-			this.S=S;
-			walk[i][j+1] = 5; //5 est le resultat de la recherche, donc proie trouvee
-			return walk;
-		}
-		if (j-1>=0 && walk[i][j-1]==4) {
-			this.N=N;
-			walk[i][j-1] = 5; //5 est le resultat de la recherche, donc proie trouvee
-			return walk;
-		}
-		
-		//Recherche de chemin
-		if (i+1<World.X && walk[i+1][j]==1 && E) {
-			walk[i+1][j] = 2; //2 En cours de recherche
-			return chasingPreyS(i+1, j, walk);
-		}
-		if (i-1>=0 && walk[i-1][j]==1 && W) {
-			walk[i-1][j] = 2; //2 En cours de recherche
-			return chasingPreyS(i-1, j, walk);
-		}
-		if (j+1<World.Y && walk[i][j+1]==1 && S) {
-			walk[i][j+1] = 2; //2 En cours de recherche
-			return chasingPreyS(i, j+1, walk);
-		}
-		if (j-1>=0 && walk[i][j-1]==1 && N) {
-			walk[i][j-1] = 2; //2 En cours de recherche
-			return chasingPreyS(i, j-1, walk);
-		}
-		
-		//2eme recherche dans le cas ou ca bloque
-		if (i+1<World.X && walk[i+1][j]==1) {
-			walk[i+1][j] = 2; //2 En cours de recherche
-			return chasingPreyS(i+1, j, walk);
-		}
-		if (i-1>=0 && walk[i-1][j]==1) {
-			walk[i-1][j] = 2; //2 En cours de recherche
-			return chasingPreyS(i-1, j, walk);
-		}
-		if (j+1<World.Y && walk[i][j+1]==1) {
-			walk[i][j+1] = 2; //2 En cours de recherche
-			return chasingPreyS(i, j+1, walk);
-		}
-		if (j-1>=0 && walk[i][j-1]==1) {
-			walk[i][j-1] = 2; //2 En cours de recherche
-			return chasingPreyS(i, j-1, walk);
-		}
-		
-		//Blocage
-		if (i+1<World.X && walk[i+1][j]==2) {
-			walk[i][j] = 3; //3 Chemin bloque
-			return chasingPreyS(i+1, j, walk);
-		}
-		if (i-1>=0 && walk[i-1][j]==2) {
-			walk[i][j] = 3; //3 Chemin bloque
-			return chasingPreyS(i-1, j, walk);
-		}
-		if (j+1<World.Y && walk[i][j+1]==2) {
-			walk[i][j] = 3; //3 Chemin bloque
-			return chasingPreyS(i, j+1, walk);
-		}
-		if (j-1>=0 && walk[i][j-1]==2) {
-			walk[i][j] = 3; //3 Chemin bloque
-			return chasingPreyS(i, j-1, walk);
-		}
-		
-		return null;
 	}
 	
 	//Fluidite des deplacements
