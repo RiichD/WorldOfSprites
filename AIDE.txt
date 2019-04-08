@@ -1,10 +1,10 @@
-Guide d’installation
+Guide d’installation :
 - Décompresser le Programme-DIEP_EL GHAZZI.zip à l’emplacement souhaité
 - Acceder au programme décompressé qui s’appelle WorldOfSprites. Vous verrez
 plusieurs dossiers, notamment le dossier src.
 - Deux façons d’exécuter le programme se présente : Avec le terminal ou avec Eclipse
 
-Voici les étapes pour exécuter le programme avec la méthode dans un terminal: 
+Voici les étapes pour exécuter le programme avec la méthode dans un terminal : 
 - Ouvrir le terminal
 - Parcourir jusqu'au dossier src dans WorldOfSprites dans le terminal ( avec la commande cd, par exemple cd Documents/2I013/WorldOfSprites/src )
 - Compiler le programme avec la commande suivante : javac *.java
