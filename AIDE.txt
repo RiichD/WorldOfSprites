@@ -1,37 +1,37 @@
-Guide d’installation :
-- Décompresser le Programme-DIEP_EL GHAZZI.zip à l’emplacement souhaité
-- Acceder au programme décompressé qui s’appelle WorldOfSprites. Vous verrez
+Guide dâ€™installation :
+- DÃ©compresser le Programme-DIEP_EL GHAZZI.zip (ou Programme-DIEP_EL-GHAZZI.zip) Ã  lâ€™emplacement souhaitÃ©
+- Acceder au programme dÃ©compressÃ© qui sâ€™appelle WorldOfSprites. Vous verrez
 plusieurs dossiers, notamment le dossier src.
-- Deux façons d’exécuter le programme se présente : Avec le terminal ou avec Eclipse
+- Deux faÃ§ons dâ€™exÃ©cuter le programme se prÃ©sente : Avec le terminal ou avec Eclipse
 
-Voici les étapes pour exécuter le programme avec la méthode dans un terminal : 
+Voici les Ã©tapes pour exÃ©cuter le programme avec la mÃ©thode dans un terminal : 
 - Ouvrir le terminal
 - Parcourir jusqu'au dossier src dans WorldOfSprites dans le terminal ( avec la commande cd, par exemple cd Documents/2I013/WorldOfSprites/src )
 - Compiler le programme avec la commande suivante : javac *.java
-- Exécuter le programme avec la commande suivante : java World
-- Le programme s'exécute
+- ExÃ©cuter le programme avec la commande suivante : java World
+- Le programme s'exÃ©cute
 
 Attention : 
-Si le répertoire pictures ne se trouve pas dans src, il est impossible d'exécuter le programme avec java World
-Il faut ainsi déplacer le dossier pictures dans src avant d'exécuter le programme
+Si le rÃ©pertoire pictures ne se trouve pas dans src, il est impossible d'exÃ©cuter le programme avec java World
+Il faut ainsi dÃ©placer le dossier pictures dans src avant d'exÃ©cuter le programme
 
-Méthode avec Eclipse :
+MÃ©thode avec Eclipse :
 - Ouvrir Eclipse IDE
-- Parcourir dans File ( en haut à gauche ), puis Open Projects from File System…
-- A la ligne Import source, selectionner Directory…
-- Parcourir jusqu’au programme décompressé et sélectionner WorldOfSprites
+- Parcourir dans File ( en haut Ã  gauche ), puis Open Projects from File Systemâ€¦
+- A la ligne Import source, selectionner Directoryâ€¦
+- Parcourir jusquâ€™au programme dÃ©compressÃ© et sÃ©lectionner WorldOfSprites
 - Dans Project Explorer, parcourir dans WorldOfSprites, src, (default package)
 - Faire un clique droit sur World.java, puis Run As, Java Application
-- Le programme s'exécute
+- Le programme s'exÃ©cute
 
 Attention !!! :
-Si le programme exécuté est trop petit ou trop grand, il faut modifier les valeurs se trouvant dans World.java
+Si le programme exÃ©cutÃ© est trop petit ou trop grand, il faut modifier les valeurs se trouvant dans World.java
 Voici comment faire :
-- Accéder au dossier src
-- Ouvrir avec un éditeur de texte World.java
-- Modifier uniquement les valeurs aux lignes 16 et 20, qui représentent respectivement la taille du monde et la taille des images
-- Après modification, sauvegarder les changements, recompiler et exécuter à nouveau le programme
+- AccÃ©der au dossier src
+- Ouvrir avec un Ã©diteur de texte World.java
+- Modifier uniquement les valeurs aux lignes 16 et 20, qui reprÃ©sentent respectivement la taille du monde et la taille des images
+- AprÃ¨s modification, sauvegarder les changements, recompiler et exÃ©cuter Ã  nouveau le programme
 
 NB : 
-Le delai peut aussi être changé dans World.java
-Cela permet de voir le volcan rapidement et la génération de nouveaux terrains rapidement
+Le delai peut aussi Ãªtre changÃ© dans World.java
+Cela permet de voir le volcan rapidement et la gÃ©nÃ©ration de nouveaux terrains rapidement
