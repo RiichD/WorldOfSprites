@@ -10,15 +10,14 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
-public class Thunder extends NaturalDisaster{
+public class Thunder implements Item{
+	private double maxSpriteSize=1;
+	private double minSpriteSize=1;
+	
+	//A ne pas modifier
 	private Image thunderSprite;
 	private double spriteSize;
-	private double maxSpriteSize=1;
-	private double minSpriteSize=0.2;
-	
 	private boolean actif;
-	
-	private double pGrow=0.01;
 	
 	public Thunder() {
 		super();

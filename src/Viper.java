@@ -11,28 +11,30 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Viper extends Agent{
-	private Image viperSprite;
-	private Image fireSprite;
 	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
-	private int drowning;
-	private int drowningTime = 70;//Se noie s'il reste drowningtime dans l'eau
+	private int drowningTime = 70; //Se noie s'il reste drowningtime dans l'eau
 	
-	private int fire;
-	private int fireTime = 16;
+	private int fireTime = 16; //Duree de l'agent en feu
 	
-	private int age;
 	private int deathAge = 470; //age maximum
 	
-	private int health;
-	private int maxHealth = 500;
-	private int minHealth = 300;
+	private int maxHealth = 500; //Sante maximale
+	private int minHealth = 300; //Sante minimale
 	private double ploseHealth = 0.4; //probabilite de perdre de la vie
 	
+	private int minStime = 80; //Duree minimale avant de pouvoir avoir un enfant
+	private int maxStime = 105; //Duree maximale avant de pouvoir avoir un enfant
+	
+	//A ne pas modifier
+	private Image viperSprite;
+	private Image fireSprite;
+	private int drowning; //Duree courant de l'agent en train de se noyer
+	private int fire; //Duree courant de l'agent en feu
+	private int age; //Age de l'agent
+	private int health; //Sante de l'agent
 	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
 	private int stime; //possibilite d'avoir un enfant a partir de stime=0
-	private int minStime = 80;
-	private int maxStime = 105;
 	
 	public Viper() {
 		super();
@@ -63,7 +65,7 @@ public class Viper extends Agent{
 		age=1;
 		drowning=0;
 		fire=0;
-		health=(int)(Math.random()*(maxHealth+1)+minHealth);
+		health=(int)(Math.random()*(maxHealth-minHealth+1)+minHealth);
 		stimeIni=(int)(Math.random()*(maxStime-minStime+1)+minStime);
 		stime=stimeIni;
 	}
@@ -130,16 +132,16 @@ public class Viper extends Agent{
 	}
 	
 	public void update() {
-		if (health <= 0) setAlive(false);
-		if (age>=deathAge) setAlive(false);
-		if (fire>=fireTime) setOnFire(false);
+		if (health <= 0) setAlive(false); //Si la sante est inferieure ou egale a 0, l'agent meurt
+		if (age>=deathAge) setAlive(false); //Si l'age est superieur ou egal a l'age maximal, l'agent meurt
+		if (fire>=fireTime) setOnFire(false); //Si la duree courant du feu est egale a la duree de fireTime, l'agent n'est plus en feu
 		if (getAlive()) {
-			if (Math.random()<ploseHealth) health--;
-			addAge();
-			removeStime();
+			if (Math.random()<ploseHealth) health--; //Chance de perdre de la sante
+			addAge(); //L'agent vieillit toutes les iterations
+			removeStime(); //Il faut que stime vaille 0 pour pouvoir avoir un enfant
 			if (getOnFire()) {
 				fire++;
-				health-=World.fireDamage;
+				health-=World.fireDamage; //Retirer fireDamage sante a l'agent pour etre en feu
 			}
 		}
 	}

@@ -11,16 +11,20 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Tree implements Item{
-	private Image treeSprite;
-	private double spriteSize;
-	private double maxSpriteSize=2; //Taille maximale du sprite
+	private double maxSpriteSize=1; //Taille maximale du sprite
 	private double minSpriteSize=0.2; //Taille minimale du sprite
-	private boolean fire; //Si l'arbre est en feu
-	private boolean alive; //Si l'arbre est en vie
 	
-	private int age; //L'age de l'arbre
-	private int deathAge=1500; //L'age de deces
+	private int deathAge=1500; //Age maximal de l'objet
+	
 	private double pGrow=0.01; //Chance de gagner en taille
+	
+	private int agingSpeed = 20; //Lorsque l'arbre est brule, il vieillit plus vite
+	//A ne pas modifier
+	private Image treeSprite; //Image du sprite
+	private double spriteSize; //Taille du sprite
+	private boolean fire; //Si l'objet est en feu
+	private boolean alive; //Si l'objet est en vie
+	private int age; //L'age de l'objet
 	
 	public Tree() {
 		age=1;
@@ -28,7 +32,10 @@ public class Tree implements Item{
 		spriteSize=Math.random()*(maxSpriteSize-minSpriteSize)+minSpriteSize;
 		fire=false;
 		try {
-			treeSprite = ImageIO.read(new File("pictures/tree.png"));
+			if (Math.random()<0.5)
+				treeSprite = ImageIO.read(new File("pictures/tree1.png"));
+			else
+				treeSprite = ImageIO.read(new File("pictures/tree2.png"));
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -64,6 +71,7 @@ public class Tree implements Item{
 	}
 	
 	public void setBurned() {
+		//Changement d'image si l'arbre est brule
 		try {
 			treeSprite = ImageIO.read(new File("pictures/burnedtree.png"));
 		} catch ( Exception e ) {
@@ -75,9 +83,10 @@ public class Tree implements Item{
 	
 	public void update(){
 		if (!fire && Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>=deathAge) alive=false;
+		if (age>=deathAge) alive=false; //L'objet a une duree de vie, il meurt quand l'age maximal est atteint
 		if (alive) {
-			age++;
+			if (fire) age+=agingSpeed; //Vieillit plus vite
+			else age++; //L'objet vieillit toutes les iterations
 		}
 	}
 }

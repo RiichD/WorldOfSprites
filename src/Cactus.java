@@ -11,17 +11,19 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Cactus implements Item{
+	private double maxSpriteSize=1; //Taille maximale du sprite
+	private double minSpriteSize=0.2; //Taille minimale du sprite
+
+	private int deathAge=1750; //Age maximal de l'objet
+	
+	private double pGrow=0.01; //Chance d'obtenir un objet qui grandit
+	
+	//A ne pas modifier
 	private Image cactusSprite;
 	private double spriteSize;
-	private double maxSpriteSize=1;
-	private double minSpriteSize=0.2;
+	private boolean alive; //Si l'objet est en vie
+	private int age; //L'age de l'objet
 	
-	private boolean alive;
-	
-	private int age;
-	private int deathAge=1750;
-	private double pGrow=0.01;
-
 	public Cactus() {
 		age=1;
 		alive=true;
@@ -55,10 +57,10 @@ public class Cactus implements Item{
 	}
 	
 	public void update(){
-		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>=deathAge) alive=false;
+		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1; //Chance de grandir en taille
+		if (age>=deathAge) alive=false; //L'objet a une duree de vie, il meurt quand l'age maximal est atteint
 		if (alive) {
-			age++;
+			age++; //L'age augmente avec le nombre d'iteration
 		}
 	}
 }

@@ -13,11 +13,13 @@ import java.util.ArrayList;
 @SuppressWarnings({ "serial", "unused" })
 public class World extends JPanel{
 	
-	public static final int X = 64, Y = 64; //taille de world
+	public static final int X = 64, Y = 64; //Taille du monde
 	
 	private JFrame frame;
 	
-	public static final int spriteLength = 20; //taille de chaque sprite
+	public static final int spriteLength = 20; //Taille de chaque sprite
+	
+	private int ite = 0; //Nombre d'iteration
 	
 	//Sprites
 	private Image waterSprite;
@@ -29,13 +31,15 @@ public class World extends JPanel{
 	private Image obsidianSprite;
 	private Image dirtSprite;
 	
-	/* terrain :
+	/* valeurs attribuees au terrain :
 	 * 0 : water
 	 * 1 : grass
 	 * 2 : sand
 	 * 3 : volcano
 	 * 4 : obsidian
 	 * 5 : dirt
+	 * 
+	 * NB : les valeurs strictement positives sont des cases ou les agents peuvent se deplacer
 	 */
 	
 	public static final int water = 0;
@@ -45,40 +49,44 @@ public class World extends JPanel{
 	public static final int volcano = -1;
 	public static final int obsidian = -2;
 	
-	private int[][] terrain; //Le terrain uniquement : terre, mer, volcan
+	private int[][] terrain; //Le terrain uniquement : herbe, sable, terre, eau, volcan, etc...
 	private ArrayList<Agent> agents; //Les agents
-	private Item[][] environnement; //Environnement contient les arbres, le feu etc..
-	private int[][] altitude; //Altitude du monde
+	private Item[][] environnement; //Environnement contient les arbres, les fleurs etc...
+	private Item[][] evenement; //Foudre, etc...
+	private int[][] altitude; //Altitude du monde, n'ayant aucune utilite encore
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
 	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
-	public static final int delai3 = 0; //Delai du main ( iteration )
+	public static final int mainDelai = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
 	private int newCycleLSDelai = 5; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
 	private int perlinSize = 10; //Taille du bruit de perlin
-	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1, plus c'est proche de 1, plus il ya de terre
+	private double perlinFloor = Math.random()*(1-0.5)+0.5; //Entre 0 et 1
 	
 	private boolean forceAdd = true; //Programme plus lent au demarrage si la valeur est true. Force l'ajout du nombre exact d'agents et d'items.
 	
-	private int nbHumanDepart = 75; //A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	//A chaque debut de cycle du monde, on ajoute un nombre d'agent au depart
+	private int nbHumanDepart = 75; //Il y a nbHumanDepart d'humain au depart
 	private int nbChickenDepart = 75;
 	private int nbFoxDepart = 75;
 	private int nbViperDepart = 75;
+	private int nbZombieDepart = 0;
 	
 	private int nbFlowerDepart = 60; //Nombre de fleurs au depart
 	private int nbTreeDepart = 700;
 	private int nbCactusDepart = 25;
 	private int nbAgentsMaxPos = 2; //Variable uniquement pour les naissances d'enfants : nombre d'agents maximum a une meme position. 2 au minimum pour avoir un enfant.
 	
+	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
+	
 	//La sante que recupere chaque agent lorsqu'ils se soignent
-	private int addHumanHealth = 50; 
+	private int addHumanHealth = 50; //L'humain se soigne addHumanHealth apres avoir mange la fleur respective
 	private int addChickenHealth = 45;
 	private int addFoxHealth = 56;
-	private int addViperHealth = 105;
 	
 	//Attributs pour la reapparition de terrain, suite au volcan
 	private int volcanoSpawn = 0; //Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
@@ -87,7 +95,7 @@ public class World extends JPanel{
 	
 	private int lavaDissipate = 5; //Nombre de laves maximum qui disparaissent chaque iteration
 	private int dirtRejuvenate = 5; //Nombre de terres maximum qui apparaissent chaque iteration
-	private int grassRejuvenate = 5; //Nombre d'herbes maximum qui apparaissent chaque iteration
+	private int grassRejuvenate = 20; //Nombre d'herbes maximum qui apparaissent chaque iteration
 	
 	private int addSandFill = 1500; //Probabilite tres faible de base. Prevoir une grande valeur
 	
@@ -96,27 +104,27 @@ public class World extends JPanel{
 	//Probabilite d'apparition des agents
 	private double pEnfant = 1; //probabilite de la naissance d'un enfant lorsque 2 sexes differents sont a la meme case
 	
+	private double pZombie = 0.01; //Probabilite d'apparition d'un zombie
+	
 	//Probabilite d'apparation des items
-	private double pFlower = 0.25;
-	private double pTulipe = 0.05;
-	private double pMarguerite = 0.05;
-	private double pRose = 0.05;
+	private double pFlower = 0.25; //Probabilite qu'une fleur apparaisse
+	private double pTulipe = 0.05; //Si une fleur apparait, il y a une probabilite que la tulipe apparaisse
+	private double pDaisy = 0.05; //Si une fleur apparait, il y a une probabilite que la Marguerite apparaisse
+	private double pRose = 0.05; //Si une fleur apparait, il y a une probabilite que la Rose apparaisse
 	
-	private double pGrass = 0.1;
-	private double pSand = 0.5; //probabilite qu'une herbe devienne du sable
-	private double pWater = 0.3; //probabilite que du sable devienne de l'eau
+	private double pSand = 0.5; //Probabilite qu'une herbe devienne du sable, pSand doit avoir une probabilite strictement superieure a pWater
+	private double pWater = 0.3; //Probabilite que du sable devienne de l'eau
 	
-	private double pTree = 0.01;
-	private double pCactus = 0.1;
+	private double pTree = 0.01; //Probabilite d'apparition d'un arbre
+	private double pCactus = 0.1; //Probabilite d'apparition d'un cactus
 	
-	private double pFire = 0.01; //Probabilite qu'un feu apparaisse
-	private int fireStop = 15; //fireStop iterations pour que le feu s'eteigne
+	private double pThunder = 0.01; //Probabilite qu'un tonnerre apparaisse
 	
 	private double pLavaNoise = 0.15; //Bruit affectant la propagation de la lave.
 	
 	//Variables en rapport aux degats sur chaque agents
-	public static final int fireDamage = 10;
-	public static final int thunderDamage = 50;
+	public static final int fireDamage = 10; //Degats de feu
+	public static final int thunderDamage = 50; //Degats de coup de tonnerre
 	
 	//A ne pas modifier
 	private int currentRange = 0; // Variable permettant de creer un effet de propagation de la lave
@@ -127,20 +135,23 @@ public class World extends JPanel{
 	private int nbSand=0; //Compte le nombre de sable
 	private int nbGrass=0; //Compte le nombre d'herbe
 	private boolean perlinReady = false; //Verifie que la lave peut s'ecouler
-	private int[][] perlinTable;
+	private int[][] perlinTable; //Tableau de Perlin servant a l'ecoulement de lave
 	
 	public World(int x, int y){
 		
+		//Initialisation
 		terrain = new int[x][y];
 		agents = new ArrayList<Agent>();
 		environnement = new Item[x][y];
+		evenement = new Item[x][y];
 		altitude = new int[x][y];
 		fire = new int[x][y];
 		perlinTable = new int[x][y];
 		int i, j;
 		
+		//Chargement des images
 		try {
-			waterSprite = ImageIO.read(new File("pictures/water.png"));
+			waterSprite = ImageIO.read(new File("pictures/water1.png"));
 			grassSprite = ImageIO.read(new File("pictures/grass.png"));
 			sandSprite = ImageIO.read(new File("pictures/sand.png"));
 			fireSprite = ImageIO.read(new File("pictures/fire.png"));
@@ -161,12 +172,13 @@ public class World extends JPanel{
 			}
 		}
 		
+		//Boucle permettant d'ajouter du sable a l'extremite des zones terrestres
 		for (i=0; i<X; i++) {
 			for (j=0; j<Y; j++) {
 				if (terrain[i][j] == grass) {
 					boolean foundWater = false;
 					boolean foundGrass = false;
-					for (int n = -1; n <= 1 ; n++)
+					for (int n = -1; n <= 1 ; n++) //Voisinage de Moore
 						for (int m = -1; m <= 1 ; m++) {
 							if (i+n>=0 && i+n<X && j+m>=0 && j+m<Y) {
 								if (terrain[i+n][j+m] == water) foundWater = true;
@@ -182,10 +194,11 @@ public class World extends JPanel{
 			}
 		}
 		
+		//Initialisation des agents et des items
 		addInitiate();
 		
 		//Creation du frame et affichage de la fenetre
-		frame = new JFrame("World Of Sprite");
+		frame = new JFrame("World Of Sprites");
 		frame.add(this);
 		frame.setSize((spriteLength+1)*(X),(spriteLength+1)*(Y));
 		frame.setVisible(true);
@@ -204,18 +217,18 @@ public class World extends JPanel{
 		//Il est possible d'utiliser addAgent mais il n'y aura pas forcement le nombre d'agent souhaite
 		for (int n=0;n<nbHumanDepart;n++) {
 			if (forceAdd && nbHumanDepart<= nbGrass + nbSand)
-				forceAddAgent(new Human());
+				forceAddAgent(new Human()); //Ajoute le nombre exact d'agent
 			else 
-				addAgent(new Human());
+				addAgent(new Human()); //Ajoute au maximum le nombre d'agent
 		}
-		
+
 		for (int n=0;n<nbChickenDepart;n++) {
 			if (forceAdd && nbChickenDepart<= nbGrass + nbSand)
 				forceAddAgent(new Chicken());
 			else
 				addAgent(new Chicken());
 		}
-		
+
 		for (int n=0;n<nbFoxDepart;n++) {
 			if (forceAdd && nbFoxDepart<= nbGrass + nbSand)
 				forceAddAgent(new Fox());
@@ -228,6 +241,13 @@ public class World extends JPanel{
 				forceAddAgent(new Viper());
 			else
 				addAgent(new Viper());
+		}
+		
+		for (int n=0;n<nbZombieDepart;n++) {
+			if (forceAdd && nbZombieDepart<= nbGrass + nbSand)
+				forceAddAgent(new Zombie());
+			else
+				addAgent(new Zombie());
 		}
 		
 		//Environnement de depart
@@ -243,9 +263,9 @@ public class World extends JPanel{
 		}
 		
 		for (int n=0;n<nbTreeDepart;n++) {
-			if (forceAdd && nbTreeDepart<= nbGrass)
+			if (forceAdd && nbTreeDepart<= nbGrass) {
 				forceAddItem(new Tree());
-			else 
+			} else 
 				addItem(new Tree());
 		}
 		
@@ -255,29 +275,17 @@ public class World extends JPanel{
 			else 
 				addItem(new Cactus());
 		}
+		
 		//Reinitialise les variables
 		nbGrass = 0;
 		nbSand = 0;
 	}
 	
-	//Get
-	public int[][] getTerrain() {
-		return terrain;
-	}
-	
-	public int[][] getAltitude(){
-		return altitude;
-	}
-	
-	public Item[][] getEnvironnement(){
-		return environnement;
-	}
-	
 	//add
 	public void addItem(Item i, int x, int y) {
-		if (environnement[x][y]== null) {
+		if (environnement[x][y]== null && !(i instanceof Thunder)) { //Thunder doit se trouver dans evenement et non dans environnement
 			environnement[x][y] = null; //Programme plus rapide si on met null avant d'ajouter l'Item i
-			if ( ! (terrain[x][y]==water )) {
+			if ( ! (terrain[x][y]==water )) { //Si la case n'est pas de l'eau, on ajoute l'objet correspondant
 				if (terrain[x][y]==sand) {
 					if (i instanceof Cactus) {
 						environnement[x][y] = i;
@@ -286,33 +294,31 @@ public class World extends JPanel{
 					if (i instanceof Tree || i instanceof Flower)
 						environnement[x][y] = i;
 				}
-			} else {
-				if (i instanceof Tsunami) {
-					environnement[x][y] = i;
-				}
 			}
 		}
 	}
 	
 	public void addItem(Item i) {
-		addItem(i, (int)(Math.random()*X), (int)(Math.random()*Y));
+		addItem(i, (int)(Math.random()*X), (int)(Math.random()*Y)); //Ajoute un objet dans une position aleatoire
 	}
 	
-	public void forceAddItem(Item i) {
-		boolean ajout = false;
+	public void forceAddItem(Item i) { //Force l'ajout de l'objet i
+		boolean ajout = false; //Permet de savoir si l'ajout a ete fait
 		while (!ajout) {
+			//Selection des positions aleatoires
 			int x = (int)(Math.random()*X);
 			int y = (int)(Math.random()*Y);
 			if (environnement[x][y] == null ) {
 				if (terrain[x][y] != water) {
 					if (terrain[x][y] == sand) {
 						if (i instanceof Cactus) {
-							if (nbSand < nbCactusDepart) ajout = true; //S'il y a plus de cactus que de sable, on n'ajoute rien sinon il y a une boucle infinie
+							if (nbSand < nbCactusDepart) ajout = true; //S'il y a plus de cactus que de sable, on n'ajoute rien car il y a une boucle infinie
 							ajout = true;
 							environnement[x][y] = i;
 						}
 					} else if (terrain[x][y]==grass) {
 						if (i instanceof Tree || i instanceof Flower) {
+							if (nbGrass < nbTreeDepart || nbGrass < nbFlowerDepart) ajout = true;
 							ajout = true;
 							environnement[x][y] = i;
 						}
@@ -323,17 +329,17 @@ public class World extends JPanel{
 	}
 	
 	public void addAgent(Agent a) {
-		if (!(terrain[a.getX()][a.getY()]==water))
-			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper)
+		if (!(terrain[a.getX()][a.getY()]==water)) //Ajout l'agent a si la case n'est pas de l'eau
+			if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper || a instanceof Zombie)
 				agents.add(a);
 		else
 			System.out.println("Ajout d'agent impossible");
 	}
 	
 	public void forceAddAgent(Agent a) {
-		if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper) {
-			int tailleInit = agents.size()+1;
-			while(agents.size() != tailleInit) {
+		if (a instanceof Human || a instanceof Chicken || a instanceof Fox || a instanceof Viper || a instanceof Zombie) {
+			int tailleInit = agents.size()+1; //Si l'ajout a ete un succes, la taille de la liste doit etre egale a la taille de la liste + 1
+			while(agents.size() != tailleInit) { //Donc tant que la taille est differente, on cherche une position ou l'agent peut se trouver
 				if (a instanceof Human) {
 					Agent a2 = new Human();
 					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
@@ -346,12 +352,15 @@ public class World extends JPanel{
 				} else if (a instanceof Viper) {
 					Agent a2 = new Viper();
 					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
+				} else if (a instanceof Zombie) {
+					Agent a2 = new Zombie();
+					if (terrain[a2.getX()][a2.getY()]!=water) agents.add(a2);
 				}
 			}
 		} else System.out.println("Ajout forcee d'agent impossible");
 	}
 	
-	//Perlin noise. Source : http://sdz.tdct.org/sdz/bruit-de-perlin.html
+	//Bruit de Perlin pris sur internet. Source : http://sdz.tdct.org/sdz/bruit-de-perlin.html
 	private double Get2DPerlinNoiseValue(float x, float y, float res)
 	{
 	    double tempX,tempY;
@@ -375,11 +384,11 @@ public class World extends JPanel{
 	        127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,
 	        156,180};
 	    
-	    //Adapter pour la r�solution
+	    //Adapter pour la resolution
 	    x /= res;
 	    y /= res;
 
-	    //On r�cup�re les positions de la grille associ�e � (x,y)
+	    //On recupere les positions de la grille associee a (x,y)
 	    x0 = (int)(x);
 	    y0 = (int)(y);
 
@@ -387,13 +396,13 @@ public class World extends JPanel{
 	    ii = x0 & 255;
 	    jj = y0 & 255;
 
-	    //Pour r�cup�rer les vecteurs
+	    //Pour recuperer les vecteurs
 	    gi0 = perm[ii + perm[jj]] % 8;
 	    gi1 = perm[ii + 1 + perm[jj]] % 8;
 	    gi2 = perm[ii + perm[jj + 1]] % 8;
 	    gi3 = perm[ii + 1 + perm[jj + 1]] % 8;
 
-	    //on r�cup�re les vecteurs et on pond�re
+	    //on recupere les vecteurs et on pondere
 	    tempX = x-x0;
 	    tempY = y-y0;
 	    s = gradient2[gi0][0]*tempX + gradient2[gi0][1]*tempY;
@@ -431,11 +440,11 @@ public class World extends JPanel{
 		agents=copie;
 	}
 	
-	public void removeItem(Item i, int x, int y) { //Pour environnement
+	public void removeItem(Item i, int x, int y) { //Methode pour l'environnement uniquement
 		environnement[x][y] = null;
 	}
 	
-	private void newPerlinTable() { //Creer une table de Perlin, entre 0 et 1
+	private void newPerlinTable() { //Creer un tableau de Perlin, entre 0 et 1
 		double perlinRandom = Math.random()*(1-0.5)+0.5;
 		for (int i = 0 ; i < X ; i++) {
 			for (int j = 0 ; j < Y ;j++) {
@@ -444,7 +453,7 @@ public class World extends JPanel{
 		}
 	}
 	
-	private void removePerlinTable() { //Met le tableau de Perlin avec les valeurs par defaut
+	private void removePerlinTable() { //Met le tableau de Perlin avec les valeurs par defaut, soit 0
 		for (int i = 0 ; i < X ; i++)
 			for (int j = 0 ; j < Y ; j++)
 				perlinTable[i][j] = 0;
@@ -454,32 +463,49 @@ public class World extends JPanel{
 	private void newLifeCycle() {
 		//S'il n'y a plus d'eau, un flac d'eau apparait
 		if (nbWater==0 && !newCycle) {
+			
+			//Selection d'une position aleatoirement
 			int x=(int)(Math.random()*X);
 			int y=(int)(Math.random()*Y);
-			terrain[x][y] = water;
-			if (Math.random()<0.75) {
-				if (Math.random()<0.5) {
-					if (Math.random()<0.25) {
-						if (x+1 < X && terrain[x+1][y]==grass)
-							terrain[x+1][y] = sand;
+			
+			terrain[x][y] = water; //Ajoute a la position de l'eau
+			double rand = Math.random();
+			boolean added = false;
+			//Ajoute du sable autour du flac d'eau
+			do {
+				if (rand<0.75) {
+					if (rand<0.5) {
+						if (rand<0.25) {
+							if (x+1 < X && terrain[x+1][y]==grass) {
+								terrain[x+1][y] = sand;
+								added = true;
+							}
+						} else {
+							if (x-1 >=0 && terrain[x-1][y]==grass) {
+								terrain[x-1][y] = sand;
+								added = true;
+							}
+						}
 					} else {
-						if (x-1 >=0 && terrain[x-1][y]==grass)
-							terrain[x-1][y] = sand;
+						if (y+1 < Y && terrain[x][y+1]==grass) {
+							terrain[x][y+1] = sand;
+							added = true;
+						}
 					}
 				} else {
-					if (y+1 < Y && terrain[x][y+1]==grass)
-						terrain[x][y+1] = sand;
+					if (y-1 >=0 && terrain[x][y-1]==grass) {
+						terrain[x][y-1] = sand;
+						added = true;
+					}
 				}
-			} else {
-				if (y-1 >=0 && terrain[x][y-1]==grass)
-					terrain[x][y-1] = sand;
-			}
+			} while (!added);
+			
 		} else if ( nbSand==0 && nbGrass<=volcanoSpawn && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre du terrain
-			newCycle = true;
+			newCycle = true; //Active le nouveau cycle
 			volcanoX = X/2;
 			volcanoY = Y/2;
 			terrain[volcanoX][volcanoY] = volcano;
-		} else if (nbSand == 0 || newCycle) {//Le nouveau cycle commence si le nombre de sable vaut 0
+		} else if (nbSand == 0 || newCycle) { //Le nouveau cycle commence si le nombre de sable vaut 0
 			if (agents.size()>0) {
 				ArrayList<Agent> copy = new ArrayList<Agent>(agents);
 				for (Agent a : copy) agents.remove(a);
@@ -488,21 +514,21 @@ public class World extends JPanel{
 			if (!newCycle) {
 				for (int i = 0 ; i < X ; i++)
 					for (int j = 0 ; j < Y ; j++) {
-						environnement[i][j] = null; //Retire tous les items du monde
+						environnement[i][j] = null; //Retire tous les items du monde car c'est un nouveau monde qui va commencer
 					}
 			}
 			while (!newCycle) {
 				int x = (int)(Math.random()*(X));
 				int y = (int)(Math.random()*(Y));
-				if (terrain[x][y]==grass) { //Enregistre les coordonnees du volcan pour la suite
+				if (terrain[x][y]==grass) { //Cherche une position ou il y a de l'herbe pour le remplacer par un volcan. Et on sauvegarde les coordonnees du volcan pour la suite du nouveau cycle
 					terrain[x][y] = volcano;
-					newCycle = true;
+					newCycle = true; //Active le nouveau cycle
 					volcanoX = x;
 					volcanoY = y;
 				}
 			}
 			
-			while (!perlinReady) { //On verifie que la lave peut bien s'ecouler, sinon on genere une autre table de Perlin
+			while (!perlinReady) { //On verifie que la lave peut bien s'ecouler, sinon on genere une autre tableau de Perlin
 				newPerlinTable();
 				if (volcanoX+1<X && perlinTable[volcanoX+1][volcanoY]!=0) perlinReady = true;
 				else if (volcanoX-1>=0 && perlinTable[volcanoX-1][volcanoY]!=0) perlinReady = true;
@@ -512,8 +538,9 @@ public class World extends JPanel{
 			
 			if (currentRange < volcanoRange) { //Tant que le rayon de propagation de la lave n'atteint pas volcanoRange, on continue dans cette condition
 				//On copie le tableau fire pour eviter d'ajouter de la lave en meme temps que de modifier le tableau, cela remplirait le tableau entierement de lave
-				int[][] copyFire = new int[X][Y]; 
-				//Boucle copiant le contenu de fire dans copyFire
+				int[][] copyFire = new int[X][Y];
+				
+				//Boucle copiant le contenu de fire dans copyFire pour permettre de faire un ecoulement de lave
 				for ( int i = 0 ; i < copyFire[0].length ; i++ )
 					for ( int j = 0 ; j < copyFire.length ; j++ )
 						copyFire[i][j] = fire[i][j];
@@ -524,8 +551,8 @@ public class World extends JPanel{
 						if (fire[i][j]!=-1 && terrain[i][j]!=volcano) { //Si ce n'est pas de la lave, on cherche a le remplacer par de la lave s'il y a de la lave autour. Recherche sous forme de + (Voisinage de Von Neumann)
 							//Remplacement de la lave par de l'obsdienne
 							if (i+1<X && perlinTable[i][j]==1 && (copyFire[i+1][j]==-1 || terrain[i+1][j]==volcano) ) { //S'il y a de la lave ou un volcan a la position indiquee, alors il y a de la lave a la position actuelle
-								fire[i][j] = -1;
-								terrain[i][j] = obsidian;
+								fire[i][j] = -1; //-1 represente du feu
+								terrain[i][j] = obsidian; //La lave et de l'eau en contact forment de l'obsidienne
 							}
 							if (i-1>=0 && perlinTable[i][j]==1 && (copyFire[i-1][j]==-1 || terrain[i-1][j]==volcano) ) {
 								fire[i][j] = -1;
@@ -539,10 +566,10 @@ public class World extends JPanel{
 								fire[i][j] = -1;
 								terrain[i][j] = obsidian;
 							}
-							if (Math.random()<pLavaNoise) {
+							if (Math.random()<pLavaNoise) { //Ajoute du bruit pour eviter un ecoulement trop "lineaire"
 								int x = (int)(Math.random()*(X));
 								int y = (int)(Math.random()*(Y));
-								boolean found = false;
+								boolean found = false; //On autorise seulement une modification pour chaque cote, et non des quatres cotes possibles
 								if (terrain[x][y]!=volcano) {
 									if (x+1<X && fire[x+1][y]==-1) {
 										fire[x][y] = -1;
@@ -560,7 +587,7 @@ public class World extends JPanel{
 										fire[x][y] = -1;
 										found = true;
 									}
-									if (found)terrain[x][y] = obsidian;
+									if (found) terrain[x][y] = obsidian;
 								}
 							}
 						}
@@ -569,27 +596,28 @@ public class World extends JPanel{
 				try {
 					Thread.sleep(lavaDelai);
 				} catch ( Exception e ) {};
-			} else { //Retrait de la lave
-				int cptLava = 0;
+			} else { //Retrait de la lave car l'ecoulement de lave est terminee
+				int cptLava = 0; //Compteur du nombre de laves presents
 				
 				//Verifie qu'il y a assez de lave pour eviter une boucle infinie dans la boucle while suivant
 				for ( int i = 0 ; i < fire[0].length && cptLava<lavaDissipate; i++ )
 					for ( int j = 0 ; j < fire.length && cptLava<lavaDissipate; j++ )
 						if (fire[i][j]==-1) cptLava++; //Compte le nombre de lava restant dans le monde
 				
-				boolean fireDone = false;
+				boolean fireDone = false; //des qu'un certains nombres de lave a ete retiree, fireDone devient vrai. (lavaDissipate est le nombre en question)
 				int nbTerr=0; //Le nombre de modification faites a chaque iteration
 				while (!fireDone && cptLava>0) {
 					int x = (int)(Math.random()*(X));
 					int y = (int)(Math.random()*(Y));
-						if (fire[x][y]==-1) { //Si c'est de la lave, elle s'eteint pour laisser place a l'obsidienne
+						if (fire[x][y]==-1) { //Si c'est de la lave, elle disparait et on pourra observer l'obsidienne formee
 							fire[x][y] = 0;
 							nbTerr++;
 							if (cptLava<lavaDissipate) fireDone = true; //Si cptLava ne peut plus depasser lavaDissipate, on sort de la boucle pour eviter une boucle infinie
 						}
 						if (nbTerr>=lavaDissipate) fireDone = true; //Le nombre de laves qui disparaissent a chaque iteration a ete atteint, on sort de la boucle
 				}
-				//Dernier etape du nouveau cycle
+				
+				//Derniere etape du nouveau cycle
 				if (!newCycleLastStep && cptLava==0) {
 					terrain[volcanoX][volcanoY] = obsidian; //Le volcan devient de l'obsidienne lorsqu'il n'y a plus de lave
 					volcanoX = 0;
@@ -598,9 +626,12 @@ public class World extends JPanel{
 				}
 				
 				if (newCycleLastStep && cptLava==0) {
+					
+					//Compteurs
 					int cptObsidian = 0;
 					int cptDirt = 0;
 					int cptGrass = 0;
+					
 					//Boucle permettant de compter le nombre de chaque type de sol restant sur terre
 					for ( int i = 0 ; i < terrain[0].length; i++ )
 						for ( int j = 0 ; j < terrain.length ; j++ ) {
@@ -609,8 +640,8 @@ public class World extends JPanel{
 							if (cptDirt == 0 && cptObsidian == 0  && terrain[i][j]==grass) cptGrass++;
 						}
 					
-					boolean fillTerr = false; //Remplissage du terrain
-					nbTerr = 0;
+					boolean fillTerr = false; //Remplissage du terrain atteint
+					nbTerr = 0; //Nombre de terrain rempli
 					while (!fillTerr && (cptObsidian>0 || cptDirt>0 || cptGrass>0) && currentSandFill<addSandFill) {
 						int x = (int)(Math.random()*(X));
 						int y = (int)(Math.random()*(Y));
@@ -630,10 +661,10 @@ public class World extends JPanel{
 								}
 								if (nbTerr>=grassRejuvenate) fillTerr = true;
 								
-								if (cptDirt==0) { //S'il n'y a plus de terre(dirt), on cherche a ajouter du sable aux bordures de la nouvelle zone terrestre
+								if (cptDirt==0) { //S'il n'y a plus de terre(dirt), on cherche a ajouter du sable aux bordures des zones terrestres
 									x = (int)(Math.random()*(X));
 									y = (int)(Math.random()*(Y));
-									if (terrain[x][y]==grass) {
+									if (terrain[x][y]==grass) { //Le sable se forme lorsqu'il y a de l'eau et de l'herbe autour d'une case. (Voisinage de Von Neumann)
 										if (x+1<X && (terrain[x+1][y]==sand || terrain[x+1][y]==water) ) {
 											terrain[x][y] = sand;
 										}
@@ -652,7 +683,7 @@ public class World extends JPanel{
 							}
 						}
 					
-					//Condition permettant de tout reinitialiser et de debuter ce nouveau cycle
+					//Lorsque tout est termine, on reinitialise tout et le nouveau cycle avec un nouveau terrain peut commencer
 					if (!fillTerr && cptObsidian<=0 && cptDirt<=0 && currentSandFill>=addSandFill) {
 						currentSandFill = 0;
 						currentRange = 0;
@@ -672,11 +703,13 @@ public class World extends JPanel{
 	
 	private void updateEnvironnement() {
 		int[][] cpFire = new int[X][Y];
+		
+		//Copie du tableau fire
 		for (int i = 0 ; i < X ; i++)
 			for (int j = 0 ; j < Y ; j++)
 				cpFire[i][j] = fire[i][j]; 
 		
-		//Mise a jour des donnees de l'environnement
+		//Mise a jour des donnees de l'environnement, des evenements et du feu
 		for (int i = 0 ; i < X ; i++ )
 			for (int j = 0 ; j < Y ; j++ ) {
 				if (environnement[i][j] instanceof Flower) {
@@ -684,24 +717,25 @@ public class World extends JPanel{
 					else if (fire[i][j]>0) ((Flower)environnement[i][j]).setFire(true); //S'il y a du feu et une fleur, la fleur est en feu
 					else environnement[i][j].update(); //Met a jour la fleur
 				} else if (environnement[i][j] instanceof Tree) {
+					//L'arbre disparait si le sol(terrain) n'est plus de l'herbe, ou qu'elle est morte, ou que l'arbre est deja brulee et en feu
 					if (terrain[i][j]!=grass || !environnement[i][j].getAlive() || ( fire[i][j]>=fireStop && ((Tree)environnement[i][j]).getFire())) environnement[i][j] = null;
 					else if (!((Tree)environnement[i][j]).getFire() && fire[i][j]>=fireStop) ((Tree)environnement[i][j]).setBurned(); //L'arbre est en feu, il change de forme
-					else if (fire[i][j]== 0 && !((Tree)environnement[i][j]).getFire()) {
-						if (i+1<X && cpFire[i+1][j]!=0) fire[i][j] = 1;
-						else if (i-1>=0 && cpFire[i-1][j]!=0) fire[i][j] = 1;
-						else if (j+1<Y && cpFire[i][j+1]!=0) fire[i][j] = 1;
-						else if (j-1>=0 && cpFire[i][j-1]!=0) fire[i][j] = 1;
+					else if (fire[i][j]== 0 && !((Tree)environnement[i][j]).getFire()) { //Feu de foret (Voisinage de Von Neumann)
+						if (i+1<X && cpFire[i+1][j]!=0 && environnement[i+1][j] instanceof Tree) fire[i][j] = 1; //Arbre en feu si un arbre en feu a droite de l'arbre est en feu
+						else if (i-1>=0 && cpFire[i-1][j]!=0 && environnement[i-1][j] instanceof Tree) fire[i][j] = 1;
+						else if (j+1<Y && cpFire[i][j+1]!=0 && environnement[i][j+1] instanceof Tree) fire[i][j] = 1;
+						else if (j-1>=0 && cpFire[i][j-1]!=0 && environnement[i][j-1] instanceof Tree) fire[i][j] = 1;
 					}
 					else environnement[i][j].update();
 				} else if (environnement[i][j] instanceof Cactus) {
+					//Si le terrain n'est plus du sable, ou que le cactus est morte, ou que le feu s'est eteint, le cactus disparait
 					if (terrain[i][j]!=sand || !environnement[i][j].getAlive() || fire[i][j]>=fireStop) environnement[i][j] = null;
 					else environnement[i][j].update();
-				} else if (environnement[i][j] instanceof Tsunami) {
-					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
-					else environnement[i][j].update();
-				} else if (environnement[i][j] instanceof Thunder) {
-					if (!environnement[i][j].getAlive()) environnement[i][j] = null;
-					else environnement[i][j].update();
+				}
+				
+				if (evenement[i][j] instanceof Thunder) {
+					if (!evenement[i][j].getAlive()) evenement[i][j] = null; //Attention, alive represente actif pour le coup de tonnerre
+					else evenement[i][j].update();
 				}
 				
 				if (fire[i][j]>0) {
@@ -716,15 +750,17 @@ public class World extends JPanel{
 					terrain[i][j] = obsidian; //Le terrain devient de l'obsidienne
 				}
 				
+				//Compte le nombre de chaque type de terrain
 				if (terrain[i][j]==grass) nbGrass++;
 				else if (terrain[i][j]==sand) nbSand++;
 				else if (terrain[i][j]==water) nbWater++;
 			}
+		
 		//Environnement aleatoire
-		if (Math.random()<pFlower) {
-			if (Math.random()<pRose) addItem(new Rose());
+		if (Math.random()<pFlower) { //Probabilite d'ajouter une fleur
+			if (Math.random()<pRose) addItem(new Rose()); //Probabilite d'ajouter une rose
 			if (Math.random()<pTulipe) addItem(new Tulip());
-			if (Math.random()<pMarguerite) addItem(new Daisy());
+			if (Math.random()<pDaisy) addItem(new Daisy());
 		}
 		
 		//Variables pour le changement de terrain aleatoire
@@ -733,7 +769,7 @@ public class World extends JPanel{
 			int q=(int)(Math.random()*Y);
 			boolean presenceSand = false;
 			
-			if (Math.random()<pSand) {
+			if (Math.random()<pSand) { //Probabilite de transformer une herbe en sable
 				if (terrain[p][q]==grass) {
 					for (int i = -1; i < 2 && !presenceSand;i++ ) //Rayon de 3x3 (Voisinage de Moore)
 						for (int j = -1; j < 2 && !presenceSand; j++) {
@@ -747,11 +783,11 @@ public class World extends JPanel{
 				}
 			}
 			
-			if (Math.random()<pWater) {
+			if (Math.random()<pWater) { //Probabilite de transformer le sable en eau
 				if (terrain[p][q]==sand) { //Remplace uniquement le sable
 					boolean presenceWater = false;
 					//Recherche d'eau sous forme de + (Voisinage de Von Neumann)
-					if (p+1<X ) {
+					if (p+1<X) {
 						if (terrain[p+1][q]==water)
 							presenceWater = true;
 					}
@@ -781,14 +817,16 @@ public class World extends JPanel{
 				if (terrain[p][q]==grass) addItem(new Tree());
 			}
 			
-			if (Math.random()<pCactus) {
+			if (Math.random()<pCactus) { //Probabilite d'ajouter un cactus si le terrain est du sable
 				if (terrain[p][q]==sand) addItem(new Cactus());
 			}
 			
-			if (Math.random()<pFire) {
-				environnement[p][q] = new Thunder();
+			if (Math.random()<pThunder) { //Probabilite d'apparition d'un coup de tonnerre
+				evenement[p][q] = new Thunder();
 				if (terrain[p][q]!=water) fire[p][q] = 1;
 			}
+			
+			//Mise a jour les modifications dans le frame
 			repaint();
 		}
 	}
@@ -803,7 +841,7 @@ public class World extends JPanel{
 				if (a.getAlive()) { //Verifie si l'agent est toujours en vie
 					a.update();
 				}
-				if (environnement[a.getX()][a.getY()] instanceof Thunder) a.addHealth(-thunderDamage);
+				if (evenement[a.getX()][a.getY()] instanceof Thunder) a.addHealth(-thunderDamage);
 			}
 			
 			//Quelques regles du monde pour les agents
@@ -816,7 +854,7 @@ public class World extends JPanel{
 				}
 				if (fire[a.getX()][a.getY()]!=0) { //L'agent est en feu s'il marche sur du feu ou de la lave
 					a.setOnFire(true);
-					((Human)a).setFire(0);
+					((Human)a).setFire(0); //Active la duree de la mise en feu de l'agent
 				}
 			} else if (a instanceof Chicken && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==water) ((Chicken)a).addDrowning();
@@ -829,7 +867,7 @@ public class World extends JPanel{
 					a.setOnFire(true);
 					((Chicken)a).setFire(0);
 				}
-			}  else if (a instanceof Fox && a.getAlive()) {
+			} else if (a instanceof Fox && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==water) ((Fox)a).addDrowning();
 				else ((Fox)a).setDrowning(0);
 				if (environnement[a.getX()][a.getY()] instanceof Daisy && !((Flower)environnement[a.getX()][a.getY()]).getFire()) { //Les renards ne mangent que les marguerites
@@ -840,12 +878,19 @@ public class World extends JPanel{
 					a.setOnFire(true);
 					((Fox)a).setFire(0);
 				}
-			}  else if (a instanceof Viper && a.getAlive()) {
+			} else if (a instanceof Viper && a.getAlive()) {
 				if (terrain[a.getX()][a.getY()]==water) ((Viper)a).addDrowning();
 				else ((Viper)a).setDrowning(0);
 				if (fire[a.getX()][a.getY()]!=0) {
 					a.setOnFire(true);
 					((Viper)a).setFire(0);
+				}
+			} else if (a instanceof Zombie && a.getAlive()) {
+				if (terrain[a.getX()][a.getY()]==water) ((Zombie)a).addDrowning();
+				else ((Zombie)a).setDrowning(0);
+				if (fire[a.getX()][a.getY()]!=0) {
+					a.setOnFire(true);
+					((Zombie)a).setFire(0);
 				}
 			}
 			
@@ -873,6 +918,10 @@ public class World extends JPanel{
 					}
 				}
 			}
+		}
+		
+		if (Math.random()<pZombie) {
+			forceAddAgent(new Zombie());
 		}
 		
 		//Boucle permettant d'afficher les agents fluidement
@@ -913,6 +962,24 @@ public class World extends JPanel{
 		try {
 			Thread.sleep(delai2);
 		} catch ( Exception e ) {};
+		
+		ite++;
+		//Creation d'animations
+		if (ite%4==0) {
+			try {
+				waterSprite = ImageIO.read(new File("pictures/water1.png"));
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		} else if (ite%4==2) { //Toutes les 2 iterations, le sprite change
+			try {
+				waterSprite = ImageIO.read(new File("pictures/water2.png"));
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		}
 	}
 	
 	public void paint(Graphics g){
@@ -942,6 +1009,12 @@ public class World extends JPanel{
 					 */
 					try {
 						g2.drawImage((environnement[i][j]).getImage(),(int)(spriteLength*i+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-environnement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*environnement[i][j].getSpriteSize()),(int)(spriteLength*environnement[i][j].getSpriteSize()), frame);
+					} catch ( Exception e ) {}
+				}
+				
+				if (evenement[i][j] instanceof Item) {
+					try {
+						g2.drawImage((evenement[i][j]).getImage(),(int)(spriteLength*i+(1-evenement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*j+(1-evenement[i][j].getSpriteSize())*(spriteLength/2+1)),(int)(spriteLength*evenement[i][j].getSpriteSize()),(int)(spriteLength*evenement[i][j].getSpriteSize()), frame);
 					} catch ( Exception e ) {}
 				}
 			}
@@ -980,13 +1053,11 @@ public class World extends JPanel{
 	//Main
 	public static void main(String[] args) {
 		World world = new World(X,Y);
-		int i = 0;
 		while (true) {
 			world.update();
 			try {
-				Thread.sleep(delai3);
+				Thread.sleep(mainDelai);
 			} catch ( Exception e ) {};
-			i++;
 		}
 	}
 }
