@@ -1,3 +1,9 @@
+Guide d’installation
+- Décompresser le Programme-DIEP_EL GHAZZI.zip à l’emplacement souhaité
+- Acceder au programme décompressé qui s’appelle WorldOfSprites. Vous verrez
+plusieurs dossiers, notamment le dossier src.
+- Deux façons d’exécuter le programme se présente : Avec le terminal ou avec Eclipse
+
 Voici les étapes pour exécuter le programme avec la méthode dans un terminal: 
 - Ouvrir le terminal
 - Parcourir jusqu'au dossier src dans WorldOfSprites dans le terminal ( avec la commande cd, par exemple cd Documents/2I013/WorldOfSprites/src )
@@ -25,3 +31,7 @@ Voici comment faire :
 - Ouvrir avec un éditeur de texte World.java
 - Modifier uniquement les valeurs aux lignes 16 et 20, qui représentent respectivement la taille du monde et la taille des images
 - Après modification, sauvegarder les changements, recompiler et exécuter à nouveau le programme
+
+NB : 
+Le delai peut aussi être changé dans World.java
+Cela permet de voir le volcan rapidement et la génération de nouveaux terrains rapidement

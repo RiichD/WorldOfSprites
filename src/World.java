@@ -57,7 +57,7 @@ public class World extends JPanel{
 	private int[][] fire; ///Si 0 rien, si >0 feu, sinon lave
 	
 	//Vitesse d'execution
-	private int delai = 10; //Delai pour la vitesse de deplacement d'agent
+	private int delai = 10; //Le delai le plus utilise. Delai pour la vitesse de deplacement d'agent, qui affecte grandement tous les autres delais
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int mainDelai = 0; //Delai du main ( iteration )
 	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
