@@ -5,6 +5,10 @@ Voici les étapes pour exécuter le programme avec la méthode dans un terminal:
 - Exécuter le programme avec la commande suivante : java World
 - Le programme s'exécute
 
+Attention : 
+Si le répertoire pictures ne se trouve pas dans src, il est impossible d'exécuter le programme avec java World
+Il faut ainsi déplacer le dossier pictures dans src avant d'exécuter le programme
+
 Méthode avec Eclipse :
 - Ouvrir Eclipse IDE
 - Parcourir dans File ( en haut à gauche ), puis Open Projects from File System…

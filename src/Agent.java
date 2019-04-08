@@ -33,13 +33,13 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	private boolean alive; //Agent en vie
 	private boolean onFire; //Agent en feu
 	
-	private int x, y;
+	private int x, y; //Position de l'agent
 	private int spriteX, spriteY; //Position du Sprite
 	private int pspriteX, pspriteY; //Ancienne position du Sprite qui permet de deplacer fluidement
 
-	private int currChasing = 0; //Nombre d'iteration que l'agent est en train de chasser
+	private int currChasing = 0; //Nombre d'iteration durant lequel l'agent est en train de chasser sa proie
 	
-	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit ou il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
+	private int nbItMax = 100; //Le choix de fuite est aleatoire mais toujours a l'endroit lorsqu'il n'y a pas de predateur. si nbItMax est depasse, l'agent ne bouge pas
 	
 	public Agent() { //Constructeur sans argument qui permet d'ajouter l'agent a des positions aleatoires
 		this((int)(Math.random()*(World.X)), (int)(Math.random()*(World.Y)));
@@ -132,34 +132,36 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	//Deplacement aleatoire
 	public void move(int[][] terrain, Item[][] environnement) {
-		if ( (pspriteX==spriteX && pspriteY==spriteY) || this instanceof Zombie) {
+		if ( (pspriteX==spriteX && pspriteY==spriteY) || this instanceof Zombie) { //On peut changer la position de l'agent uniquement si la position du sprite courant et du précédent est identique. Sauf pour le zombie qui peut se déplacer plusieurs fois
 			double rand = Math.random();
 			if (rand < 0.75) {
 				if (rand < 0.5) {
 					if (rand < 0.25) {
-						if (x-1>=0 && terrain[x-1][y]>0) {//(terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) ) {
-							if (environnement[x-1][y] instanceof Flower || !(environnement[x-1][y] instanceof Item))
+						if (x-1>=0 && terrain[x-1][y]>0) { //ou (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) ), car toutes valeur superieures a 0 sont des cases ou l'agent peut marcher
+							if (environnement[x-1][y] instanceof Flower || !(environnement[x-1][y] instanceof Item)) //Verifie qu'il y a soit une fleur, soit aucun objet a la position
 								x--;
 						}
 					} else {
-						if (y+1<World.X && ( terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) ) {
+						if (y+1<World.X && ( terrain[x][y+1]>0) ) {
 							if (environnement[x][y+1] instanceof Flower || !(environnement[x][y+1] instanceof Item))
 								y++;
 						}
 					}
 				} else {
-					if (y-1>=0 && ( terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) ) {
+					if (y-1>=0 && ( terrain[x][y-1]>0) ) {
 						if (environnement[x][y-1] instanceof Flower || !(environnement[x][y-1] instanceof Item))
 							y--;
 					}
 				}
 			} else {
-				if (x+1<World.Y && ( terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt)) {
+				if (x+1<World.Y && ( terrain[x+1][y]>0) ) {
 					if (environnement[x+1][y] instanceof Flower || !(environnement[x+1][y] instanceof Item))
 						x++;
 				}
 			}
 		}
+		
+		//Mise a jour du sprite courant la taille du sprite et la position de l'agent
 		spriteX= x*World.spriteLength;
 		spriteY= y*World.spriteLength;
 	}
@@ -182,17 +184,17 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 					if (this instanceof Chicken) {
 						if (b instanceof Viper) { //La poule mange la vipere
 							b.setAlive(false);
-							addHealth(addChickenHealth);
-							currChasing = -chasingPause;
+							addHealth(addChickenHealth); //L'agent a gagne en sante
+							currChasing = -chasingPause; //Pause pour la chasse apres avoir tue sa proie
 						} else if (b instanceof Fox) { //Le renard mange la poule
 							setAlive(false);
-							b.addHealth(addFoxHealth);
+							b.addHealth(addFoxHealth); //L'agent b gagne en sante
 						}
 					} else if (this instanceof Fox) {
 						if (b instanceof Chicken) { //Le renard mange la poule
 							b.setAlive(false);
 							addHealth(addFoxHealth);
-							currChasing = -chasingPause;
+							currChasing = -chasingPause; //Pause pour la chasse apres avoir tue sa proie
 						} else if (b instanceof Viper) { //La vipere mange le renard
 							setAlive(false);
 							b.addHealth(addViperHealth);
@@ -201,7 +203,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 						if (b instanceof Fox) { //La vipere mange le renard
 							b.setAlive(false);
 							addHealth(addViperHealth);
-							currChasing = -chasingPause;
+							currChasing = -chasingPause; //Pause pour la chasse apres avoir tue sa proie
 						} else if (b instanceof Chicken) { //La poule mange la vipere
 							setAlive(false);
 							b.addHealth(addChickenHealth);
@@ -210,10 +212,10 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 				}
 				
 				//Recherche d'une proie autour de l'agent
-				if (!escape && Math.abs(x-b.getX())<=rayon && Math.abs(y-b.getY())<=rayon) {
+				if (!escape && Math.abs(x-b.getX())<=rayon && Math.abs(y-b.getY())<=rayon) { //Recherche si une proie est dans le rayon du predateur
 					if (this instanceof Chicken && b instanceof Viper) {
-						chase = true;
-						posPrey[b.getX()][b.getY()] = true;
+						chase = true; //Activation de la chasse
+						posPrey[b.getX()][b.getY()] = true; //Sauvegarde la position de la proie
 					}else if (this instanceof Fox && b instanceof Chicken) {
 						chase = true;
 						posPrey[b.getX()][b.getY()] = true;
@@ -224,11 +226,11 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 				}
 				
 				//Recherche d'un predateur autour de l'agent
-				if (Math.abs(x-b.getX())<=1 && Math.abs(y-b.getY())<=1) {
+				if (Math.abs(x-b.getX()) + Math.abs(y-b.getY())<=1) { //Recherche un predateur avec un voisinage de Von Neumann
 					if (this instanceof Viper && b instanceof Chicken) {
-						chase = false;
-						escape = true;
-						posPred[b.getX()][b.getY()] = true;
+						chase = false; //La fuite etant prioritaire, la chasse est desactivee
+						escape = true; //Activation de la fuite
+						posPred[b.getX()][b.getY()] = true; //Sauvegarde la position du predateur
 					}else if (this instanceof Chicken && b instanceof Fox) {
 						chase = false;
 						escape = true;
@@ -241,86 +243,97 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 				}
 			}
 		} else {
-			if (this instanceof Human) {
+			if (this instanceof Human) { //Si l'agent est un humain, on cherche si un zombie est a la meme case. Si oui, l'humain meurt
 				for (Agent b: agents) {
 					if (b instanceof Zombie && x==b.getX() && y==b.getY()) {
 						this.setAlive(false);
 					}
 					
-					if (Math.abs(x-b.getX())<=1 && Math.abs(y-b.getY())<=1) {
+					if (Math.abs(x-b.getX()) + Math.abs(y-b.getY())<=1) {
 						if (this instanceof Human && b instanceof Zombie) {
-							escape = true;
-							posPred[b.getX()][b.getY()] = true;
+							escape = true; //Activation de la fuite
+							posPred[b.getX()][b.getY()] = true; //Sauvegarde la position du predateur
 						}
 					}
 				}
 			}
 		}
 		
-		if (!chase && !escape) {
-			if (this instanceof Zombie) {
+		if (!chase && !escape) { //S'il n'y a ni chasse et ni fuite, l'agent a un deplacement aleatoire
+			if (this instanceof Zombie) { //Le zombie se deplace plus vite, donc on creer une boucle et on le fait deplacer plusieurs fois
 				for (int i = 0 ; i < ((Zombie)this).getZombieIte() ; i++) {
 					this.move(terrain,environnement);
 				}
 			} else {
 				move(terrain,environnement); //Deplacement aleatoire
 			}
-			currChasing = 0;
-		} else if (!escape && chase){
+			currChasing = 0; //Reinitialise le temps de chasse
+		} else if (!escape && chase){ //Si l'agent ne fuit pas mais chasse, il va chasser sa proie
 			chasingPrey(terrain, environnement, posPrey); //Chasse
 		} else {
 			escapingPredator(terrain, environnement, posPred); //Fuite
 		}
 	}
 	
+	//Methode privee car elle sert uniquement a la methode ci-dessous, 
 	private void move(int[][] terrain, Item[][] environnement, boolean[][] position, int i, int j) {
+		//On verifie les 8 cases autour de l'agent, donc on applique le voisinage de Moore. Le predateur cherche a se rapprocher de sa proie
 		if (x-i==0) {
-			if (y<j && y+1<World.Y && (terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
+			if (y<j && y+1<World.Y && (terrain[x][y+1]>0) && (environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
 				y++;
 			}
-			else if (y>j && y-1>=0 && (terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
+			else if (y>j && y-1>=0 && (terrain[x][y-1]>0) && (environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
 				y--;
 			}
 		} else if (y-j==0){
-			if (x<i && x+1<World.X && (terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) { 
+			if (x<i && x+1<World.X && (terrain[x+1][y]>0) && (environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) { 
 				x++;
 			}
-			else if (x>i && x-1>=0 && (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
+			else if (x>i && x-1>=0 && (terrain[x-1][y]>0) && (environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
 				x--;
 			}
 		} else {
 			if (Math.random()<0.5) { //Meme distance de chemin pour atteindre la position, alors on choisit au hasard l'un des deux chemins possibles
-				if (y<j && y+1<World.Y && (terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
+				if (y<j && y+1<World.Y && (terrain[x][y+1]>0) && (environnement[x][y+1] instanceof Flower || environnement[x][y+1]==null)) {
 					y++;
 				}
-				else if (y>j && y-1>=0 && (terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) && ( environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
+				else if (y>j && y-1>=0 && (terrain[x][y-1]>0) && (environnement[x][y-1] instanceof Flower || environnement[x][y-1]==null)) {
 					y--;
 				}
 			} else {
-				if (x<i && x+1<World.X && (terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt) && ( environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) {
+				if (x<i && x+1<World.X && (terrain[x+1][y]>0) && (environnement[x+1][y] instanceof Flower || environnement[x+1][y]==null)) {
 					x++;
 				}
-				else if (x>i && x-1>=0 && (terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) && ( environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
+				else if (x>i && x-1>=0 && (terrain[x-1][y]>0) && (environnement[x-1][y] instanceof Flower || environnement[x-1][y]==null)) {
 					x--;
 				}
 			}
 		}
+		
+		//Mise a jour du sprite
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
 	}
 	
+	//Methode privee car on ne l'utilise uniquement pour la chasse aux proies
 	private void chasingPrey(int[][] terrain, Item[][] environnement, boolean[][] position) {
-		boolean found = false;
+		boolean found = false; //Proie trouvee
+		
+		//Coordonnees de la proie
 		int n=0;
 		int m=0;
+		
+		//Si la chasse actuelle vaut le temps de chasse maximal, le predateur fait une pause
 		if (currChasing == chasingTime) {
 			currChasing = -chasingPause;
 		}
+		
+		//La chasse reprend uniquement si la valeur de currChasing se retrouve a 0, d'ou la valeur negatif appliquee. Sinon l'agent se deplace aleatoirement
 		if (currChasing>=0) {
 			for (int i = -rayon; i <= rayon; i++)
 				for (int j = -rayon ; j <= rayon ; j++) {
-					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j] && (terrain[x+i][y+j]==World.grass || terrain[x+i][y+j]==World.sand || terrain[x+i][y+j]==World.dirt) && ( environnement[x+i][y+j] instanceof Flower || environnement[x+i][y+j]==null)) {
-						if (!found) {
+					if (x+i>=0 && x+i<World.X && y+j>=0 && y+j<World.Y && position[x+i][y+j] && (terrain[x+i][y+j]>0) && (environnement[x+i][y+j] instanceof Flower || environnement[x+i][y+j]==null)) {
+						if (!found) { //Premiere proie trouvee
 							n = x+i;
 							m = y+j;
 							found = true;
@@ -333,37 +346,40 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 						}
 					}
 				}
-			if (found) move(terrain, environnement, position, n, m);
-			else move(terrain, environnement); //Cas si aucun chemin ne permet d'atteindre la cible
+			if (found) move(terrain, environnement, position, n, m); //Utilisation de la methode privee pour se rapprocher de la proie
+			else move(terrain, environnement); //Cas si aucun chemin ne permet d'atteindre la cible, il y a un deplacement aleatoire
 		} else {
 			move(terrain, environnement);
 		}
+		
 		currChasing++;
+		
+		//Mise a jour du sprite
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
 	}
 	
 	private void escapingPredator(int[][] terrain, Item[][] environnement, boolean[][] position) {
-		boolean found = false;
-		boolean N = false, S = false, W = false, E = false;
+		boolean found = false; //Predateur trouve
+		boolean N = false, S = false, W = false, E = false; //Position du predateur par rapport a la proie. La proie cherche toujours le chemin oppose au predateur pour fuir
 		
 		//Recherche de la position d'un predateur avec un voisinage de Von Neumann, ensuite de Moore
-		if (x+1<World.X && !position[x+1][y] && ( terrain[x+1][y]==World.grass || terrain[x+1][y]==World.sand || terrain[x+1][y]==World.dirt) && ( environnement[x+1][y]==null || environnement[x+1][y] instanceof Flower) )
+		if (x+1<World.X && !position[x+1][y] && ( terrain[x+1][y]>0 ) && ( environnement[x+1][y]==null || environnement[x+1][y] instanceof Flower) )
 			E = true;
-		if (x-1>=0 && !position[x-1][y] && ( terrain[x-1][y]==World.grass || terrain[x-1][y]==World.sand || terrain[x-1][y]==World.dirt) && ( environnement[x-1][y]==null || environnement[x-1][y] instanceof Flower) )
+		if (x-1>=0 && !position[x-1][y] && ( terrain[x-1][y]>0 ) && ( environnement[x-1][y]==null || environnement[x-1][y] instanceof Flower) )
 			W = true;
-		if (y+1<World.Y && !position[x][y+1] && ( terrain[x][y+1]==World.grass || terrain[x][y+1]==World.sand || terrain[x][y+1]==World.dirt) && ( environnement[x][y+1]==null || environnement[x][y+1] instanceof Flower) )
+		if (y+1<World.Y && !position[x][y+1] && ( terrain[x][y+1]>0 ) && ( environnement[x][y+1]==null || environnement[x][y+1] instanceof Flower) )
 			S = true;
-		if (y-1>=0 && !position[x][y-1] && ( terrain[x][y-1]==World.grass || terrain[x][y-1]==World.sand || terrain[x][y-1]==World.dirt) && ( environnement[x][y-1]==null || environnement[x][y-1] instanceof Flower) )
+		if (y-1>=0 && !position[x][y-1] && ( terrain[x][y-1]>0 ) && ( environnement[x][y-1]==null || environnement[x][y-1] instanceof Flower) )
 			N = true;
 		
-		if (N || S || E || W) {
+		if (N || S || E || W) { //Si l'une des positions est vraie, donc un predateur dans l'une des positions, la proie va activer la fuite
 			found = false;
-			int n=0;
+			int n=0; //n permet d'eviter une boucle infinie, apres nbItMax.
 			while (!found) {
 				if (!found && N && Math.random()<pN) {
 					if (x+1<World.X && y-1>=0 && x-1>=0 && !position[x+1][y-1] && !position[x-1][y-1]) { //Verifie en haut a gauche et en haut a droite avec un voisinage de Moore
-						y--;
+						y--; //Deplacement oppose au predateur
 						found = true;
 					}
 					n++;
@@ -389,19 +405,22 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 					}
 					n++;
 				}
-				if (n>nbItMax && !found) found = true;
+				if (n>nbItMax && !found) found = true; //Sortie de boucle, found est true mais uniquement pour mettre fin a la boucle
 			}
 		} else {
-			move(terrain,environnement);
+			move(terrain,environnement); //Deplacement aleatoire
 		}
+		
+		//Mise a jour du sprite
 		spriteX = x*World.spriteLength;
 		spriteY = y*World.spriteLength;
 	}
 	
 	//Fluidite des deplacements
 	public void smoothMove() {
-		//Si les sprites de chaque coordonnee est differente, il y a un deplacement, alors on incremente l'ancienne sprite de maniere progressive pour l'affichage d'un deplacement fluide
+		//Si les sprites courant et precedent de chaque coordonnee sont differentes, il y a un deplacement, alors on incremente l'ancien sprite de maniere progressif pour obtenir un deplacement fluide
 		if ( pspriteX!=spriteX || pspriteY!=spriteY) {
+			//pspriteX se rapproche de spriteX pixel par pixel
 			if ( pspriteX < spriteX ) {
 				pspriteX++;
 			}

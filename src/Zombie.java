@@ -13,22 +13,23 @@ import javax.swing.JPanel;
 public class Zombie extends Agent{
 	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale
 	
-	private int drowningTime = 10;//Se noie s'il reste drowningtime dans l'eau
-
-	private int maxAppearenceTime = 5000; //Le temps d'apparition du zombie. L'age represente le temps d'apparition du zombie
-	private int minAppearenceTime = 2000;
+	private int drowningTime = 10; //Se noie s'il reste drowningtime dans l'eau
+	
+	//L'age represente le temps d'apparition du zombie
+	private int maxAppearenceTime = 500; //Le temps d'apparition maximal du zombie
+	private int minAppearenceTime = 200; //Le temps d'apparition minimal du zombie
 	
 	private int zombieIte = 20; //Nombre de changements de position que fait l'agent en une iteration
 	
 	//A ne pas modifier
 	private Image zombieSprite;
 	private Image fireSprite;
-	private int drowning;
-	private int fire;
-	private int age;
-	private int deathAge; //age maximum.
+	private int drowning; //Duree courant de l'agent en train de se noyer
+	private int fire; //Duree courant de l'agent en feu
+	private int age; //Age de l'agent
+	private int deathAge; //Age maximum
 	//Variables non necessaires
-	private int health;
+	private int health; //Sante de l'agent
 	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
 	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	
@@ -127,11 +128,11 @@ public class Zombie extends Agent{
 	}
 	
 	public void update() {
-		if (age>=deathAge) setAlive(false);
+		if (age>=deathAge) setAlive(false); //Si l'age est superieur ou egal a l'age maximal, l'agent meurt
 		if (getAlive()) {
-			addAge();
+			addAge(); //L'agent vieillit toutes les iterations
 			if (getOnFire()) {
-				setAlive(false);
+				setAlive(false); //Meurt instantanement s'il est en feu
 			}
 		}
 	}

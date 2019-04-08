@@ -13,26 +13,26 @@ import javax.swing.JPanel;
 public class Fox extends Agent{
 	private double spriteSize = 1; //Change la taille du sprite. 1 etant la taille normale et maximale.
 	
-	private int drowningTime = 15;//Se noie s'il reste drowningtime dans l'eau
+	private int drowningTime = 15; //Se noie s'il reste drowningtime dans l'eau
 	
-	private int fireTime = 6;
+	private int fireTime = 6; //Duree de l'agent en feu
 	
 	private int deathAge = 420; //age maximum
 	
-	private int maxHealth = 350;
-	private int minHealth = 180;
+	private int maxHealth = 350; //Sante maximale
+	private int minHealth = 180; //Sante minimale
 	private double ploseHealth = 0.55; //probabilite de perdre de la vie
 	
-	private int minStime = 18;
-	private int maxStime = 55;
+	private int minStime = 18; //Duree minimale avant de pouvoir avoir un enfant
+	private int maxStime = 55; //Duree maximale avant de pouvoir avoir un enfant
 	
 	//A ne pas modifier
 	private Image foxSprite;
 	private Image fireSprite;
-	private int drowning;
-	private int fire;
-	private int age;
-	private int health;
+	private int drowning; //Duree courant de l'agent en train de se noyer
+	private int fire; //Duree courant de l'agent en feu
+	private int age; //Age de l'agent
+	private int health; //Sante de l'agent
 	private int stimeIni; //temps initial avant de pouvoir avoir un enfant, entre minStime et maxStime inclus
 	private int stime; //possibilite d'avoir un enfant a partir de stime=0
 	
@@ -132,16 +132,16 @@ public class Fox extends Agent{
 	}
 	
 	public void update() {
-		if (health <= 0) setAlive(false);
-		if (age>=deathAge) setAlive(false);
-		if (fire>=fireTime) setOnFire(false);
+		if (health <= 0) setAlive(false); //Si la sante est inferieure ou egale a 0, l'agent meurt
+		if (age>=deathAge) setAlive(false); //Si l'age est superieur ou egal a l'age maximal, l'agent meurt
+		if (fire>=fireTime) setOnFire(false); //Si la duree courant du feu est egale a la duree de fireTime, l'agent n'est plus en feu
 		if (getAlive()) {
-			if (Math.random()<ploseHealth) health--;
-			addAge();
-			removeStime();
+			if (Math.random()<ploseHealth) health--; //Chance de perdre de la sante
+			addAge(); //L'agent vieillit toutes les iterations
+			removeStime(); //Il faut que stime vaille 0 pour pouvoir avoir un enfant
 			if (getOnFire()) {
 				fire++;
-				health-=World.fireDamage;
+				health-=World.fireDamage; //Retirer fireDamage sante a l'agent pour etre en feu
 			}
 		}
 	}

@@ -11,18 +11,18 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("unused")
 public class Daisy extends Flower {
-	private double maxSpriteSize=1;
-	private double minSpriteSize=0.2;
+	private double maxSpriteSize=1; //Taille maximale du sprite
+	private double minSpriteSize=0.2; //Taille minimale du sprite
 	
-	private int deathAge=500;
+	private int deathAge=500; //Age maximal de la fleur
 	
-	private double pGrow=0.01;
+	private double pGrow=0.01; //Chance de gagner en taille
 	
 	//A ne pas modifier
 	private Image spriteDaisy;
 	private double spriteSize;
-	private boolean alive;
-	private int age;
+	private boolean alive; //Si la fleur est en vie
+	private int age; //L'age de la fleur
 	
 	public Daisy() {
 		super();
@@ -61,9 +61,9 @@ public class Daisy extends Flower {
 	}
 	
 	public void update() {
-		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1;
-		if (age>=deathAge) alive=false;
-		age++;
+		if (Math.random()<pGrow && spriteSize<=maxSpriteSize) spriteSize+=0.1; //Chance de grandir en taille
+		if (age>=deathAge) alive=false; //Si l'age est superieur ou egal a l'age maximal, la fleur meurt
+		age++; //La fleur vieillit toutes les iterations
 	}
 	
 }
