@@ -132,7 +132,7 @@ public abstract class Agent{ //Agents sera abstract, avec differents types d'age
 	
 	//Deplacement aleatoire
 	public void move(int[][] terrain, Item[][] environnement) {
-		if ( (pspriteX==spriteX && pspriteY==spriteY) || this instanceof Zombie) { //On peut changer la position de l'agent uniquement si la position du sprite courant et du precedent est identique. Sauf pour le zombie qui peut se déplacer plusieurs fois
+		if ( (pspriteX==spriteX && pspriteY==spriteY) || this instanceof Zombie) { //On peut changer la position de l'agent uniquement si la position du sprite courant et du precedent est identique. Sauf pour le zombie qui peut se deplacer plusieurs fois
 			double rand = Math.random();
 			if (rand < 0.75) {
 				if (rand < 0.5) {
