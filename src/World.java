@@ -9,11 +9,12 @@ import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.util.ArrayList;
+import java.awt.event.*;
 
 @SuppressWarnings({ "serial", "unused" })
-public class World extends JPanel{
+public class World extends JPanel implements MouseWheelListener{
 	
-	public static final int X = 64, Y = 64; //Taille du monde
+	public static final int X = 48, Y = 48; //Taille du monde
 	
 	private JFrame frame;
 	
@@ -947,7 +948,7 @@ public class World extends JPanel{
 		}
 	}
 	
-	// Mise a jour de chaque Item et Agents
+	//Mise a jour de chaque Item et Agents
 	public void update() {
 		nbGrass = 0;
 		nbSand = 0;
@@ -981,6 +982,22 @@ public class World extends JPanel{
 			}
 		}
 	}
+	
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) { //Utiliser la molette pour accelerer ou decelerer le monde
+
+        //Accelere si on fait defiler vers le bas
+        if(e.getWheelRotation()<0){
+        	delai+=1;
+        	System.out.println("Delai : " + delai);
+           
+        }
+        //Decelere si on fait defiler vers le haut
+        if(e.getWheelRotation()>0 && delai>0){ 
+        	delai-=1;
+        	System.out.println("Delai : " + delai);
+        }
+    }
 	
 	public void paint(Graphics g){
 		Graphics2D g2 = (Graphics2D)g;
@@ -1053,6 +1070,7 @@ public class World extends JPanel{
 	//Main
 	public static void main(String[] args) {
 		World world = new World(X,Y);
+		world.addMouseWheelListener(world);
 		while (true) {
 			world.update();
 			try {
