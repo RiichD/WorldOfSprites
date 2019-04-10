@@ -90,7 +90,6 @@ public class World extends JPanel implements MouseWheelListener{
 	private int addFoxHealth = 56;
 	
 	//Attributs pour la reapparition de terrain, suite au volcan
-	private int volcanoSpawn = 0; //En realite inutile. Si le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait sur l'un des herbes, sinon au centre
 	private int volcanoX, volcanoY; //Coordonnees du volcan
 	private int volcanoRange = (int)(X/1.3); //Distance de propagation de la lave sur le terrain
 	
@@ -504,7 +503,7 @@ public class World extends JPanel implements MouseWheelListener{
 				}
 			} while (!added);
 			
-		} else if ( nbSand==0/* && nbGrass<=volcanoSpawn*/ && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre du terrain
+		} else if ( nbSand==0 && !newCycle) { //S'il n'y a plus de sable et que le nombre d'herbe est inferieur a volcanoSpawn, un volcan apparait au centre du terrain
 			newCycle = true; //Active le nouveau cycle
 			volcanoX = X/2;
 			volcanoY = Y/2;
@@ -838,7 +837,7 @@ public class World extends JPanel implements MouseWheelListener{
 	}
 	
 	private void updateAgents() {
-		boolean existsHuman = false;
+		boolean existsHuman = false; //Variable verifiant s'il y a un humain. Si oui, les zombies peuvent aapparaitre
 		//Liste permettant d'ajouter les nouveaux enfants
 		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
 		//Met a jour les agents
