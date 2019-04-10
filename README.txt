@@ -6,6 +6,9 @@ allPictures contient toutes les sources de chaque images.
 pictures contient toutes les images utilisées.
 rapports contient tous les documents (sprints, product backlog, etc.).
 
+Comment télécharger le programme ?
+Aller dans l'onglet releases, et télécharger Programme-DIEP_EL.GHAZZI.zip (ou Programme-DIEP_EL-GHAZZI.zip) du dernier realease (Latest release)
+
 Sources :
 https://opengameart.org/content/basic-map-32x32-by-silver-iv
 http://zfgc.com/forum/index.php?topic=39863.420
