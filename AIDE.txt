@@ -33,5 +33,5 @@ Voici comment faire :
 - Après modification, sauvegarder les changements, recompiler et exécuter à nouveau le programme
 
 NB : 
-Le delai peut aussi être changé dans World.java
+Le delai peut aussi être changé dans World.java ou avec la molette de la souris
 Cela permet de voir le volcan rapidement et la génération de nouveaux terrains rapidement
