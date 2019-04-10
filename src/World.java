@@ -61,8 +61,8 @@ public class World extends JPanel implements MouseWheelListener{
 	private int delai = 10; //Le delai le plus utilise. Delai pour la vitesse de deplacement d'agent, qui affecte grandement tous les autres delais
 	private int delai2 = 0; //Delai pour la vitesse d'execution (d'affichage)
 	public static final int mainDelai = 0; //Delai du main ( iteration )
-	private int lavaDelai = 200; //Delai permettant d'afficher la propagation de la lave progressivement
-	private int newCycleLSDelai = 5; //Delai lors du passage de la lave a la nouvelle terre
+	private int lavaDelai = 000; //Delai permettant d'afficher la propagation de la lave progressivement
+	private int newCycleLSDelai = 0; //Delai lors du passage de la lave a la nouvelle terre
 	
 	//Attributs du monde
 	private int perlinSize = 10; //Taille du bruit de perlin
@@ -213,7 +213,7 @@ public class World extends JPanel implements MouseWheelListener{
 				if (terrain[i][j] == grass ) nbGrass++;
 				if (terrain[i][j] == sand ) nbSand++;
 			}
-		
+		System.out.println("Debut");
 		//Agents de depart
 		//Il est possible d'utiliser addAgent mais il n'y aura pas forcement le nombre d'agent souhaite
 		for (int n=0;n<nbHumanDepart;n++) {
@@ -222,35 +222,35 @@ public class World extends JPanel implements MouseWheelListener{
 			else 
 				addAgent(new Human()); //Ajoute au maximum le nombre d'agent
 		}
-
+		System.out.println("1");
 		for (int n=0;n<nbChickenDepart;n++) {
 			if (forceAdd && nbChickenDepart<= nbGrass + nbSand)
 				forceAddAgent(new Chicken());
 			else
 				addAgent(new Chicken());
 		}
-
+		System.out.println("2");
 		for (int n=0;n<nbFoxDepart;n++) {
 			if (forceAdd && nbFoxDepart<= nbGrass + nbSand)
 				forceAddAgent(new Fox());
 			else
 				addAgent(new Fox());
 		}
-		
+		System.out.println("3");
 		for (int n=0;n<nbViperDepart;n++) {
 			if (forceAdd && nbViperDepart<= nbGrass + nbSand)
 				forceAddAgent(new Viper());
 			else
 				addAgent(new Viper());
 		}
-		
+		System.out.println("4");
 		for (int n=0;n<nbZombieDepart;n++) {
 			if (forceAdd && nbZombieDepart<= nbGrass + nbSand)
 				forceAddAgent(new Zombie());
 			else
 				addAgent(new Zombie());
 		}
-		
+		System.out.println("5");
 		//Environnement de depart
 		for (int n=0;n<nbFlowerDepart;n++) {
 			if (forceAdd && nbFlowerDepart<= nbGrass) {
@@ -260,23 +260,25 @@ public class World extends JPanel implements MouseWheelListener{
 			} else {
 				addItem(new Rose());
 				addItem(new Tulip());
+				addItem(new Daisy());
 			}
 		}
-		
+		nbGrass-=nbFlowerDepart*3; //On ne peut pas avoir des arbres et des fleurs dans ue meme case
+		System.out.println("6");
 		for (int n=0;n<nbTreeDepart;n++) {
 			if (forceAdd && nbTreeDepart<= nbGrass) {
 				forceAddItem(new Tree());
 			} else 
 				addItem(new Tree());
 		}
-		
+		System.out.println("7");
 		for (int n=0;n<nbCactusDepart;n++) {
 			if (forceAdd && nbCactusDepart<= nbSand)
 				forceAddItem(new Cactus());
 			else 
 				addItem(new Cactus());
 		}
-		
+		System.out.println("Fin");
 		//Reinitialise les variables
 		nbGrass = 0;
 		nbSand = 0;
@@ -319,7 +321,8 @@ public class World extends JPanel implements MouseWheelListener{
 						}
 					} else if (terrain[x][y]==grass) {
 						if (i instanceof Tree || i instanceof Flower) {
-							if (nbGrass < nbTreeDepart || nbGrass < nbFlowerDepart) ajout = true;
+							if (nbGrass < nbTreeDepart && i instanceof Tree) ajout = true;
+							if (nbGrass < nbFlowerDepart && i instanceof Flower) ajout = true;
 							ajout = true;
 							environnement[x][y] = i;
 						}
@@ -516,7 +519,9 @@ public class World extends JPanel implements MouseWheelListener{
 				for (int i = 0 ; i < X ; i++)
 					for (int j = 0 ; j < Y ; j++) {
 						environnement[i][j] = null; //Retire tous les items du monde car c'est un nouveau monde qui va commencer
+						fire[i][j] = 0; //On reinitialise le tableau pour se preparer a l'utiliser pour de la lave
 					}
+				repaint();
 			}
 			while (!newCycle) {
 				int x = (int)(Math.random()*(X));
@@ -833,6 +838,7 @@ public class World extends JPanel implements MouseWheelListener{
 	}
 	
 	private void updateAgents() {
+		boolean existsHuman = false;
 		//Liste permettant d'ajouter les nouveaux enfants
 		ArrayList<Agent> nEnfant = new ArrayList<Agent>();
 		//Met a jour les agents
@@ -843,6 +849,7 @@ public class World extends JPanel implements MouseWheelListener{
 					a.update();
 				}
 				if (evenement[a.getX()][a.getY()] instanceof Thunder) a.addHealth(-thunderDamage);
+				if (a instanceof Human && !existsHuman) existsHuman = true;
 			}
 			
 			//Quelques regles du monde pour les agents
@@ -921,7 +928,7 @@ public class World extends JPanel implements MouseWheelListener{
 			}
 		}
 		
-		if (Math.random()<pZombie) {
+		if (existsHuman && Math.random()<pZombie) {
 			forceAddAgent(new Zombie());
 		}
 		

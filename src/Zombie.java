@@ -19,7 +19,7 @@ public class Zombie extends Agent{
 	private int maxAppearenceTime = 500; //Le temps d'apparition maximal du zombie
 	private int minAppearenceTime = 200; //Le temps d'apparition minimal du zombie
 	
-	private int zombieIte = 20; //Nombre de changements de position que fait l'agent en une iteration
+	private int zombieIte = 2; //Nombre de changements de position que fait l'agent en une iteration
 	
 	//A ne pas modifier
 	private Image zombieSprite;
