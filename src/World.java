@@ -708,6 +708,8 @@ public class World extends JPanel implements MouseWheelListener{
 						addInitiate();
 						perlinReady = false;
 						removePerlinTable();
+						nbSand = 0;
+						nbGrass = 0;
 					}
 				}
 				try {
