@@ -7,7 +7,11 @@ pictures contient toutes les images utilisées.
 rapports contient tous les documents (sprints, product backlog, etc.).
 
 Comment télécharger le programme ?
-Aller dans l'onglet releases, et télécharger Programme-DIEP_EL.GHAZZI.zip (ou Programme-DIEP_EL-GHAZZI.zip) du dernier realease (Latest release)
+Pour utiliser dans le terminal : 
+  Aller dans l'onglet releases, et télécharger Programme-DIEP_EL.GHAZZI.zip (ou Programme-DIEP_EL-GHAZZI.zip) du dernier realease (Latest release)
+
+Pour utiliser dans Eclipse : 
+  Aller dans l'onglet releases, et télécharger Source code (zip) du dernier realease (Latest release)
 
 Sources :
 https://opengameart.org/content/basic-map-32x32-by-silver-iv
